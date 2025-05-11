@@ -4,6 +4,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>DRAFT: File system manager</title>
     <style>
+      .block {
+        display: block;
+      }
+      .mar {
+        margin: 1em;
+      }
+      .fullw {
+        width: calc(100% - 3em);
+      }
     </style>
   </head>
   <body>
@@ -12,10 +21,8 @@
     <form id="repository">
       <fieldset>
         <legend>Git repository</legend>
-        <div id="repository-contents">
-          <input id="repository-url" name="repository-url" type="text" placeholder="For example: https://github.com/OGStudio/cross-language-dialect"/>
-          <input id="repository-clone" type="submit" value="Clone" />
-        </div>
+        <input class="block mar fullw" id="repository-url" type="text" placeholder="For example: https://github.com/OGStudio/cross-language-dialect"/>
+        <input class="block mar" id="repository-clone" type="submit" value="Clone" />
       </fieldset>
     </form>
 
