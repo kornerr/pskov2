@@ -6,15 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="extlib/uikit/uikit.min.js"></script>
     <script src="extlib/uikit/uikit-icons.min.js"></script>
-    <title>DRAFT: Prototype</title>
+    <title>site-opengamestudio</title>
     <style>
       /* Elements */
       body {
         margin-top: 4em;
       }
       header {
-        backdrop-filter: blur(5px);
-        border-bottom: 1px solid black;
+        background-color: #f8f8f8;
+        border-bottom: 1px solid lightgray;
         left: 0;
         padding: 0.5em;
         position: fixed;
@@ -38,8 +38,64 @@
   <body>
     <!-- Header -->
     <header>
-      <span id="location-icon">📁</span>
-      <span id="location-path">/path/to</span>
+      <nav uk-dropnav="mode: click; boundary: true; stretch: x; flip: false">
+        <ul class="uk-subnav">
+          <li>
+            <a>
+              <span class="uk-label uk-label-warning">M</span>
+              site-opengamestudio
+              <span uk-drop-parent-icon></span>
+            </a>
+            <div class="uk-dropdown">
+							<table class="uk-table uk-table-divider uk-table-small">
+									<thead>
+											<tr>
+													<th class="uk-table-shrink"></th>
+													<th>Repository</th>
+											</tr>
+									</thead>
+									<tbody>
+											<tr>
+                          <td>√</td>
+                          <td><a class="uk-link-heading">https://github.com/OGStudio/<strong>site-opengamestudio</strong></a></td>
+											</tr>
+											<tr>
+													<td></td>
+                          <td><a class="uk-link-heading">https://git.opengamestudio.org/ZH/<strong>Matrix</strong></a></td>
+											</tr>
+											<tr>
+													<td></td>
+                          <td><button class="uk-button uk-button-default">Clone new repository</button></td>
+											</tr>
+									</tbody>
+							</table>
+					  </div>
+					</li>
+          <li>
+            <a>main<span uk-drop-parent-icon></span></a>
+            <div class="uk-dropdown">
+							<table class="uk-table uk-table-divider uk-table-small">
+									<thead>
+											<tr>
+													<th class="uk-table-shrink"></th>
+													<th>Branch</th>
+											</tr>
+									</thead>
+									<tbody>
+											<tr>
+                          <td>√</td>
+                          <td><a class="uk-link-heading">main</strong></a></td>
+											</tr>
+											<tr>
+													<td></td>
+                          <td><a class="uk-link-heading">desktop</a></td>
+											</tr>
+									</tbody>
+							</table>
+					  </div>
+					</li>
+        </ul>
+      </nav>
     </header>
 
     <!-- Repository -->
