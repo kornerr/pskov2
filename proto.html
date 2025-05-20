@@ -39,7 +39,18 @@
     <!-- Header -->
     <header>
       <nav uk-dropnav="mode: click; boundary: true; stretch: x; flip: false">
-        <li>Item1</li>
+        <div>
+          <button class="uk-button uk-button-default uk-button-small">
+            <span class="uk-label uk-label-danger">M</span>
+            site-opengamestudio
+            <span uk-icon="icon: git-branch"></span>
+            main
+            <span uk-drop-parent-icon></span>
+          </button>
+          <div class="uk-dropdown">
+            Item-1
+          </div>
+        </div>
       </nav>
       <!--
       <nav uk-dropnav="mode: click; boundary: true; stretch: x; flip: false">
