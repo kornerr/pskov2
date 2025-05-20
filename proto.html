@@ -40,7 +40,7 @@
     <header>
       <nav uk-dropnav="mode: click; boundary: true; stretch: x; flip: false">
         <div>
-          <button class="uk-button uk-button-default uk-button-small">
+          <button class="uk-button uk-button-default">
             <span class="uk-label uk-label-danger">M</span>
             site-opengamestudio
             <span uk-icon="icon: git-branch"></span>
@@ -48,7 +48,34 @@
             <span uk-drop-parent-icon></span>
           </button>
           <div class="uk-dropdown">
-            Item-1
+							<table class="uk-table uk-table-divider uk-table-small">
+									<thead>
+											<tr>
+													<th class="uk-table-expand">Repository</th>
+													<th>Branch</th>
+											</tr>
+									</thead>
+									<tbody>
+											<tr>
+                          <td>√ https://github.com/OGStudio/<strong>site-opengamestudio</strong></td>
+                          <td uk-margin>
+                            <button class="uk-button uk-button-default" disabled>√ main</button>
+                            <button class="uk-button uk-button-default">desktop</button>
+                            <button class="uk-button uk-button-default">alter</button>
+                            <button class="uk-button uk-button-default">sync</button>
+                            <button class="uk-button uk-button-default">feature/VCSMOB-2999/kzs</button>
+                          </td>
+											</tr>
+											<tr>
+                          <td><a class="uk-link-heading">https://git.opengamestudio.org/ZH/<strong>Matrix</strong></a></td>
+													<td></td>
+											</tr>
+											<tr>
+                          <td><button class="uk-button uk-button-default">Clone new repository</button></td>
+													<td></td>
+											</tr>
+									</tbody>
+							</table>
           </div>
         </div>
       </nav>
