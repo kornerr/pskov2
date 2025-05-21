@@ -21,6 +21,7 @@
         margin: 0;
         top: 0;
         width: 100%;
+        z-index: 999;
       }
 
       /* Classes */
@@ -33,122 +34,89 @@
       .mar {
         margin: 1em;
       }
+      @media (min-width: 960px) {
+        .tm-main {
+          padding-left: 240px;
+        }
+      }
+      .tm-sidebar-left {
+        border-right: 1px solid lightgray;
+        box-sizing: border-box;
+        position: fixed;
+        height: 100%;
+        overflow: auto;
+        top: 40px;
+        width: 240px;
+      }
     </style>
   </head>
   <body>
     <!-- Header -->
     <header>
-      <nav uk-dropnav="mode: click; boundary: true; stretch: x; flip: false">
-        <ul class="uk-subnav">
-          <li>
-            <a>
-              <span class="uk-label uk-label-warning">M</span>
+      <nav class="uk-navbar-container">
+        <div class="uk-navbar-left" uk-dropnav="mode: click; boundary: true; stretch: x; flip: false">
+            <button class="uk-button uk-button-text">
+              <span class="uk-label uk-label-danger">M</span>
               site-opengamestudio
+              <span uk-icon="icon: git-branch"></span>
+              main
               <span uk-drop-parent-icon></span>
-            </a>
+            </button>
             <div class="uk-dropdown">
-							<table class="uk-table uk-table-divider uk-table-small">
-									<thead>
-											<tr>
-													<th class="uk-table-shrink"></th>
-													<th>Repository</th>
-											</tr>
-									</thead>
-									<tbody>
-											<tr>
-                          <td>√</td>
-                          <td><a class="uk-link-heading">https://github.com/OGStudio/<strong>site-opengamestudio</strong></a></td>
-											</tr>
-											<tr>
-													<td></td>
-                          <td><a class="uk-link-heading">https://git.opengamestudio.org/ZH/<strong>Matrix</strong></a></td>
-											</tr>
-											<tr>
-													<td></td>
-                          <td><button class="uk-button uk-button-default">Clone new repository</button></td>
-											</tr>
-									</tbody>
-							</table>
-					  </div>
-					</li>
-          <li>
-            <a>main<span uk-drop-parent-icon></span></a>
-            <div class="uk-dropdown">
-							<table class="uk-table uk-table-divider uk-table-small">
-									<thead>
-											<tr>
-													<th class="uk-table-shrink"></th>
-													<th>Branch</th>
-											</tr>
-									</thead>
-									<tbody>
-											<tr>
-                          <td>√</td>
-                          <td><a class="uk-link-heading">main</strong></a></td>
-											</tr>
-											<tr>
-													<td></td>
-                          <td><a class="uk-link-heading">desktop</a></td>
-											</tr>
-									</tbody>
-							</table>
-					  </div>
-					</li>
-        </ul>
+                <table class="uk-table uk-table-divider uk-table-small">
+                    <thead>
+                        <tr>
+                            <th class="uk-table-expand">Repository</th>
+                            <th>Branch</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>√ https://github.com/OGStudio/<strong>site-opengamestudio</strong></td>
+                            <td uk-margin>
+                              <button class="uk-button uk-button-default" disabled>√ main</button>
+                              <button class="uk-button uk-button-default">desktop</button>
+                              <button class="uk-button uk-button-default">alter</button>
+                              <button class="uk-button uk-button-default">sync</button>
+                              <button class="uk-button uk-button-default">feature/VCSMOB-2999/kzs</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><a class="uk-link-heading">https://git.opengamestudio.org/ZH/<strong>Matrix</strong></a></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td><button class="uk-button uk-button-default">Clone new repository</button></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div> <!--left-->
+
+            <div class="uk-navbar-right uk-margin-right">
+              <button class="uk-button uk-button-text" uk-tooltip="Push to upstream">👊</button>
+              <button class="uk-button uk-button-text" uk-tooltip="Save locally">💾</button>
+            </div> <!--right-->
+        </div>
       </nav>
     </header>
 
-    <!-- Repository -->
-    <form id="repository">
-      <fieldset>
-        <legend>Git repository</legend>
-        <input class="block mar fullw" id="repository-url" type="text" placeholder="For example: https://github.com/OGStudio/cross-language-dialect"/>
-        <input class="block mar" id="repository-clone" type="submit" value="Clone" />
-      </fieldset>
-    </form>
+    <!-- Left panel -->
+    <div class="tm-sidebar-left uk-visible@m">
+      <p>1 Left panel items will be here</p>
+      <p>2 Left panel items will be here</p>
+      <p>3 Left panel items will be here</p>
+      <p>4 Left panel items will be here</p>
+    </div>
 
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-    <p>just some text</p>
-
+    <!-- Right panel -->
+    <div class="tm-main">
+      <p>1 main content line</p>
+      <p>2 main content line</p>
+      <p>3 main content line</p>
+      <p>4 main content line</p>
+      <p>5 main content line</p>
+      <p>6 main content line</p>
+    </div>
   </body>
 </html>
