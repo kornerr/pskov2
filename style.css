@@ -1,0 +1,25 @@
+#panel-header {
+  background-color: #f8f8f8;
+  border-bottom: 1px solid lightgray;
+  height: 40px;
+  left: 0;
+  margin: 0;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 100;
+}
+
+#panel-left {
+  border-right: 1px solid lightgray;
+  height: 100%;
+  position: fixed;
+  top: 40px;
+  width: 240px;
+}
+
+#panel-main {
+  padding-left: 240px;
+  position: fixed;
+  top: 40px;
+}
