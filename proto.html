@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="extlib/uikit/uikit.min.css" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="extlib/uikit/uikit.min.js"></script>
+    <script src="extlib/uikit/uikit-icons.min.js"></script>
+    <title>site-opengamestudio</title>
+    <style>
+      /* Elements */
+      body {
+        margin-top: 4em;
+      }
+      header {
+        background-color: #f8f8f8;
+        border-bottom: 1px solid lightgray;
+        left: 0;
+        padding: 0.5em;
+        position: fixed;
+        margin: 0;
+        top: 0;
+        width: 100%;
+        z-index: 999;
+      }
+
+      /* Classes */
+      .block {
+        display: block;
+      }
+      .fullw {
+        width: calc(100% - 3em);
+      }
+      .mar {
+        margin: 1em;
+      }
+      @media (min-width: 960px) {
+        .tm-main {
+          padding-left: 240px;
+        }
+      }
+      .tm-sidebar-left {
+        border-right: 1px solid lightgray;
+        box-sizing: border-box;
+        position: fixed;
+        height: 100%;
+        overflow: auto;
+        top: 40px;
+        width: 240px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <header>
+      <nav class="uk-navbar-container">
+        <div class="uk-navbar-left" uk-dropnav="mode: click; boundary: true; stretch: x; flip: false">
+            <button class="uk-button uk-button-text">
+              <span class="uk-label uk-label-danger">M</span>
+              site-opengamestudio
+              <span uk-icon="icon: git-branch"></span>
+              main
+              <span uk-drop-parent-icon></span>
+            </button>
+            <div class="uk-dropdown">
+                <table class="uk-table uk-table-divider uk-table-small">
+                    <thead>
+                        <tr>
+                            <th class="uk-table-expand">Repository</th>
+                            <th>Branch</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>√ https://github.com/OGStudio/<strong>site-opengamestudio</strong></td>
+                            <td uk-margin>
+                              <button class="uk-button uk-button-default" disabled>√ main</button>
+                              <button class="uk-button uk-button-default">desktop</button>
+                              <button class="uk-button uk-button-default">alter</button>
+                              <button class="uk-button uk-button-default">sync</button>
+                              <button class="uk-button uk-button-default">feature/VCSMOB-2999/kzs</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><a class="uk-link-heading">https://git.opengamestudio.org/ZH/<strong>Matrix</strong></a></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td><button class="uk-button uk-button-default">Clone new repository</button></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div> <!--left-->
+
+            <div class="uk-navbar-right uk-margin-right">
+              <button class="uk-button uk-button-text" uk-tooltip="Push to upstream">👊</button>
+              <button class="uk-button uk-button-text" uk-tooltip="Save locally">💾</button>
+            </div> <!--right-->
+        </div>
+      </nav>
+    </header>
+
+    <!-- Left panel -->
+    <div class="tm-sidebar-left uk-visible@m">
+      <p>1 Left panel items will be here</p>
+      <p>2 Left panel items will be here</p>
+      <p>3 Left panel items will be here</p>
+      <p>4 Left panel items will be here</p>
+    </div>
+
+    <!-- Right panel -->
+    <div class="tm-main">
+      <p>1 main content line</p>
+      <p>2 main content line</p>
+      <p>3 main content line</p>
+      <p>4 main content line</p>
+      <p>5 main content line</p>
+      <p>6 main content line</p>
+    </div>
+  </body>
+</html>
