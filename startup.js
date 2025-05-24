@@ -1,1 +1,1 @@
-setupEditorPanels();
+console.log("TODO: startup");
