@@ -5,7 +5,7 @@ window.addEventListener("load", (e) => {
 
 //<!-- Constants -->
 
-TEMPLATE_WELCOME_HEADER = `<h1>Welcome</h1>`;
+TEMPLATE_WELCOME_HEADER = `<div class="uk-position-center-vertical uk-padding">Welcome to PSKOV2</div>`;
 
 //<!-- Context -->
 
@@ -17,4 +17,6 @@ TEMPLATE_WELCOME_HEADER = `<h1>Welcome</h1>`;
 
 function welcomeSetup() {
     console.log("欢迎光临");
+    let header = document.getElementById("panel-header");
+    header.innerHTML = TEMPLATE_WELCOME_HEADER;
 }
