@@ -7,7 +7,7 @@ window.addEventListener("load", (e) => {
 
 TEMPLATE_WELCOME_HEADER = `<div class="uk-position-center-vertical uk-padding">Welcome to PSKOV2</div>`;
 TEMPLATE_WELCOME_LEFT = `
-<div>
+<div class="uk-padding">
     <ul class="uk-nav uk-nav-default">
         <li class="uk-nav-header">Welcome section</li>
         <li class="uk-nav-divider"></li>
@@ -16,14 +16,10 @@ TEMPLATE_WELCOME_LEFT = `
     </ul>
 </div>`;
 TEMPLATE_WELCOME_MAIN = `
-<p>abc</p>
-`;
-/*
-<div class="uk-container">
+<div class="uk-container uk-padding">
     <h1 class="uk-heading">Welcome to PSKOV2</h1>
     <p>Time to generate static sites from web-browser!</p>
 </div>`;
-*/
 
 //<!-- Context -->
 
