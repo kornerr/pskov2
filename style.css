@@ -13,14 +13,13 @@
 #panel-left {
   border-right: 1px solid lightgray;
   height: 100%;
-  padding: 1em;
   position: fixed;
   top: 40px;
   width: 240px;
 }
 
 #panel-main {
-  padding-left: 240px;
+  left: 240px;
   position: fixed;
   top: 40px;
 }

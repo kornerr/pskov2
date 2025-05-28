@@ -16,10 +16,14 @@ TEMPLATE_WELCOME_LEFT = `
     </ul>
 </div>`;
 TEMPLATE_WELCOME_MAIN = `
+<p>abc</p>
+`;
+/*
 <div class="uk-container">
     <h1 class="uk-heading">Welcome to PSKOV2</h1>
     <p>Time to generate static sites from web-browser!</p>
 </div>`;
+*/
 
 //<!-- Context -->
 
