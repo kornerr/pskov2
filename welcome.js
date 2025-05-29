@@ -38,17 +38,19 @@ function WelcomeContext() {
 
 //<!-- Constants -->
 
-let TEMPLATE_WELCOME_HEADER = `<div class="uk-position-center-vertical uk-padding">Welcome to PSKOV2</div>`;
-let TEMPLATE_WELCOME_LEFT = `
+let WELCOME_ITEMS_ID = "welcome-items";
+let WELCOME_PANEL_LEFT = "panel-left";
+let WELCOME_TEMPLATE_HEADER = `<div class="uk-position-center-vertical uk-padding">Welcome to PSKOV2</div>`;
+let WELCOME_TEMPLATE_LEFT = `
 <div class="uk-padding">
-    <ul class="uk-nav uk-nav-default">
+    <ul id="%WELCOME_ITEMS_ID%" class="uk-nav uk-nav-default">
         <li class="uk-nav-header">Welcome section</li>
         <li class="uk-nav-divider"></li>
-        <li><a href="#">What is PSKOV</a></li>
-        <li><a href="#">What PSKOV is not</a></li>
+        <li><a>What is PSKOV</a></li>
+        <li><a>What PSKOV is not</a></li>
     </ul>
 </div>`;
-let TEMPLATE_WELCOME_MAIN = `
+let WELCOME_TEMPLATE_MAIN = `
 <div class="uk-container uk-padding">
     <h1 class="uk-heading">Welcome to PSKOV2</h1>
     <p>Time to generate static sites from web-browser!</p>
@@ -59,42 +61,38 @@ let TEMPLATE_WELCOME_MAIN = `
 function WelcomeComponent() {
     this._construct = function() {
         this.ctrl = new CLDController(new WelcomeContext());
+        this.setupHTML();
         this.setupEvents();
-        this.setupMenu();
     };
 
     this.setupEvents = function() {
         window.addEventListener("load", (e) => {
             this.ctrl.set("didLaunch", true);
         });
+        let items = deId(WELCOME_ITEMS_ID);
     };
 
-    this.setupMenu = function() {
-        let left = document.getElementById("panel-left");
-        left.innerHTML += TEMPLATE_WELCOME_LEFT;
+    this.setupHTML = function() {
+        let left = deId(WELCOME_PANEL_LEFT);
+        left.innerHTML += WELCOME_TEMPLATE_LEFT
+            .replaceAll("%WELCOME_ITEMS_ID%", WELCOME_ITEMS_ID);
     };
 
     this._construct();
 }
 
-
-
-
-
-//<!-- Context -->
-
-
 //<!-- Shoulds -->
-
 
 //<!-- Other -->
 
 function welcomeSetup() {
+    /*
     console.log("欢迎光临");
-    let header = document.getElementById("panel-header");
+    let header = deId("panel-header");
     header.innerHTML += TEMPLATE_WELCOME_HEADER;
-    let main = document.getElementById("panel-main");
+    let main = deId("panel-main");
     main.innerHTML += TEMPLATE_WELCOME_MAIN;
+    */
 }
 
 //<!-- Setup -->
