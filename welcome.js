@@ -3,7 +3,7 @@
 function WelcomeContext() {
     this._construct = function() {
         this.didLaunch = false;
-        this.selectedMenuId = 0;
+        this.selectedItemId = 0;
 
         this.recentField = "";
     };
@@ -12,8 +12,8 @@ function WelcomeContext() {
     this.field = function(name) {
         if (name == "didLaunch") {
             return this.didLaunch;
-        } else if (name == "selectedMenuId") {
-            return this.selectedMenuId;
+        } else if (name == "selectedItemId") {
+            return this.selectedItemId;
         }
 
         return "unknown-field-name";
@@ -22,7 +22,7 @@ function WelcomeContext() {
     this.selfCopy = function() {
         let that = new WelcomeContext();
         that.didLaunch = this.didLaunch;
-        that.selectedMenuId = this.selectedMenuId;
+        that.selectedItemId = this.selectedItemId;
         that.recentField = this.recentField;
         return that;
     };
@@ -30,8 +30,8 @@ function WelcomeContext() {
     this.setField = function(name, value) {
         if (name == "didLaunch") {
             this.didLaunch = value;
-        } else if (name == "selectedMenuId") {
-            this.selectedMenuId = value;
+        } else if (name == "selectedItemId") {
+            this.selectedItemId = value;
         }
     };
 }
@@ -46,8 +46,8 @@ let WELCOME_TEMPLATE_LEFT = `
     <ul id="%WELCOME_ITEMS_ID%" class="uk-nav uk-nav-default">
         <li class="uk-nav-header">Welcome section</li>
         <li class="uk-nav-divider"></li>
-        <li><a>What is PSKOV</a></li>
-        <li><a>What PSKOV is not</a></li>
+        <li><a data-id="0">What is PSKOV</a></li>
+        <li><a data-id="1">What PSKOV is not</a></li>
     </ul>
 </div>`;
 let WELCOME_TEMPLATE_MAIN = `
@@ -63,13 +63,25 @@ function WelcomeComponent() {
         this.ctrl = new CLDController(new WelcomeContext());
         this.setupHTML();
         this.setupEvents();
+        // Dbg.
+        this.ctrl.registerCallback((c) => {
+            console.log(`ИГР WelcomeC._construct ctrl key/value: '${c.recentField}'/'${c.field(c.recentField)}'`);
+
+        });
     };
 
     this.setupEvents = function() {
         window.addEventListener("load", (e) => {
             this.ctrl.set("didLaunch", true);
         });
+
         let items = deId(WELCOME_ITEMS_ID);
+        items.addEventListener("click", (e) => {
+            if (e.target.nodeName == "A") {
+                let id = Number(e.target.dataset.id);
+                this.ctrl.set("selectedItemId", id);
+            }
+        });
     };
 
     this.setupHTML = function() {
@@ -77,7 +89,7 @@ function WelcomeComponent() {
         left.innerHTML += WELCOME_TEMPLATE_LEFT
             .replaceAll("%WELCOME_ITEMS_ID%", WELCOME_ITEMS_ID);
     };
-
+    
     this._construct();
 }
 
