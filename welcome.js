@@ -61,12 +61,19 @@ let WELCOME_TEMPLATE_MAIN = `
 function WelcomeComponent() {
     this._construct = function() {
         this.ctrl = new CLDController(new WelcomeContext());
-        this.setupHTML();
-        this.setupEvents();
         // Dbg.
         this.ctrl.registerCallback((c) => {
             console.log(`ИГР WelcomeC._construct ctrl key/value: '${c.recentField}'/'${c.field(c.recentField)}'`);
 
+        });
+        this.setupHTML();
+        this.setupEffects();
+        this.setupEvents();
+    };
+
+    this.setupEffects = function() {
+        this.ctrl.registerFieldCallback("selectedItemId", (c) => {
+            welcomeDisplaySelectedItem(c.selectedItemId);
         });
     };
 
@@ -96,6 +103,31 @@ function WelcomeComponent() {
 //<!-- Shoulds -->
 
 //<!-- Other -->
+
+function welcomeDisplaySelectedItem(id) {
+    let items = deId(WELCOME_ITEMS_ID);
+    for (let i in items.children) {
+        let li = items.children[i];
+        if (!welcomeIsNavItemSelectable(li)) {
+            continue;
+        }
+        let selectableItemId = i - 2;
+        let isSelected = (selectableItemId == id);
+        welcomeSelectNavItem(li, isSelected);
+    }
+}
+
+function welcomeIsNavItemSelectable(li) {
+    return li.firstChild && li.firstChild.nodeName == "A";
+}
+
+function welcomeSelectNavItem(item, isSelected) {
+    if (isSelected) {
+        item.className = "uk-active";
+    } else {
+        item.className = "";
+    }
+}
 
 function welcomeSetup() {
     /*
