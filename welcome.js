@@ -2,15 +2,18 @@
 
 function WelcomeContext() {
     this._construct = function() {
+        this.clickedItemId = -1;
         this.didLaunch = false;
-        this.selectedItemId = 0;
+        this.selectedItemId = -1;
 
         this.recentField = "";
     };
     this._construct();
 
     this.field = function(name) {
-        if (name == "didLaunch") {
+        if (name == "clickedItemId") {
+            return this.clickedItemId;
+        } else if (name == "didLaunch") {
             return this.didLaunch;
         } else if (name == "selectedItemId") {
             return this.selectedItemId;
@@ -21,6 +24,7 @@ function WelcomeContext() {
 
     this.selfCopy = function() {
         let that = new WelcomeContext();
+        that.clickedItemId = this.clickedItemId;
         that.didLaunch = this.didLaunch;
         that.selectedItemId = this.selectedItemId;
         that.recentField = this.recentField;
@@ -28,7 +32,9 @@ function WelcomeContext() {
     };
 
     this.setField = function(name, value) {
-        if (name == "didLaunch") {
+        if (name == "clickedItemId") {
+            this.clickedItemId = value;
+        } else if (name == "didLaunch") {
             this.didLaunch = value;
         } else if (name == "selectedItemId") {
             this.selectedItemId = value;
@@ -69,6 +75,7 @@ function WelcomeComponent() {
         this.setupHTML();
         this.setupEffects();
         this.setupEvents();
+        this.setupShoulds();
     };
 
     this.setupEffects = function() {
@@ -86,7 +93,7 @@ function WelcomeComponent() {
         items.addEventListener("click", (e) => {
             if (e.target.nodeName == "A") {
                 let id = Number(e.target.dataset.id);
-                this.ctrl.set("selectedItemId", id);
+                this.ctrl.set("clickedItemId", id);
             }
         });
     };
@@ -96,11 +103,39 @@ function WelcomeComponent() {
         left.innerHTML += WELCOME_TEMPLATE_LEFT
             .replaceAll("%WELCOME_ITEMS_ID%", WELCOME_ITEMS_ID);
     };
+
+    this.setupShoulds = function() {
+        [
+            welcomeShouldResetSelectedItemId,
+        ].forEach((f) => {
+            this.ctrl.registerFunction(f);
+        });
+    };
     
     this._construct();
 }
 
 //<!-- Shoulds -->
+
+// Conditions:
+// 1. Did launch
+// 2. Item has been clicked
+function welcomeShouldResetSelectedItemId(c) {
+    if (c.recentField == "didLaunch") {
+        c.selectedItemId = 0;
+        c.recentField = "selectedItemId";
+        return c;
+    }
+
+    if (c.recentField == "clickedItemId") {
+        c.selectedItemId = c.clickedItemId;
+        c.recentField = "selectedItemId";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
 
 //<!-- Other -->
 
@@ -117,16 +152,13 @@ function welcomeDisplaySelectedItem(id) {
     }
 }
 
+// Navigation item is selectable if it's childe is a link
 function welcomeIsNavItemSelectable(li) {
     return li.firstChild && li.firstChild.nodeName == "A";
 }
 
 function welcomeSelectNavItem(item, isSelected) {
-    if (isSelected) {
-        item.className = "uk-active";
-    } else {
-        item.className = "";
-    }
+    item.className = isSelected? "uk-active" : "";
 }
 
 function welcomeSetup() {
