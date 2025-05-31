@@ -47,7 +47,7 @@ function WelcomeContext() {
 let WELCOME_ITEMS_ID = "welcome-items";
 let WELCOME_PANEL_LEFT = "panel-left";
 let WELCOME_TEMPLATE_HEADER = `<div class="uk-position-center-vertical uk-padding">Welcome to PSKOV2</div>`;
-let WELCOME_TEMPLATE_LEFT = `
+let WELCOME_HTML_MENU = `
 <div class="uk-padding">
     <ul id="%WELCOME_ITEMS_ID%" class="uk-nav uk-nav-default">
         <li class="uk-nav-header">Welcome section</li>
@@ -56,11 +56,24 @@ let WELCOME_TEMPLATE_LEFT = `
         <li><a data-id="1">What PSKOV is not</a></li>
     </ul>
 </div>`;
-let WELCOME_TEMPLATE_MAIN = `
+let WELCOME_HTML_CONTENTS = {
+  0: `
 <div class="uk-container uk-padding">
     <h1 class="uk-heading">Welcome to PSKOV2</h1>
     <p>Time to generate static sites from web-browser!</p>
-</div>`;
+    <p>PSKOV 2 is a static site generator that works inside a web browser</p>
+    <p>PSKOV 2 can also work completely off-line with LHA</p>
+    <p>Though, by default, PSKOV 2 works directly with Git</p>
+</div>`,
+  1: `
+<div class="uk-container uk-padding">
+    <h1 class="uk-heading">PSKOV2 is not</h1>
+    <ul>
+      <li>It's not a WYSIWYG editor</li>
+      <li>It doesn't need server (PSKOV 2 is client-side JS only)</li>
+    </ul>
+</div>`
+};
 
 //<!-- Component -->
 
@@ -79,9 +92,15 @@ function WelcomeComponent() {
     };
 
     this.setupEffects = function() {
-        this.ctrl.registerFieldCallback("selectedItemId", (c) => {
-            welcomeDisplaySelectedItem(c.selectedItemId);
-        });
+        let d = { 
+            "selectedItemId": (c) => {
+                welcomeDisplaySelectedItem(c.selectedItemId);
+                welcomeDisplaySelectedItemContents(c.selectedItemId);
+            },
+        }
+        for (let field in d) {
+            this.ctrl.registerFieldCallback(field, d[field]);
+        }
     };
 
     this.setupEvents = function() {
@@ -100,7 +119,7 @@ function WelcomeComponent() {
 
     this.setupHTML = function() {
         let left = deId(WELCOME_PANEL_LEFT);
-        left.innerHTML += WELCOME_TEMPLATE_LEFT
+        left.innerHTML += WELCOME_HTML_MENU
             .replaceAll("%WELCOME_ITEMS_ID%", WELCOME_ITEMS_ID);
     };
 
@@ -150,6 +169,11 @@ function welcomeDisplaySelectedItem(id) {
         let isSelected = (selectableItemId == id);
         welcomeSelectNavItem(li, isSelected);
     }
+}
+
+function welcomeDisplaySelectedItemContents(id) {
+    let main = deId("panel-main");
+    main.innerHTML = WELCOME_HTML_CONTENTS[id];
 }
 
 // Navigation item is selectable if it's childe is a link
