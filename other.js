@@ -1,4 +1,4 @@
-// Delimit document body into three parts.
-function setupEditorPanels() {
-    document.body.innerHTML = TEMPLATE_EDITOR_PANELS;
+// Shortcut to get document element by id
+function deId(id) {
+    return document.getElementById(id);
 }

@@ -19,7 +19,7 @@
 }
 
 #panel-main {
-  padding-left: 240px;
+  left: 240px;
   position: fixed;
   top: 40px;
 }
