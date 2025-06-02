@@ -176,23 +176,13 @@ function welcomeDisplaySelectedItemContents(id) {
     main.innerHTML = WELCOME_HTML_CONTENTS[id];
 }
 
-// Navigation item is selectable if it's childe is a link
+// Navigation item is selectable if its child is a link
 function welcomeIsNavItemSelectable(li) {
     return li.firstChild && li.firstChild.nodeName == "A";
 }
 
 function welcomeSelectNavItem(item, isSelected) {
     item.className = isSelected? "uk-active" : "";
-}
-
-function welcomeSetup() {
-    /*
-    console.log("欢迎光临");
-    let header = deId("panel-header");
-    header.innerHTML += TEMPLATE_WELCOME_HEADER;
-    let main = deId("panel-main");
-    main.innerHTML += TEMPLATE_WELCOME_MAIN;
-    */
 }
 
 //<!-- Setup -->
