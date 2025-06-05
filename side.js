@@ -1,6 +1,6 @@
 //<!-- Context -->
 
-function WelcomeContext() {
+function SideContext() {
     this._construct = function() {
         this.clickedItemId = -1;
         this.didLaunch = false;
@@ -23,7 +23,7 @@ function WelcomeContext() {
     };
 
     this.selfCopy = function() {
-        let that = new WelcomeContext();
+        let that = new SideContext();
         that.clickedItemId = this.clickedItemId;
         that.didLaunch = this.didLaunch;
         that.selectedItemId = this.selectedItemId;
@@ -44,58 +44,44 @@ function WelcomeContext() {
 
 //<!-- Constants -->
 
-let WELCOME_ITEMS_ID = "welcome-items";
-let WELCOME_PANEL_LEFT = "panel-left";
-let WELCOME_TEMPLATE_HEADER = `<div class="uk-position-center-vertical uk-padding">Welcome to PSKOV2</div>`;
-let WELCOME_HTML_MENU = `
+let SIDE_HTML = `
 <div class="uk-padding-small">
-    <ul id="%WELCOME_ITEMS_ID%" class="uk-nav uk-nav-default">
-        <li class="uk-nav-header">Welcome</li>
-        <li class="uk-nav-divider"></li>
-        <li><a data-id="0">What is PSKOV</a></li>
-        <li><a data-id="1">What PSKOV is not</a></li>
+    <ul id="side-items" class="uk-nav uk-nav-default">
     </ul>
 </div>`;
-let WELCOME_HTML_CONTENTS = {
-  0: `
-<div class="uk-container uk-padding">
-    <h1 class="uk-heading">Welcome to PSKOV2</h1>
-    <p>Time to generate static sites from web-browser!</p>
-    <p>PSKOV 2 is a static site generator that works inside a web browser</p>
-    <p>PSKOV 2 can also work completely off-line with LHA</p>
-    <p>Though, by default, PSKOV 2 works directly with Git</p>
-</div>`,
-  1: `
-<div class="uk-container uk-padding">
-    <h1 class="uk-heading">PSKOV2 is not</h1>
-    <ul>
-      <li>It's not a WYSIWYG editor</li>
-      <li>It doesn't need server (PSKOV 2 is client-side JS only)</li>
-    </ul>
-</div>`
-};
+let SIDE_HTML_ITEM = `
+<li><a data-id="%ITEM_ID%">%ITEM_NAME%</a></li>
+`;
+let SIDE_HTML_TITLE = `
+<li class="uk-nav-header">%TITLE%</li>
+<li class="uk-nav-divider"></li>
+`;
+let SIDE_PANEL_LEFT = "panel-left";
 
 //<!-- Component -->
 
-function WelcomeComponent() {
+function SideComponent() {
     this._construct = function() {
-        this.ctrl = new CLDController(new WelcomeContext());
+        this.ctrl = new CLDController(new SideContext());
         // Dbg.
         this.ctrl.registerCallback((c) => {
-            console.log(`ИГР WelcomeC._construct ctrl key/value: '${c.recentField}'/'${c.field(c.recentField)}'`);
+            console.log(`ИГР SideC._construct ctrl key/value: '${c.recentField}'/'${c.field(c.recentField)}'`);
 
         });
         this.setupHTML();
+        /*
         this.setupEffects();
         this.setupEvents();
         this.setupShoulds();
+        */
     };
 
+    /*
     this.setupEffects = function() {
         let d = { 
             "selectedItemId": (c) => {
-                welcomeDisplaySelectedItem(c.selectedItemId);
-                welcomeDisplaySelectedItemContents(c.selectedItemId);
+                gitDisplaySelectedItem(c.selectedItemId);
+                gitDisplaySelectedItemContents(c.selectedItemId);
             },
         }
         for (let field in d) {
@@ -108,7 +94,7 @@ function WelcomeComponent() {
             this.ctrl.set("didLaunch", true);
         });
 
-        let items = deId(WELCOME_ITEMS_ID);
+        let items = deId(GIT_ITEMS_ID);
         items.addEventListener("click", (e) => {
             if (e.target.nodeName == "A") {
                 let id = Number(e.target.dataset.id);
@@ -116,22 +102,22 @@ function WelcomeComponent() {
             }
         });
     };
+    */
 
     this.setupHTML = function() {
-        let left = deId(WELCOME_PANEL_LEFT);
-        let menu = document.createElement("div");
-        menu.innerHTML = WELCOME_HTML_MENU
-            .replaceAll("%WELCOME_ITEMS_ID%", WELCOME_ITEMS_ID);
-        left.appendChild(menu);
+        let parent = deId(SIDE_PANEL_LEFT);
+        parent.innerHTML = SIDE_HTML;
     };
 
+    /*
     this.setupShoulds = function() {
         [
-            welcomeShouldResetSelectedItemId,
+            gitShouldResetSelectedItemId,
         ].forEach((f) => {
             this.ctrl.registerFunction(f);
         });
     };
+    */
     
     this._construct();
 }
@@ -141,7 +127,8 @@ function WelcomeComponent() {
 // Conditions:
 // 1. Did launch
 // 2. Item has been clicked
-function welcomeShouldResetSelectedItemId(c) {
+/*
+function gitShouldResetSelectedItemId(c) {
     if (c.recentField == "didLaunch") {
         c.selectedItemId = 0;
         c.recentField = "selectedItemId";
@@ -157,36 +144,39 @@ function welcomeShouldResetSelectedItemId(c) {
     c.recentField = "none";
     return c;
 }
+*/
 
 //<!-- Other -->
 
-function welcomeDisplaySelectedItem(id) {
-    let items = deId(WELCOME_ITEMS_ID);
+/*
+function gitDisplaySelectedItem(id) {
+    let items = deId(GIT_ITEMS_ID);
     for (let i in items.children) {
         let li = items.children[i];
-        if (!welcomeIsNavItemSelectable(li)) {
+        if (!gitIsNavItemSelectable(li)) {
             continue;
         }
-        let selectableItemId = i - 2;
+        let selectableItemId = i < 4 ? i - 2 : i - 4;
         let isSelected = (selectableItemId == id);
-        welcomeSelectNavItem(li, isSelected);
+        gitSelectNavItem(li, isSelected);
     }
 }
 
-function welcomeDisplaySelectedItemContents(id) {
-    let main = deId("panel-main");
-    main.innerHTML = WELCOME_HTML_CONTENTS[id];
+function gitDisplaySelectedItemContents(id) {
+    let main = deId(GIT_PANEL_MAIN);
+    main.innerHTML = GIT_HTML_CONTENTS[id];
 }
 
 // Navigation item is selectable if its child is a link
-function welcomeIsNavItemSelectable(li) {
+function gitIsNavItemSelectable(li) {
     return li.firstChild && li.firstChild.nodeName == "A";
 }
 
-function welcomeSelectNavItem(item, isSelected) {
+function gitSelectNavItem(item, isSelected) {
     item.className = isSelected? "uk-active" : "";
 }
+*/
 
 //<!-- Setup -->
 
-window.components.push(new WelcomeComponent());
+window.components.push(new SideComponent());

@@ -13,6 +13,7 @@
 #panel-left {
   border-right: 1px solid lightgray;
   height: 100%;
+  overflow: auto;
   position: fixed;
   top: 40px;
   width: 240px;
