@@ -63,6 +63,10 @@ let GIT_HTML_MENU = `
         <li class="uk-nav-divider"></li>
         <li><a data-id="0">Repository</a></li>
         <li><a data-id="1">Branch</a></li>
+        <li class="uk-nav-header">Whatever</li>
+        <li class="uk-nav-divider"></li>
+        <li><a data-id="2">Something</a></li>
+        <li><a data-id="3">Else</a></li>
     </ul>
 </div>`;
 let GIT_ITEMS_ID = "git-items";
@@ -161,7 +165,7 @@ function gitDisplaySelectedItem(id) {
         if (!gitIsNavItemSelectable(li)) {
             continue;
         }
-        let selectableItemId = i - 2;
+        let selectableItemId = i < 4 ? i - 2 : i - 4;
         let isSelected = (selectableItemId == id);
         gitSelectNavItem(li, isSelected);
     }
