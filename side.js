@@ -146,6 +146,22 @@ function gitShouldResetSelectedItemId(c) {
 }
 */
 
+//<!-- API -->
+
+function sideCreateGroup(name) {
+    window.sideMenu.ctrl.set("createGroup", name);
+    return window.sideMenu.ctrl.context.activeGroupId;
+}
+
+function sideDeleteGroup(id) {
+    window.sideMenu.ctrl.set("deleteGroup", id);
+}
+
+function sideResetItemTitles(id, titles) {
+    window.sideMenu.ctrl.set("activeGroupId", id);
+    window.sideMenu.ctrl.set("titles", titles);
+}
+
 //<!-- Other -->
 
 /*
@@ -179,4 +195,5 @@ function gitSelectNavItem(item, isSelected) {
 
 //<!-- Setup -->
 
-window.components.push(new SideComponent());
+window.sideMenu = new SideComponent();
+window.components.push(window.sideMenu);
