@@ -2,21 +2,30 @@
 
 function SideContext() {
     this._construct = function() {
-        this.clickedItemId = -1;
+        this.activeGroupId = -1;
+        this.createGroup = "";
+        this.deleteGroup = -1;
         this.didLaunch = false;
-        this.selectedItemId = -1;
+        this.items = [];
+        this.titles = [];
 
         this.recentField = "";
     };
     this._construct();
 
     this.field = function(name) {
-        if (name == "clickedItemId") {
-            return this.clickedItemId;
+        if (name == "activeGroupId") {
+            return this.activeGroupId;
+        } else if (name == "createGroup") {
+            return this.createGroup;
+        } else if (name == "deleteGroup") {
+            return this.deleteGroup;
         } else if (name == "didLaunch") {
             return this.didLaunch;
-        } else if (name == "selectedItemId") {
-            return this.selectedItemId;
+        } else if (name == "items") {
+            return this.items;
+        } else if (name == "titles") {
+            return this.titles;
         }
 
         return "unknown-field-name";
@@ -24,20 +33,29 @@ function SideContext() {
 
     this.selfCopy = function() {
         let that = new SideContext();
-        that.clickedItemId = this.clickedItemId;
+        that.activeGroupId = this.activeGroupId;
+        that.createGroup = this.createGroup;
+        that.deleteGroup = this.deleteGroup;
         that.didLaunch = this.didLaunch;
-        that.selectedItemId = this.selectedItemId;
+        that.items = this.items;
+        that.titles = this.titles;
         that.recentField = this.recentField;
         return that;
     };
 
     this.setField = function(name, value) {
-        if (name == "clickedItemId") {
-            this.clickedItemId = value;
+        if (name == "activeGroupId") {
+            this.activeGroupId = value;
+        } else if (name == "createGroup") {
+            this.createGroup = value;
+        } else if (name == "deleteGroup") {
+            this.deleteGroup = value;
         } else if (name == "didLaunch") {
             this.didLaunch = value;
-        } else if (name == "selectedItemId") {
-            this.selectedItemId = value;
+        } else if (name == "items") {
+            this.items = value;
+        } else if (name == "titles") {
+            this.titles = value;
         }
     };
 }
