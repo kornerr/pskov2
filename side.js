@@ -3,11 +3,14 @@
 function SideContext() {
     this._construct = function() {
         this.activeGroupId = -1;
+        this.activeGroupTitles= [];
         this.createGroup = "";
+        this.createdGroupId = -1;
         this.deleteGroup = -1;
         this.didLaunch = false;
-        this.items = [];
-        this.titles = [];
+        this.groupTitles = [];
+        this.htmlItems = [];
+        this.selectedItem = [];
 
         this.recentField = "";
     };
@@ -16,16 +19,22 @@ function SideContext() {
     this.field = function(name) {
         if (name == "activeGroupId") {
             return this.activeGroupId;
+        } else if (name == "activeGroupTitles") {
+            return this.activeGroupTitles;
         } else if (name == "createGroup") {
             return this.createGroup;
+        } else if (name == "createdGroupId") {
+            return this.createdGroupId;
         } else if (name == "deleteGroup") {
             return this.deleteGroup;
         } else if (name == "didLaunch") {
             return this.didLaunch;
-        } else if (name == "items") {
-            return this.items;
-        } else if (name == "titles") {
-            return this.titles;
+        } else if (name == "groupTitles") {
+            return this.groupTitles;
+        } else if (name == "htmlItems") {
+            return this.htmlItems;
+        } else if (name == "selectedItem") {
+            return this.selectedItem;
         }
 
         return "unknown-field-name";
@@ -34,11 +43,13 @@ function SideContext() {
     this.selfCopy = function() {
         let that = new SideContext();
         that.activeGroupId = this.activeGroupId;
+        that.activeGroupTitles = this.activeGroupTitles;
         that.createGroup = this.createGroup;
         that.deleteGroup = this.deleteGroup;
         that.didLaunch = this.didLaunch;
-        that.items = this.items;
-        that.titles = this.titles;
+        that.groupTitles = this.groupTitles;
+        that.htmlItems = this.htmlItems;
+        that.selectedItem = this.selectedItem;
         that.recentField = this.recentField;
         return that;
     };
@@ -46,16 +57,22 @@ function SideContext() {
     this.setField = function(name, value) {
         if (name == "activeGroupId") {
             this.activeGroupId = value;
+        } else if (name == "activeGroupTitles") {
+            this.activeGroupTitles = value;
         } else if (name == "createGroup") {
             this.createGroup = value;
+        } else if (name == "createdGroupId") {
+            this.createdGroupId = value;
         } else if (name == "deleteGroup") {
             this.deleteGroup = value;
         } else if (name == "didLaunch") {
             this.didLaunch = value;
-        } else if (name == "items") {
-            this.items = value;
-        } else if (name == "titles") {
-            this.titles = value;
+        } else if (name == "groupTitles") {
+            this.groupTitles = value;
+        } else if (name == "htmlItems") {
+            this.htmlItems = value;
+        } else if (name == "selectedItem") {
+            this.selectedItem = value;
         }
     };
 }
@@ -64,7 +81,7 @@ function SideContext() {
 
 let SIDE_HTML = `
 <div class="uk-padding-small">
-    <ul id="side-items" class="uk-nav uk-nav-default">
+    <ul id="%SIDE_ITEMS_ID%" class="uk-nav uk-nav-default">
     </ul>
 </div>`;
 let SIDE_HTML_ITEM = `
@@ -74,6 +91,7 @@ let SIDE_HTML_TITLE = `
 <li class="uk-nav-header">%TITLE%</li>
 <li class="uk-nav-divider"></li>
 `;
+let SIDE_ITEMS_ID = "side-items";
 let SIDE_PANEL_LEFT = "panel-left";
 
 //<!-- Component -->
@@ -87,11 +105,9 @@ function SideComponent() {
 
         });
         this.setupHTML();
-        /*
-        this.setupEffects();
         this.setupEvents();
+        //this.setupEffects();
         this.setupShoulds();
-        */
     };
 
     /*
@@ -106,13 +122,14 @@ function SideComponent() {
             this.ctrl.registerFieldCallback(field, d[field]);
         }
     };
+    */
 
     this.setupEvents = function() {
         window.addEventListener("load", (e) => {
             this.ctrl.set("didLaunch", true);
         });
 
-        let items = deId(GIT_ITEMS_ID);
+        let items = deId(SIDE_ITEMS_ID);
         items.addEventListener("click", (e) => {
             if (e.target.nodeName == "A") {
                 let id = Number(e.target.dataset.id);
@@ -120,22 +137,21 @@ function SideComponent() {
             }
         });
     };
-    */
 
     this.setupHTML = function() {
         let parent = deId(SIDE_PANEL_LEFT);
-        parent.innerHTML = SIDE_HTML;
+        parent.innerHTML = SIDE_HTML
+            .replaceAll("%SIDE_ITEMS_ID%", SIDE_ITEMS_ID);
     };
 
-    /*
     this.setupShoulds = function() {
         [
-            gitShouldResetSelectedItemId,
+            sideShouldResetCreatedGroupId,
+            sideShouldResetGroupTitles,
         ].forEach((f) => {
             this.ctrl.registerFunction(f);
         });
     };
-    */
     
     this._construct();
 }
@@ -143,32 +159,42 @@ function SideComponent() {
 //<!-- Shoulds -->
 
 // Conditions:
-// 1. Did launch
-// 2. Item has been clicked
-/*
-function gitShouldResetSelectedItemId(c) {
-    if (c.recentField == "didLaunch") {
-        c.selectedItemId = 0;
-        c.recentField = "selectedItemId";
-        return c;
-    }
-
-    if (c.recentField == "clickedItemId") {
-        c.selectedItemId = c.clickedItemId;
-        c.recentField = "selectedItemId";
+// 1. Group creation has been requested
+function sideShouldResetCreatedGroupId(c) {
+    if (c.recentField == "createGroup") {
+        c.createdGroupId = c.groupTitles.length;
+        c.recentField = "createdGroupId";
         return c;
     }
 
     c.recentField = "none";
     return c;
 }
-*/
+
+// Conditions:
+// 1. Group id after creation has been "allocated"
+function sideShouldResetGroupTitles(c) {
+    if (
+        c.recentField == "createdGroupId"
+    ) {
+        console.log("ИГР sideSRGT-1", c.createdGroupId, c.groupTitles.length);
+        c.groupTitles.push({
+            section: c.createGroup,
+            items: []
+        });
+        c.recentField = "groupTitles"
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
 
 //<!-- API -->
 
 function sideCreateGroup(name) {
     window.sideMenu.ctrl.set("createGroup", name);
-    return window.sideMenu.ctrl.context.activeGroupId;
+    return window.sideMenu.ctrl.context.createdGroupId;
 }
 
 function sideDeleteGroup(id) {
@@ -177,7 +203,7 @@ function sideDeleteGroup(id) {
 
 function sideResetItemTitles(id, titles) {
     window.sideMenu.ctrl.set("activeGroupId", id);
-    window.sideMenu.ctrl.set("titles", titles);
+    window.sideMenu.ctrl.set("activeGroupTitles", titles);
 }
 
 //<!-- Other -->

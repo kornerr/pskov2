@@ -45,7 +45,6 @@ function GitContext() {
 //<!-- Constants -->
 
 let GIT_PANEL_MAIN = "panel-main";
-let GIT_TITLE = "Git";
 
 //<!-- Component -->
 
@@ -60,7 +59,8 @@ function GitComponent() {
     };
 
     this.setupSideMenu = function() {
-        this.sideId = sideCreateGroup(GIT_TITLE);
+        this.sideId = sideCreateGroup("Git");
+        /*
         sideResetItemTitles(
             this.sideId,
             [
@@ -69,6 +69,7 @@ function GitComponent() {
               "Push & pull",
             ]
         );
+        */
     };
     
     this._construct();
