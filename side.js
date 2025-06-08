@@ -209,6 +209,10 @@ function sideShouldResetGroupTitles(c) {
 
 //<!-- Other -->
 
+function sideItemId(group, item) {
+    return `${group}/${item}`;
+}
+
 function sideResetHTML(groupTitles) {
     let items = deId(SIDE_ITEMS_ID);
     var html = "";
@@ -220,8 +224,9 @@ function sideResetHTML(groupTitles) {
         // For each item in each section.
         for (let j in group.items) {
             let title = group.items[j];
+            let itemId = sideItemId(i, j);
             html += SIDE_HTML_ITEM
-                .replaceAll("%ITEM_ID%", `${i}/${j}`)
+                .replaceAll("%ITEM_ID%", itemId)
                 .replaceAll("%ITEM_NAME%", title);
         }
     }
