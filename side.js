@@ -45,11 +45,13 @@ function SideContext() {
         that.activeGroupId = this.activeGroupId;
         that.activeGroupTitles = this.activeGroupTitles;
         that.createGroup = this.createGroup;
+        that.createdGroupId = this.createdGroupId;
         that.deleteGroup = this.deleteGroup;
         that.didLaunch = this.didLaunch;
         that.groupTitles = this.groupTitles;
         that.htmlItems = this.htmlItems;
         that.selectedItem = this.selectedItem;
+
         that.recentField = this.recentField;
         return that;
     };
@@ -177,7 +179,6 @@ function sideShouldResetGroupTitles(c) {
     if (
         c.recentField == "createdGroupId"
     ) {
-        console.log("ИГР sideSRGT-1", c.createdGroupId, c.groupTitles.length);
         c.groupTitles.push({
             section: c.createGroup,
             items: []
