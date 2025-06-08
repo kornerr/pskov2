@@ -44,18 +44,6 @@ function WelcomeContext() {
 
 //<!-- Constants -->
 
-let WELCOME_ITEMS_ID = "welcome-items";
-let WELCOME_PANEL_LEFT = "panel-left";
-let WELCOME_TEMPLATE_HEADER = `<div class="uk-position-center-vertical uk-padding">Welcome to PSKOV2</div>`;
-let WELCOME_HTML_MENU = `
-<div class="uk-padding-small">
-    <ul id="%WELCOME_ITEMS_ID%" class="uk-nav uk-nav-default">
-        <li class="uk-nav-header">Welcome</li>
-        <li class="uk-nav-divider"></li>
-        <li><a data-id="0">What is PSKOV</a></li>
-        <li><a data-id="1">What PSKOV is not</a></li>
-    </ul>
-</div>`;
 let WELCOME_HTML_CONTENTS = {
   0: `
 <div class="uk-container uk-padding">
@@ -85,52 +73,18 @@ function WelcomeComponent() {
             console.log(`ИГР WelcomeC._construct ctrl key/value: '${c.recentField}'/'${c.field(c.recentField)}'`);
 
         });
-        this.setupHTML();
-        this.setupEffects();
-        this.setupEvents();
-        this.setupShoulds();
+        this.setupSideMenu();
     };
 
-    this.setupEffects = function() {
-        let d = { 
-            "selectedItemId": (c) => {
-                welcomeDisplaySelectedItem(c.selectedItemId);
-                welcomeDisplaySelectedItemContents(c.selectedItemId);
-            },
-        }
-        for (let field in d) {
-            this.ctrl.registerFieldCallback(field, d[field]);
-        }
-    };
-
-    this.setupEvents = function() {
-        window.addEventListener("load", (e) => {
-            this.ctrl.set("didLaunch", true);
-        });
-
-        let items = deId(WELCOME_ITEMS_ID);
-        items.addEventListener("click", (e) => {
-            if (e.target.nodeName == "A") {
-                let id = Number(e.target.dataset.id);
-                this.ctrl.set("clickedItemId", id);
-            }
-        });
-    };
-
-    this.setupHTML = function() {
-        let left = deId(WELCOME_PANEL_LEFT);
-        let menu = document.createElement("div");
-        menu.innerHTML = WELCOME_HTML_MENU
-            .replaceAll("%WELCOME_ITEMS_ID%", WELCOME_ITEMS_ID);
-        left.appendChild(menu);
-    };
-
-    this.setupShoulds = function() {
-        [
-            welcomeShouldResetSelectedItemId,
-        ].forEach((f) => {
-            this.ctrl.registerFunction(f);
-        });
+    this.setupSideMenu = function() {
+        this.sideId = sideCreateGroup("Welcome");
+        sideResetItemTitles(
+            this.sideId,
+            [
+              "What is PSKOV 2",
+              "What PSKOV 2 is not",
+            ]
+        );
     };
     
     this._construct();
@@ -159,33 +113,6 @@ function welcomeShouldResetSelectedItemId(c) {
 }
 
 //<!-- Other -->
-
-function welcomeDisplaySelectedItem(id) {
-    let items = deId(WELCOME_ITEMS_ID);
-    for (let i in items.children) {
-        let li = items.children[i];
-        if (!welcomeIsNavItemSelectable(li)) {
-            continue;
-        }
-        let selectableItemId = i - 2;
-        let isSelected = (selectableItemId == id);
-        welcomeSelectNavItem(li, isSelected);
-    }
-}
-
-function welcomeDisplaySelectedItemContents(id) {
-    let main = deId("panel-main");
-    main.innerHTML = WELCOME_HTML_CONTENTS[id];
-}
-
-// Navigation item is selectable if its child is a link
-function welcomeIsNavItemSelectable(li) {
-    return li.firstChild && li.firstChild.nodeName == "A";
-}
-
-function welcomeSelectNavItem(item, isSelected) {
-    item.className = isSelected? "uk-active" : "";
-}
 
 //<!-- Setup -->
 
