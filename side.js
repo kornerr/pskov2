@@ -1,3 +1,19 @@
+//<!-- API -->
+
+function sideCreateGroup(name) {
+    window.sideMenu.ctrl.set("createGroup", name);
+    return window.sideMenu.ctrl.context.createdGroupId;
+}
+
+function sideDeleteGroup(id) {
+    window.sideMenu.ctrl.set("deleteGroup", id);
+}
+
+function sideResetItemTitles(id, titles) {
+    window.sideMenu.ctrl.set("activeGroupId", id);
+    window.sideMenu.ctrl.set("activeGroupTitles", titles);
+}
+
 //<!-- Context -->
 
 function SideContext() {
@@ -9,7 +25,7 @@ function SideContext() {
         this.deleteGroup = -1;
         this.didLaunch = false;
         this.groupTitles = [];
-        this.htmlItems = [];
+        this.html = "";
         this.selectedItem = [];
 
         this.recentField = "";
@@ -31,8 +47,8 @@ function SideContext() {
             return this.didLaunch;
         } else if (name == "groupTitles") {
             return this.groupTitles;
-        } else if (name == "htmlItems") {
-            return this.htmlItems;
+        } else if (name == "html") {
+            return this.html;
         } else if (name == "selectedItem") {
             return this.selectedItem;
         }
@@ -49,7 +65,7 @@ function SideContext() {
         that.deleteGroup = this.deleteGroup;
         that.didLaunch = this.didLaunch;
         that.groupTitles = this.groupTitles;
-        that.htmlItems = this.htmlItems;
+        that.html = this.html;
         that.selectedItem = this.selectedItem;
 
         that.recentField = this.recentField;
@@ -71,8 +87,8 @@ function SideContext() {
             this.didLaunch = value;
         } else if (name == "groupTitles") {
             this.groupTitles = value;
-        } else if (name == "htmlItems") {
-            this.htmlItems = value;
+        } else if (name == "html") {
+            this.html = value;
         } else if (name == "selectedItem") {
             this.selectedItem = value;
         }
@@ -108,23 +124,18 @@ function SideComponent() {
         });
         this.setupHTML();
         this.setupEvents();
-        //this.setupEffects();
+        this.setupEffects();
         this.setupShoulds();
     };
 
-    /*
     this.setupEffects = function() {
         let d = { 
-            "selectedItemId": (c) => {
-                gitDisplaySelectedItem(c.selectedItemId);
-                gitDisplaySelectedItemContents(c.selectedItemId);
-            },
+            "groupTitles": (c) => { sideResetHTML(c.groupTitles); },
         }
         for (let field in d) {
             this.ctrl.registerFieldCallback(field, d[field]);
         }
     };
-    */
 
     this.setupEvents = function() {
         window.addEventListener("load", (e) => {
@@ -191,23 +202,26 @@ function sideShouldResetGroupTitles(c) {
     return c;
 }
 
-//<!-- API -->
-
-function sideCreateGroup(name) {
-    window.sideMenu.ctrl.set("createGroup", name);
-    return window.sideMenu.ctrl.context.createdGroupId;
-}
-
-function sideDeleteGroup(id) {
-    window.sideMenu.ctrl.set("deleteGroup", id);
-}
-
-function sideResetItemTitles(id, titles) {
-    window.sideMenu.ctrl.set("activeGroupId", id);
-    window.sideMenu.ctrl.set("activeGroupTitles", titles);
-}
-
 //<!-- Other -->
+
+function sideResetHTML(groupTitles) {
+    let items = deId(SIDE_ITEMS_ID);
+    var html = "";
+    // For each section.
+    for (let i in groupTitles) {
+        let group = groupTitles[i];
+        html += SIDE_HTML_TITLE
+            .replaceAll("%TITLE%", group.section);
+        // For each item in each section.
+        for (let j in group.items) {
+            let title = group.items[j];
+            html += SIDE_HTML_ITEM
+                .replaceAll("%ITEM_ID%", `${i}/${j}`)
+                .replaceAll("%ITEM_NAME%", title);
+        }
+    }
+    items.innerHTML = html;
+}
 
 /*
 function gitDisplaySelectedItem(id) {
