@@ -186,14 +186,19 @@ function sideShouldResetCreatedGroupId(c) {
 
 // Conditions:
 // 1. Group id after creation has been "allocated"
+// 2. Items have been explicitely reset
 function sideShouldResetGroupTitles(c) {
-    if (
-        c.recentField == "createdGroupId"
-    ) {
+    if (c.recentField == "createdGroupId") {
         c.groupTitles.push({
             section: c.createGroup,
             items: []
         });
+        c.recentField = "groupTitles"
+        return c;
+    }
+
+    if (c.recentField == "activeGroupTitles") {
+        c.groupTitles[c.activeGroupId].items = c.activeGroupTitles;
         c.recentField = "groupTitles"
         return c;
     }

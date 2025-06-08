@@ -60,7 +60,6 @@ function GitComponent() {
 
     this.setupSideMenu = function() {
         this.sideId = sideCreateGroup("Git");
-        /*
         sideResetItemTitles(
             this.sideId,
             [
@@ -69,7 +68,6 @@ function GitComponent() {
               "Push & pull",
             ]
         );
-        */
     };
     
     this._construct();
