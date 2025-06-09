@@ -137,6 +137,7 @@ function SideComponent() {
     this.setupEffects = function() {
         let d = { 
             "groupTitles": (c) => { sideResetHTML(c.groupTitles); },
+            "selectedItemId": (c) => { sideDisplaySelection(c.groupTitles, c.selectedItemId); },
         }
         for (let field in d) {
             this.ctrl.registerFieldCallback(field, d[field]);
@@ -235,8 +236,40 @@ function sideShouldResetGroupTitles(c) {
 
 //<!-- Other -->
 
+// Reset classes to depict selection
+function sideDisplaySelection(groupTitles, id) {
+    let items = deId(SIDE_ITEMS_ID);
+    var groupId = 0;
+    for (let i in items.children) {
+        let itemId = sideLiToItemId(groupTitles, i);
+        // Ignore non-selectable LI's.
+        if (itemId == "") {
+            continue
+        }
+        let isSelected = (itemId == id);
+        let li = items.children[i];
+        li.className = isSelected ? "uk-active" : "";
+    }
+}
+
 function sideItemId(group, item) {
     return `${group}/${item}`;
+}
+
+// Convert sequential LI number to item id if LI number is valid
+function sideLiToItemId(groupTitles, id) {
+    var rid = -1;
+    for (let i in groupTitles) {
+        let g = groupTitles[i];
+        rid += 2;
+        for (let j in g.items) {
+            rid += 1;
+            if (rid == id) {
+                return sideItemId(i, j);
+            }
+        }
+    }
+    return "";
 }
 
 function sideResetHTML(groupTitles) {
@@ -260,31 +293,9 @@ function sideResetHTML(groupTitles) {
 }
 
 /*
-function gitDisplaySelectedItem(id) {
-    let items = deId(GIT_ITEMS_ID);
-    for (let i in items.children) {
-        let li = items.children[i];
-        if (!gitIsNavItemSelectable(li)) {
-            continue;
-        }
-        let selectableItemId = i < 4 ? i - 2 : i - 4;
-        let isSelected = (selectableItemId == id);
-        gitSelectNavItem(li, isSelected);
-    }
-}
-
 function gitDisplaySelectedItemContents(id) {
     let main = deId(GIT_PANEL_MAIN);
     main.innerHTML = GIT_HTML_CONTENTS[id];
-}
-
-// Navigation item is selectable if its child is a link
-function gitIsNavItemSelectable(li) {
-    return li.firstChild && li.firstChild.nodeName == "A";
-}
-
-function gitSelectNavItem(item, isSelected) {
-    item.className = isSelected? "uk-active" : "";
 }
 */
 
