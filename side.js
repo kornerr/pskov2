@@ -166,6 +166,7 @@ function SideComponent() {
         [
             sideShouldResetCreatedGroupId,
             sideShouldResetGroupTitles,
+            sideShouldResetSelectedItemId,
         ].forEach((f) => {
             this.ctrl.registerFunction(f);
         });
@@ -175,6 +176,26 @@ function SideComponent() {
 }
 
 //<!-- Shoulds -->
+
+// Conditions:
+// 1. Did launch
+// 2. Item has been clicked
+function sideShouldResetSelectedItemId(c) {
+    if (c.recentField == "didLaunch") {
+        c.selectedItemId = "0/0";
+        c.recentField = "selectedItemId";
+        return c;
+    }
+
+    if (c.recentField == "clickedItemId") {
+        c.selectedItemId = c.clickedItemId;
+        c.recentField = "selectedItemId";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
 
 // Conditions:
 // 1. Group creation has been requested

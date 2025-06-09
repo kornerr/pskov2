@@ -92,26 +92,6 @@ function WelcomeComponent() {
 
 //<!-- Shoulds -->
 
-// Conditions:
-// 1. Did launch
-// 2. Item has been clicked
-function welcomeShouldResetSelectedItemId(c) {
-    if (c.recentField == "didLaunch") {
-        c.selectedItemId = 0;
-        c.recentField = "selectedItemId";
-        return c;
-    }
-
-    if (c.recentField == "clickedItemId") {
-        c.selectedItemId = c.clickedItemId;
-        c.recentField = "selectedItemId";
-        return c;
-    }
-
-    c.recentField = "none";
-    return c;
-}
-
 //<!-- Other -->
 
 //<!-- Setup -->
