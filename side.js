@@ -20,13 +20,14 @@ function SideContext() {
     this._construct = function() {
         this.activeGroupId = -1;
         this.activeGroupTitles= [];
+        this.clickedItemId = "";
         this.createGroup = "";
         this.createdGroupId = -1;
         this.deleteGroup = -1;
         this.didLaunch = false;
         this.groupTitles = [];
         this.html = "";
-        this.selectedItem = [];
+        this.selectedItemId = "";
 
         this.recentField = "";
     };
@@ -37,6 +38,8 @@ function SideContext() {
             return this.activeGroupId;
         } else if (name == "activeGroupTitles") {
             return this.activeGroupTitles;
+        } else if (name == "clickedItemId") {
+            return this.clickedItemId;
         } else if (name == "createGroup") {
             return this.createGroup;
         } else if (name == "createdGroupId") {
@@ -49,8 +52,8 @@ function SideContext() {
             return this.groupTitles;
         } else if (name == "html") {
             return this.html;
-        } else if (name == "selectedItem") {
-            return this.selectedItem;
+        } else if (name == "selectedItemId") {
+            return this.selectedItemId;
         }
 
         return "unknown-field-name";
@@ -59,14 +62,15 @@ function SideContext() {
     this.selfCopy = function() {
         let that = new SideContext();
         that.activeGroupId = this.activeGroupId;
-        that.activeGroupTitles = this.activeGroupTitles;
+        that.activeGroupTitles = this.activeGroupTitles
+        that.clickedItemId = this.clickedItemId;
         that.createGroup = this.createGroup;
         that.createdGroupId = this.createdGroupId;
         that.deleteGroup = this.deleteGroup;
         that.didLaunch = this.didLaunch;
         that.groupTitles = this.groupTitles;
         that.html = this.html;
-        that.selectedItem = this.selectedItem;
+        that.selectedItemId = this.selectedItemId;
 
         that.recentField = this.recentField;
         return that;
@@ -77,6 +81,8 @@ function SideContext() {
             this.activeGroupId = value;
         } else if (name == "activeGroupTitles") {
             this.activeGroupTitles = value;
+        } else if (name == "clickedItemId") {
+            this.clickedItemId = value;
         } else if (name == "createGroup") {
             this.createGroup = value;
         } else if (name == "createdGroupId") {
@@ -89,8 +95,8 @@ function SideContext() {
             this.groupTitles = value;
         } else if (name == "html") {
             this.html = value;
-        } else if (name == "selectedItem") {
-            this.selectedItem = value;
+        } else if (name == "selectedItemId") {
+            this.selectedItemId = value;
         }
     };
 }
@@ -145,8 +151,7 @@ function SideComponent() {
         let items = deId(SIDE_ITEMS_ID);
         items.addEventListener("click", (e) => {
             if (e.target.nodeName == "A") {
-                let id = Number(e.target.dataset.id);
-                this.ctrl.set("clickedItemId", id);
+                this.ctrl.set("clickedItemId", e.target.dataset.id);
             }
         });
     };
