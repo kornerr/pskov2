@@ -306,13 +306,6 @@ function sideResetHTML(groupTitles) {
     items.innerHTML = html;
 }
 
-/*
-function gitDisplaySelectedItemContents(id) {
-    let main = deId(GIT_PANEL_MAIN);
-    main.innerHTML = GIT_HTML_CONTENTS[id];
-}
-*/
-
 //<!-- Setup -->
 
 window.sideMenu = new SideComponent();
