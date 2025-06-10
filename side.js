@@ -1,17 +1,31 @@
 //<!-- API -->
 
 function sideCreateGroup(name) {
-    window.sideMenu.ctrl.set("createGroup", name);
-    return window.sideMenu.ctrl.context.createdGroupId;
+    sideCtrl().set("createGroup", name);
+    return sideCtrl().context.createdGroupId;
+}
+
+function sideCtrl() {
+    return window.sideMenu.ctrl;
 }
 
 function sideDeleteGroup(id) {
-    window.sideMenu.ctrl.set("deleteGroup", id);
+    sideCtrl().set("deleteGroup", Number(id));
 }
 
 function sideResetItemTitles(id, titles) {
-    window.sideMenu.ctrl.set("activeGroupId", id);
-    window.sideMenu.ctrl.set("activeGroupTitles", titles);
+    sideCtrl().set("activeGroupId", Number(id));
+    sideCtrl().set("activeGroupTitles", titles);
+}
+
+function sideSelectionIds(strId) {
+    var result = [];
+    let parts = strId.split("/");
+    if (parts.length == 2) {
+        result.push(Number(parts[0]));
+        result.push(Number(parts[1]));
+    }
+    return result;
 }
 
 //<!-- Context -->

@@ -1,50 +1,6 @@
-//<!-- Context -->
-
-function WelcomeContext() {
-    this._construct = function() {
-        this.clickedItemId = -1;
-        this.didLaunch = false;
-        this.selectedItemId = -1;
-
-        this.recentField = "";
-    };
-    this._construct();
-
-    this.field = function(name) {
-        if (name == "clickedItemId") {
-            return this.clickedItemId;
-        } else if (name == "didLaunch") {
-            return this.didLaunch;
-        } else if (name == "selectedItemId") {
-            return this.selectedItemId;
-        }
-
-        return "unknown-field-name";
-    };
-
-    this.selfCopy = function() {
-        let that = new WelcomeContext();
-        that.clickedItemId = this.clickedItemId;
-        that.didLaunch = this.didLaunch;
-        that.selectedItemId = this.selectedItemId;
-        that.recentField = this.recentField;
-        return that;
-    };
-
-    this.setField = function(name, value) {
-        if (name == "clickedItemId") {
-            this.clickedItemId = value;
-        } else if (name == "didLaunch") {
-            this.didLaunch = value;
-        } else if (name == "selectedItemId") {
-            this.selectedItemId = value;
-        }
-    };
-}
-
 //<!-- Constants -->
 
-let WELCOME_HTML_CONTENTS = {
+let WELCOME_PAGES = {
   0: `
 <div class="uk-container uk-padding">
     <h1 class="uk-heading">Welcome to PSKOV2</h1>
@@ -62,35 +18,42 @@ let WELCOME_HTML_CONTENTS = {
     </ul>
 </div>`
 };
+let WELCOME_PANEL_MAIN = "panel-main";
 
 //<!-- Component -->
 
 function WelcomeComponent() {
     this._construct = function() {
-        this.ctrl = new CLDController(new WelcomeContext());
-        // Dbg.
-        this.ctrl.registerCallback((c) => {
-            console.log(`ИГР WelcomeC._construct ctrl key/value: '${c.recentField}'/'${c.field(c.recentField)}'`);
-
-        });
         this.setupSideMenu();
+        this.setupPageDisplay();
+    };
+
+    this.setupPageDisplay = function() {
+        sideCtrl().registerFieldCallback("selectedItemId", (c) => {
+            let main = deId(WELCOME_PANEL_MAIN);
+            let ids = sideSelectionIds(c.selectedItemId);
+            // Ignore other side menu groups.
+            if (ids[0] != self.sideId) {
+                return;
+            }
+            main.innerHTML = WELCOME_PAGES[ids[1]];
+        });
     };
 
     this.setupSideMenu = function() {
-        this.sideId = sideCreateGroup("Welcome");
+        self.sideId = sideCreateGroup("Welcome");
         sideResetItemTitles(
-            this.sideId,
+            self.sideId,
             [
               "What is PSKOV 2",
               "What PSKOV 2 is not",
             ]
         );
+        //self.sideId = sideId;
     };
     
     this._construct();
 }
-
-//<!-- Shoulds -->
 
 //<!-- Other -->
 
