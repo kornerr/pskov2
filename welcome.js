@@ -33,7 +33,7 @@ function WelcomeComponent() {
             let main = deId(WELCOME_PANEL_MAIN);
             let ids = sideSelectionIds(c.selectedItemId);
             // Ignore other side menu groups.
-            if (ids[0] != self.sideId) {
+            if (ids[0] != this.sideId) {
                 return;
             }
             main.innerHTML = WELCOME_PAGES[ids[1]];
@@ -41,15 +41,14 @@ function WelcomeComponent() {
     };
 
     this.setupSideMenu = function() {
-        self.sideId = sideCreateGroup("Welcome");
+        this.sideId = sideCreateGroup("Welcome");
         sideResetItemTitles(
-            self.sideId,
+            this.sideId,
             [
               "What is PSKOV 2",
               "What PSKOV 2 is not",
             ]
         );
-        //self.sideId = sideId;
     };
     
     this._construct();
