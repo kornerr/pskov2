@@ -140,7 +140,6 @@ function SideComponent() {
         // Dbg.
         this.ctrl.registerCallback((c) => {
             console.log(`ИГР SideC._construct ctrl key/value: '${c.recentField}'/'${c.field(c.recentField)}'`);
-
         });
         this.setupHTML();
         this.setupEvents();
