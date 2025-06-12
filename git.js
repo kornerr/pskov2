@@ -2,7 +2,9 @@
 
 function GitContext() {
     this._construct = function() {
+        this.didClickClone = false;
         this.didLaunch = false;
+        this.didResetContents = false;
         this.selectedItemId = -1;
         this.sideId = -1;
         this.sideSelectedItemId = -1;
@@ -12,8 +14,12 @@ function GitContext() {
     this._construct();
 
     this.field = function(name) {
-        if (name == "didLaunch") {
+        if (name == "didClickClone") {
+            return this.didClickClone;
+        } else if (name == "didLaunch") {
             return this.didLaunch;
+        } else if (name == "didResetContents") {
+            return this.didResetContents;
         } else if (name == "selectedItemId") {
             return this.selectedItemId;
         } else if (name == "sideId") {
@@ -27,7 +33,9 @@ function GitContext() {
 
     this.selfCopy = function() {
         let that = new GitContext();
+        that.didClickClone = this.didClickClone;
         that.didLaunch = this.didLaunch;
+        that.didResetContents = this.didResetContents;
         that.selectedItemId = this.selectedItemId;
         that.sideId = this.sideId;
         that.sideSelectedItemId = this.sideSelectedItemId;
@@ -37,8 +45,12 @@ function GitContext() {
     };
 
     this.setField = function(name, value) {
-        if (name == "didLaunch") {
+        if (name == "didClickClone") {
+            this.didClickClone = value;
+        } else if (name == "didLaunch") {
             this.didLaunch = value;
+        } else if (name == "didResetContents") {
+            this.didResetContents = value;
         } else if (name == "selectedItemId") {
             this.selectedItemId = value;
         } else if (name == "sideId") {
@@ -84,15 +96,30 @@ function GitComponent() {
         this.setupSideMenu();
         this.setupShoulds();
         this.setupEffects();
+        this.setupEvents();
+    };
+
+    this.resetEvents = function() {
+        let clone = deId(GIT_REPO_CLONE);
+        clone.addEventListener("click", (e) => {
+            this.ctrl.set("didClickClone", true);
+        });
     };
 
     this.setupEffects = function() {
         this.ctrl.registerFieldCallback("selectedItemId", (c) => {
-            let main = deId(GIT_PANEL_MAIN);
             let contents = GIT_PAGES[c.selectedItemId]
                 .replaceAll("%GIT_REPO%", GIT_REPO)
                 .replaceAll("%GIT_REPO_CLONE%", GIT_REPO_CLONE);
+            let main = deId(GIT_PANEL_MAIN);
             main.innerHTML = contents;
+            this.ctrl.set("didResetContents", true);
+        });
+    };
+
+    this.setupEvents = function() {
+        this.ctrl.registerFieldCallback("didResetContents", (c) => {
+            this.resetEvents();
         });
     };
 
@@ -119,9 +146,8 @@ function GitComponent() {
         );
 
         // Track selections.
-        let self = this;
         sideCtrl().registerFieldCallback("selectedItemId", (c) => {
-            self.ctrl.set("sideSelectedItemId", c.selectedItemId);
+            this.ctrl.set("sideSelectedItemId", c.selectedItemId);
         });
     };
     
