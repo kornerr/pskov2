@@ -77,7 +77,7 @@ let GIT_PAGES = {
         <fieldset class="uk-fieldset">
             <legend class="uk-legend">1. Clone new repository</legend>
             <div class="uk-margin">
-              <input id="%GIT_REPO_URL%" class="uk-input" type="text" placeholder="For example: https://git.opengamestudio.org/kornerr/study-gitjs-access">
+              <input id="%GIT_REPO_URL%" class="uk-input" type="text" placeholder="For example: https://git.opengamestudio.org/kornerr/study-gitjs-access" value="%URL%">
             </div>
             <button id="%GIT_REPO_CLONE%" class="uk-button uk-button-default">Clone</button>
         </fieldset>
@@ -122,7 +122,8 @@ function GitComponent() {
             let contents = GIT_PAGES[c.selectedItemId]
                 .replaceAll("%GIT_REPO%", GIT_REPO)
                 .replaceAll("%GIT_REPO_CLONE%", GIT_REPO_CLONE)
-                .replaceAll("%GIT_REPO_URL%", GIT_REPO_URL);
+                .replaceAll("%GIT_REPO_URL%", GIT_REPO_URL)
+                .replaceAll("%URL%", c.url);
             let main = deId(GIT_PANEL_MAIN);
             main.innerHTML = contents;
             this.ctrl.set("didResetContents", true);
