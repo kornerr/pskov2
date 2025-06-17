@@ -8,6 +8,7 @@ function GitContext() {
         this.selectedItemId = -1;
         this.sideId = -1;
         this.sideSelectedItemId = -1;
+        this.url = "";
 
         this.recentField = "";
     };
@@ -26,6 +27,8 @@ function GitContext() {
             return this.sideId;
         } else if (name == "sideSelectedItemId") {
             return this.sideSelectedItemId;
+        } else if (name == "url") {
+            return this.url;
         }
 
         return "unknown-field-name";
@@ -39,6 +42,7 @@ function GitContext() {
         that.selectedItemId = this.selectedItemId;
         that.sideId = this.sideId;
         that.sideSelectedItemId = this.sideSelectedItemId;
+        that.url = this.url;
 
         that.recentField = this.recentField;
         return that;
@@ -57,6 +61,8 @@ function GitContext() {
             this.sideId = value;
         } else if (name == "sideSelectedItemId") {
             this.sideSelectedItemId = value;
+        } else if (name == "url") {
+            this.url = value;
         }
     };
 }
@@ -71,7 +77,7 @@ let GIT_PAGES = {
         <fieldset class="uk-fieldset">
             <legend class="uk-legend">1. Clone new repository</legend>
             <div class="uk-margin">
-              <input class="uk-input" type="text" placeholder="For example: https://git.opengamestudio.org/kornerr/study-gitjs-access">
+              <input id="%GIT_REPO_URL%" class="uk-input" type="text" placeholder="For example: https://git.opengamestudio.org/kornerr/study-gitjs-access">
             </div>
             <button id="%GIT_REPO_CLONE%" class="uk-button uk-button-default">Clone</button>
         </fieldset>
@@ -82,6 +88,7 @@ let GIT_PAGES = {
 let GIT_PANEL_MAIN = "panel-main";
 let GIT_REPO = "repository";
 let GIT_REPO_CLONE = "repository-clone";
+let GIT_REPO_URL = "repository-url";
 
 //<!-- Component -->
 
@@ -104,13 +111,18 @@ function GitComponent() {
         clone.addEventListener("click", (e) => {
             this.ctrl.set("didClickClone", true);
         });
+        let url = deId(GIT_REPO_URL);
+        url.addEventListener("input", (e) => {
+            this.ctrl.set("url", url.value);
+        });
     };
 
     this.setupEffects = function() {
         this.ctrl.registerFieldCallback("selectedItemId", (c) => {
             let contents = GIT_PAGES[c.selectedItemId]
                 .replaceAll("%GIT_REPO%", GIT_REPO)
-                .replaceAll("%GIT_REPO_CLONE%", GIT_REPO_CLONE);
+                .replaceAll("%GIT_REPO_CLONE%", GIT_REPO_CLONE)
+                .replaceAll("%GIT_REPO_URL%", GIT_REPO_URL);
             let main = deId(GIT_PANEL_MAIN);
             main.innerHTML = contents;
             this.ctrl.set("didResetContents", true);
