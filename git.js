@@ -2,6 +2,7 @@
 
 function GitContext() {
     this._construct = function() {
+        this.clone = "";
         this.didClickClone = false;
         this.didLaunch = false;
         this.didResetContents = false;
@@ -15,7 +16,9 @@ function GitContext() {
     this._construct();
 
     this.field = function(name) {
-        if (name == "didClickClone") {
+        if (name == "clone") {
+            return this.clone;
+        } else if (name == "didClickClone") {
             return this.didClickClone;
         } else if (name == "didLaunch") {
             return this.didLaunch;
@@ -36,6 +39,7 @@ function GitContext() {
 
     this.selfCopy = function() {
         let that = new GitContext();
+        that.clone = this.clone;
         that.didClickClone = this.didClickClone;
         that.didLaunch = this.didLaunch;
         that.didResetContents = this.didResetContents;
@@ -49,7 +53,9 @@ function GitContext() {
     };
 
     this.setField = function(name, value) {
-        if (name == "didClickClone") {
+        if (name == "clone") {
+            this.clone = value;
+        } else if (name == "didClickClone") {
             this.didClickClone = value;
         } else if (name == "didLaunch") {
             this.didLaunch = value;
@@ -86,8 +92,10 @@ let GIT_PAGES = {
 `,
 };
 let GIT_PANEL_MAIN = "panel-main";
+let GIT_PROXY = "https://vercel-cors-proxy-pi.vercel.app";
 let GIT_REPO = "repository";
 let GIT_REPO_CLONE = "repository-clone";
+let GIT_REPO_DIR = "/";
 let GIT_REPO_URL = "repository-url";
 
 //<!-- Component -->
@@ -99,6 +107,8 @@ function GitComponent() {
         this.ctrl.registerCallback((c) => {
             console.log(`ИГР GitC._construct ctrl key/value: '${c.recentField}'/'${c.field(c.recentField)}'`);
         });
+
+        git.plugins.set("fs", fs());
 
         this.setupSideMenu();
         this.setupShoulds();
@@ -128,6 +138,20 @@ function GitComponent() {
             main.innerHTML = contents;
             this.ctrl.set("didResetContents", true);
         });
+
+        this.ctrl.registerFieldCallback("clone", (c) => {
+          (async() => {
+              try {
+                  await git.clone({
+                      corsProxy: GIT_PROXY,
+                      dir: GIT_REPO_DIR,
+                      url: c.clone,
+                  });
+              } catch (e) {
+                  console.log("ERR GitC.setupE clone error:", e);
+              }
+          })();
+        });
     };
 
     this.setupEvents = function() {
@@ -138,6 +162,7 @@ function GitComponent() {
 
     this.setupShoulds = function() {
         [
+            gitShouldClone,
             gitShouldResetSelectedItemId,
         ].forEach((f) => {
             this.ctrl.registerFunction(f);
@@ -168,6 +193,22 @@ function GitComponent() {
 }
 
 //<!-- Shoulds -->
+
+// Conditions:
+// 1. URL is not empty and `Clone` button has been clicked
+function gitShouldClone(c) {
+    if (
+        c.recentField == "didClickClone" &&
+        c.url.length > 0
+    ) {
+        c.clone = c.url;
+        c.recentField = "clone";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
 
 // Conditions:
 // 1. Side menu item has been selected

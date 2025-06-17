@@ -1,3 +1,9 @@
+//<!-- API -->
+
+function fs() {
+    return window.fsCmp.fs;
+}
+
 //<!-- Context -->
 
 function FSContext() {
@@ -72,7 +78,9 @@ function FSComponent() {
             console.log(`ИГР FSC._construct ctrl key/value: '${c.recentField}'/'${c.field(c.recentField)}'`);
         });
 
-        this.setupFileSystem();
+        this.fs = new LightningFS(FS_NAME);
+        this.pfs = this.fs.promises;
+
         this.setupSideMenu();
         this.setupEffects();
         this.setupShoulds();
@@ -84,11 +92,6 @@ function FSComponent() {
             let main = deId(FS_PANEL_MAIN);
             main.innerHTML = contents;
         });
-    };
-
-    this.setupFileSystem = function() {
-        this.fs = new LightningFS(FS_NAME);
-        this.pfs = this.fs.promises;
     };
 
     this.setupShoulds = function() {
@@ -152,4 +155,5 @@ function fsIsSideSelectionRelevant(selectedItemId, sideId) {
 
 //<!-- Setup -->
 
-window.components.push(new FSComponent());
+window.fsCmp = new FSComponent();
+window.components.push(window.fsCmp);

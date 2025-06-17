@@ -6,7 +6,7 @@ function sideCreateGroup(name) {
 }
 
 function sideCtrl() {
-    return window.sideMenu.ctrl;
+    return window.sideCmp.ctrl;
 }
 
 function sideDeleteGroup(id) {
@@ -307,5 +307,5 @@ function sideResetHTML(groupTitles) {
 
 //<!-- Setup -->
 
-window.sideMenu = new SideComponent();
-window.components.push(window.sideMenu);
+window.sideCmp = new SideComponent();
+window.components.push(window.sideCmp);
