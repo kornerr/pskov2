@@ -69,10 +69,13 @@ function FSContext() {
 
 //<!-- Constants -->
 
+let FS_FILES = "<ul>%ITEMS%</ul>";
+let FS_FILES_ITEM = "<li>%ITEM%</li>";
+let FS_FILES_LOADING = "<p>Loading...</p>";
 let FS_NAME = "pskov2-proto-fs";
 let FS_PANEL_MAIN = "panel-main";
 let FS_PAGES = {
-  0: `
+    0: `
 <div class="uk-container uk-padding">
     <h1 class="uk-heading">Files</h1>
     %FILES%
@@ -155,19 +158,18 @@ function FSComponent() {
 // 2. Files have been read
 function fsShouldResetHTMLFiles(c) {
     if (c.recentField == "selectedItemId") {
-        c.htmlFiles = "<p>Loading...</p>";
+        c.htmlFiles = FS_FILES_LOADING;
         c.recentField = "htmlFiles";
         return c;
     }
 
     if (c.recentField == "walkedFiles") {
-        var html = "<ul>";
+        var html = "";
         for (let i in c.walkedFiles) {
             let file = c.walkedFiles[i];
-            html += `<li>${file}</li>`;
+            html += FS_FILES_ITEM.replaceAll("%ITEM%", file);
         }
-        html += "</ul>";
-        c.htmlFiles = html;
+        c.htmlFiles = FS_FILES.replaceAll("%ITEMS%", html);
         c.recentField = "htmlFiles";
         return c;
     }
