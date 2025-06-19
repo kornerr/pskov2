@@ -75,6 +75,8 @@ let FS_FILES = `
         <tr>
             <th>Name</th>
             <th>Type</th>
+            <th>Size</th>
+            <th>Modified</th>
         </tr>
     </thead>
     <tbody>
@@ -86,6 +88,8 @@ let FS_FILES_ITEM = `
 <tr>
     <td>%PATH%</td>
     <td>%TYPE%</td>
+    <td>%SIZE%</td>
+    <td>%MTIME%</td>
 </tr>
 `;
 let FS_FILES_LOADING = "<p>Loading...</p>";
@@ -185,9 +189,12 @@ function fsShouldResetHTMLFiles(c) {
         var html = "";
         for (let i in c.walkedFiles) {
             let item = c.walkedFiles[i];
+            let dt = new Date(item.st.mtimeMs);
             html += FS_FILES_ITEM
                 .replaceAll("%PATH%", item.path)
-                .replaceAll("%TYPE%", item.st.type);
+                .replaceAll("%TYPE%", item.st.type)
+                .replaceAll("%SIZE%", item.st.size)
+                .replaceAll("%MTIME%", dt.toLocaleString());
         }
         c.htmlFiles = FS_FILES.replaceAll("%ITEMS%", html);
         c.recentField = "htmlFiles";
