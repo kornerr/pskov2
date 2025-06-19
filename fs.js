@@ -69,8 +69,25 @@ function FSContext() {
 
 //<!-- Constants -->
 
-let FS_FILES = "<ul>%ITEMS%</ul>";
-let FS_FILES_ITEM = "<li>%ITEM%</li>";
+let FS_FILES = `
+<table class='uk-table uk-table-hover uk-table-divider'>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+        </tr>
+    </thead>
+    <tbody>
+%ITEMS%
+    </tbody>
+</table>
+`;
+let FS_FILES_ITEM = `
+<tr>
+    <td>%PATH%</td>
+    <td>%TYPE%</td>
+</tr>
+`;
 let FS_FILES_LOADING = "<p>Loading...</p>";
 let FS_NAME = "pskov2-proto-fs";
 let FS_PANEL_MAIN = "panel-main";
@@ -104,7 +121,8 @@ function FSComponent() {
     this.resetFiles = function() {
         (async() => {
             var files = [];
-            await fsWalkFiles(this.pfs, "/", files);
+            var st = await this.pfs.stat("/");
+            await fsWalkFiles(this.pfs, "/", st, files);
             this.ctrl.set("walkedFiles", files);
         })();
     };
@@ -166,8 +184,10 @@ function fsShouldResetHTMLFiles(c) {
     if (c.recentField == "walkedFiles") {
         var html = "";
         for (let i in c.walkedFiles) {
-            let file = c.walkedFiles[i];
-            html += FS_FILES_ITEM.replaceAll("%ITEM%", file);
+            let item = c.walkedFiles[i];
+            html += FS_FILES_ITEM
+                .replaceAll("%PATH%", item.path)
+                .replaceAll("%TYPE%", item.st.type);
         }
         c.htmlFiles = FS_FILES.replaceAll("%ITEMS%", html);
         c.recentField = "htmlFiles";
@@ -208,18 +228,24 @@ function fsIsSideSelectionRelevant(selectedItemId, sideId) {
 }
 
 // Collect a list of directories and files into the provided `collection`
-async function fsWalkFiles(pfs, path, collection) {
+async function fsWalkFiles(pfs, path, pathSt, collection) {
     var suffix = path == "/" ? "" : "/";
-    collection.push(path + suffix);
+    collection.push({
+        path: path + suffix,
+        st: pathSt,
+    });
     var files = await pfs.readdir(path)
     for (var i in files) {
         var f = files[i];
         var fullPath = path + suffix + f;
         var st = await pfs.stat(fullPath);
         if (st.type == "dir") {
-            await fsWalkFiles(pfs, fullPath, collection);
+            await fsWalkFiles(pfs, fullPath, st, collection);
         } else {
-            collection.push(fullPath);
+            collection.push({
+                path: fullPath,
+                st: st
+            });
         }
     }
 }
