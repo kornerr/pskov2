@@ -113,7 +113,6 @@ function GitComponent() {
         this.setupSideMenu();
         this.setupShoulds();
         this.setupEffects();
-        this.setupEvents();
     };
 
     this.resetEvents = function() {
@@ -128,17 +127,6 @@ function GitComponent() {
     };
 
     this.setupEffects = function() {
-        this.ctrl.registerFieldCallback("selectedItemId", (c) => {
-            let contents = GIT_PAGES[c.selectedItemId]
-                .replaceAll("%GIT_REPO%", GIT_REPO)
-                .replaceAll("%GIT_REPO_CLONE%", GIT_REPO_CLONE)
-                .replaceAll("%GIT_REPO_URL%", GIT_REPO_URL)
-                .replaceAll("%URL%", c.url);
-            let main = deId(GIT_PANEL_MAIN);
-            main.innerHTML = contents;
-            this.ctrl.set("didResetContents", true);
-        });
-
         this.ctrl.registerFieldCallback("clone", (c) => {
           (async() => {
               try {
@@ -152,11 +140,20 @@ function GitComponent() {
               }
           })();
         });
-    };
 
-    this.setupEvents = function() {
         this.ctrl.registerFieldCallback("didResetContents", (c) => {
             this.resetEvents();
+        });
+
+        this.ctrl.registerFieldCallback("selectedItemId", (c) => {
+            let contents = GIT_PAGES[c.selectedItemId]
+                .replaceAll("%GIT_REPO%", GIT_REPO)
+                .replaceAll("%GIT_REPO_CLONE%", GIT_REPO_CLONE)
+                .replaceAll("%GIT_REPO_URL%", GIT_REPO_URL)
+                .replaceAll("%URL%", c.url);
+            let main = deId(GIT_PANEL_MAIN);
+            main.innerHTML = contents;
+            this.ctrl.set("didResetContents", true);
         });
     };
 

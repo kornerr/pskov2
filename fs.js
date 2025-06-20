@@ -8,7 +8,10 @@ function fs() {
 
 function FSContext() {
     this._construct = function() {
+        this.areDirsHidden = true;
+        this.didClickHideDirs = false;
         this.didLaunch = false;
+        this.didResetContents = false;
         this.htmlFiles = "";
         this.selectedItemId = -1;
         this.sideId = -1;
@@ -20,8 +23,14 @@ function FSContext() {
     this._construct();
 
     this.field = function(name) {
-        if (name == "didLaunch") {
+        if (name == "areDirsHidden") {
+            return this.areDirsHidden;
+        } else if (name == "didClickHideDirs") {
+            return this.didClickHideDirs;
+        } else if (name == "didLaunch") {
             return this.didLaunch;
+        } else if (name == "didResetContents") {
+            return this.didResetContents;
         } else if (name == "htmlFiles") {
             return this.htmlFiles;
         } else if (name == "selectedItemId") {
@@ -39,7 +48,10 @@ function FSContext() {
 
     this.selfCopy = function() {
         let that = new FSContext();
+        that.areDirsHidden = this.areDirsHidden;
+        that.didClickHideDirs = this.didClickHideDirs;
         that.didLaunch = this.didLaunch;
+        that.didResetContents = this.didResetContents;
         that.htmlFiles = this.htmlFiles;
         that.selectedItemId = this.selectedItemId;
         that.sideId = this.sideId;
@@ -51,8 +63,14 @@ function FSContext() {
     };
 
     this.setField = function(name, value) {
-        if (name == "didLaunch") {
+        if (name == "areDirsHidden") {
+            this.areDirsHidden = value;
+        } else if (name == "didClickHideDirs") {
+            this.didClickHideDirs = value;
+        } else if (name == "didLaunch") {
             this.didLaunch = value;
+        } else if (name == "didResetContents") {
+            this.didResetContents = value;
         } else if (name == "htmlFiles") {
             this.htmlFiles = value;
         } else if (name == "selectedItemId") {
@@ -92,6 +110,7 @@ let FS_FILES_ITEM = `
     <td>%MTIME%</td>
 </tr>
 `;
+let FS_HIDE_DIRS = "fs-hide-dirs";
 let FS_FILES_LOADING = "<p>Loading...</p>";
 let FS_NAME = "pskov2-proto-fs";
 let FS_PANEL_MAIN = "panel-main";
@@ -102,6 +121,21 @@ let FS_PAGES = {
     %FILES%
 </div>
 `,
+    1: `
+<div class="uk-container uk-padding">
+    <h1 class="uk-heading">Cfg</h1>
+    <form>
+        <fieldset class="uk-fieldset">
+            <div class="uk-margin">
+                <label>
+                    <input id="%FS_HIDE_DIRS%" class="uk-checkbox" type="checkbox" %ARE_DIRS_HIDDEN%>
+                    Hide directories
+                </label>
+            </div>
+        </fieldset>
+    </form>
+</div>
+`
 };
 
 //<!-- Component -->
@@ -122,6 +156,13 @@ function FSComponent() {
         this.setupShoulds();
     };
 
+    this.resetEvents = function() {
+        let hideDirs = deId(FS_HIDE_DIRS);
+        hideDirs.addEventListener("click", (e) => {
+            this.ctrl.set("didClickHideDirs", true);
+        });
+    };
+
     this.resetFiles = function() {
         (async() => {
             var files = [];
@@ -132,11 +173,19 @@ function FSComponent() {
     };
 
     this.setupEffects = function() {
+        this.ctrl.registerFieldCallback("didResetContents", (c) => {
+            this.resetEvents();
+        });
+
         this.ctrl.registerFieldCallback("htmlFiles", (c) => {
             let contents = FS_PAGES[c.selectedItemId];
             let main = deId(FS_PANEL_MAIN);
+            let areDirsHidden = c.areDirsHidden ? "checked" : "";
             main.innerHTML = contents
-                .replaceAll("%FILES%", c.htmlFiles);
+                .replaceAll("%ARE_DIRS_HIDDEN%", areDirsHidden)
+                .replaceAll("%FILES%", c.htmlFiles)
+                .replaceAll("%FS_HIDE_DIRS%", FS_HIDE_DIRS);
+            this.ctrl.set("didResetContents", true);
         });
 
         this.ctrl.registerFieldCallback("selectedItemId", (c) => {
@@ -146,6 +195,7 @@ function FSComponent() {
 
     this.setupShoulds = function() {
         [
+            fsShouldResetHiddenDirs,
             fsShouldResetHTMLFiles,
             fsShouldResetSelectedItemId,
         ].forEach((f) => {
@@ -161,6 +211,7 @@ function FSComponent() {
             sideId,
             [
               "Files",
+              "Cfg",
             ]
         );
 
@@ -174,6 +225,19 @@ function FSComponent() {
 }
 
 //<!-- Shoulds -->
+
+// Conditions:
+// 1. Checkmark has been clicked
+function fsShouldResetHiddenDirs(c) {
+    if (c.recentField == "didClickHideDirs") {
+        c.areDirsHidden = !c.areDirsHidden;
+        c.recentField = "areDirsHidden";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
 
 // Conditions:
 // 1. Files side menu item has been selected
