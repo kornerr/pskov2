@@ -158,6 +158,10 @@ function FSComponent() {
 
     this.resetEvents = function() {
         let hideDirs = deId(FS_HIDE_DIRS);
+        // Return irrelevant pages.
+        if (hideDirs == null) {
+            return;
+        }
         hideDirs.addEventListener("click", (e) => {
             this.ctrl.set("didClickHideDirs", true);
         });
@@ -253,6 +257,14 @@ function fsShouldResetHTMLFiles(c) {
         var html = "";
         for (let i in c.walkedFiles) {
             let item = c.walkedFiles[i];
+            // Ignore display dirs if so configured.
+            if (
+                c.areDirsHidden &&
+                item.st.type == "dir"
+            ) {
+                continue;
+                console.log("ИГР ignore item path/type:", item.path, item.st.type);
+            }
             let dt = new Date(item.st.mtimeMs);
             html += FS_FILES_ITEM
                 .replaceAll("%PATH%", item.path)
