@@ -10,9 +10,11 @@ function FSContext() {
     this._construct = function() {
         this.areDirsHidden = true;
         this.didClickHideDirs = false;
+        this.didClickHideGit = false;
         this.didLaunch = false;
         this.didResetContents = false;
         this.htmlFiles = "";
+        this.isGitHidden = true;
         this.selectedItemId = -1;
         this.sideId = -1;
         this.sideSelectedItemId = -1;
@@ -27,12 +29,16 @@ function FSContext() {
             return this.areDirsHidden;
         } else if (name == "didClickHideDirs") {
             return this.didClickHideDirs;
+        } else if (name == "didClickHideGit") {
+            return this.didClickHideGit;
         } else if (name == "didLaunch") {
             return this.didLaunch;
         } else if (name == "didResetContents") {
             return this.didResetContents;
         } else if (name == "htmlFiles") {
             return this.htmlFiles;
+        } else if (name == "isGitHidden") {
+            return this.isGitHidden;
         } else if (name == "selectedItemId") {
             return this.selectedItemId;
         } else if (name == "sideId") {
@@ -50,9 +56,11 @@ function FSContext() {
         let that = new FSContext();
         that.areDirsHidden = this.areDirsHidden;
         that.didClickHideDirs = this.didClickHideDirs;
+        that.didClickHideGit = this.didClickHideDGit;
         that.didLaunch = this.didLaunch;
         that.didResetContents = this.didResetContents;
         that.htmlFiles = this.htmlFiles;
+        that.isGitHidden = this.isGitHidden;
         that.selectedItemId = this.selectedItemId;
         that.sideId = this.sideId;
         that.sideSelectedItemId = this.sideSelectedItemId;
@@ -67,12 +75,16 @@ function FSContext() {
             this.areDirsHidden = value;
         } else if (name == "didClickHideDirs") {
             this.didClickHideDirs = value;
+        } else if (name == "didClickHideGit") {
+            this.didClickHideDGit = value;
         } else if (name == "didLaunch") {
             this.didLaunch = value;
         } else if (name == "didResetContents") {
             this.didResetContents = value;
         } else if (name == "htmlFiles") {
             this.htmlFiles = value;
+        } else if (name == "isGitHidden") {
+            this.isGitHidden = value;
         } else if (name == "selectedItemId") {
             this.selectedItemId = value;
         } else if (name == "sideId") {
@@ -111,6 +123,7 @@ let FS_FILES_ITEM = `
 </tr>
 `;
 let FS_HIDE_DIRS = "fs-hide-dirs";
+let FS_HIDE_GIT = "fs-hide-git";
 let FS_FILES_LOADING = "<p>Loading...</p>";
 let FS_NAME = "pskov2-proto-fs";
 let FS_PANEL_MAIN = "panel-main";
@@ -130,6 +143,12 @@ let FS_PAGES = {
                 <label>
                     <input id="%FS_HIDE_DIRS%" class="uk-checkbox" type="checkbox" %ARE_DIRS_HIDDEN%>
                     Hide directories
+                </label>
+            </div>
+            <div class="uk-margin">
+                <label>
+                    <input id="%FS_HIDE_GIT%" class="uk-checkbox" type="checkbox" %IS_GIT_HIDDEN%>
+                    Hide .git
                 </label>
             </div>
         </fieldset>
@@ -158,22 +177,18 @@ function FSComponent() {
 
     this.resetEvents = function() {
         let hideDirs = deId(FS_HIDE_DIRS);
-        // Return irrelevant pages.
-        if (hideDirs == null) {
-            return;
+        if (hideDirs != null) {
+            hideDirs.addEventListener("click", (e) => {
+                this.ctrl.set("didClickHideDirs", true);
+            });
         }
-        hideDirs.addEventListener("click", (e) => {
-            this.ctrl.set("didClickHideDirs", true);
-        });
-    };
 
-    this.resetFiles = function() {
-        (async() => {
-            var files = [];
-            var st = await this.pfs.stat("/");
-            await fsWalkFiles(this.pfs, "/", st, files);
-            this.ctrl.set("walkedFiles", files);
-        })();
+        let hideGit = deId(FS_HIDE_GIT);
+        if (hideGit != null) {
+            hideGit.addEventListener("click", (e) => {
+                this.ctrl.set("didClickHideGit", true);
+            });
+        }
     };
 
     this.setupEffects = function() {
@@ -184,22 +199,32 @@ function FSComponent() {
         this.ctrl.registerFieldCallback("htmlFiles", (c) => {
             let contents = FS_PAGES[c.selectedItemId];
             let main = deId(FS_PANEL_MAIN);
+
+            let isGitHidden = c.isGitHidden ? "checked" : "";
             let areDirsHidden = c.areDirsHidden ? "checked" : "";
             main.innerHTML = contents
                 .replaceAll("%ARE_DIRS_HIDDEN%", areDirsHidden)
                 .replaceAll("%FILES%", c.htmlFiles)
-                .replaceAll("%FS_HIDE_DIRS%", FS_HIDE_DIRS);
+                .replaceAll("%FS_HIDE_DIRS%", FS_HIDE_DIRS)
+                .replaceAll("%FS_HIDE_GIT%", FS_HIDE_GIT)
+                .replaceAll("%IS_GIT_HIDDEN%", isGitHidden);
             this.ctrl.set("didResetContents", true);
         });
 
         this.ctrl.registerFieldCallback("selectedItemId", (c) => {
-            this.resetFiles();
+            (async() => {
+                var files = [];
+                var st = await this.pfs.stat("/");
+                await fsWalkFiles(this.pfs, "/", st, files);
+                this.ctrl.set("walkedFiles", files);
+            })();
         });
     };
 
     this.setupShoulds = function() {
         [
             fsShouldResetHiddenDirs,
+            fsShouldResetHiddenGit,
             fsShouldResetHTMLFiles,
             fsShouldResetSelectedItemId,
         ].forEach((f) => {
@@ -231,11 +256,24 @@ function FSComponent() {
 //<!-- Shoulds -->
 
 // Conditions:
-// 1. Checkmark has been clicked
+// 1. Checkbox has been clicked
 function fsShouldResetHiddenDirs(c) {
     if (c.recentField == "didClickHideDirs") {
         c.areDirsHidden = !c.areDirsHidden;
         c.recentField = "areDirsHidden";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Checkbox has been clicked
+function fsShouldResetHiddenGit(c) {
+    if (c.recentField == "didClickHideGit") {
+        c.isGitHidden = !c.isGitHidden;
+        c.recentField = "isGitHidden";
         return c;
     }
 
@@ -257,14 +295,11 @@ function fsShouldResetHTMLFiles(c) {
         var html = "";
         for (let i in c.walkedFiles) {
             let item = c.walkedFiles[i];
-            // Ignore display dirs if so configured.
-            if (
-                c.areDirsHidden &&
-                item.st.type == "dir"
-            ) {
+
+            if (fsIsFileHidden(c, item)) {
                 continue;
-                console.log("ИГР ignore item path/type:", item.path, item.st.type);
             }
+
             let dt = new Date(item.st.mtimeMs);
             html += FS_FILES_ITEM
                 .replaceAll("%PATH%", item.path)
@@ -299,6 +334,26 @@ function fsShouldResetSelectedItemId(c) {
 }
 
 //<!-- Other -->
+
+function fsIsFileHidden(c, item) {
+    // Ignore directories
+    if (
+        c.areDirsHidden &&
+        item.st.type == "dir"
+    ) {
+        return true;
+    }
+
+    // Ignore .git
+    if (
+        c.isGitHidden &&
+        item.path.includes(".git")
+    ) {
+        return true;
+    }
+
+    return false;
+}
 
 // Make sure side selection is about FS items
 function fsIsSideSelectionRelevant(selectedItemId, sideId) {
