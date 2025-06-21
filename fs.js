@@ -11,6 +11,7 @@ function FSContext() {
         this.areDirsHidden = true;
         this.didClickHideDirs = false;
         this.didClickHideGit = false;
+        this.didClickWipe = false;
         this.didLaunch = false;
         this.didResetContents = false;
         this.htmlFiles = "";
@@ -31,6 +32,8 @@ function FSContext() {
             return this.didClickHideDirs;
         } else if (name == "didClickHideGit") {
             return this.didClickHideGit;
+        } else if (name == "didClickWipe") {
+            return this.didClickWipe;
         } else if (name == "didLaunch") {
             return this.didLaunch;
         } else if (name == "didResetContents") {
@@ -56,7 +59,8 @@ function FSContext() {
         let that = new FSContext();
         that.areDirsHidden = this.areDirsHidden;
         that.didClickHideDirs = this.didClickHideDirs;
-        that.didClickHideGit = this.didClickHideDGit;
+        that.didClickHideGit = this.didClickHideGit;
+        that.didClickWipe = this.didClickWipe;
         that.didLaunch = this.didLaunch;
         that.didResetContents = this.didResetContents;
         that.htmlFiles = this.htmlFiles;
@@ -76,7 +80,9 @@ function FSContext() {
         } else if (name == "didClickHideDirs") {
             this.didClickHideDirs = value;
         } else if (name == "didClickHideGit") {
-            this.didClickHideDGit = value;
+            this.didClickHideGit = value;
+        } else if (name == "didClickWipe") {
+            this.didClickWipe = value;
         } else if (name == "didLaunch") {
             this.didLaunch = value;
         } else if (name == "didResetContents") {
@@ -153,9 +159,11 @@ let FS_PAGES = {
             </div>
         </fieldset>
     </form>
+    <button id="%FS_WIPE%" class="uk-button uk-button-danger">Wipe file system and reload</button>
 </div>
 `
 };
+let FS_WIPE = "fs-wipe";
 
 //<!-- Component -->
 
@@ -189,9 +197,20 @@ function FSComponent() {
                 this.ctrl.set("didClickHideGit", true);
             });
         }
+
+        let wipe = deId(FS_WIPE);
+        if (wipe != null) {
+            wipe.addEventListener("click", (e) => {
+                this.ctrl.set("didClickWipe", true);
+            });
+        }
     };
 
     this.setupEffects = function() {
+        this.ctrl.registerFieldCallback("didClickWipe", (c) => {
+            console.log("TODO wipe");
+        });
+
         this.ctrl.registerFieldCallback("didResetContents", (c) => {
             this.resetEvents();
         });
@@ -207,6 +226,7 @@ function FSComponent() {
                 .replaceAll("%FILES%", c.htmlFiles)
                 .replaceAll("%FS_HIDE_DIRS%", FS_HIDE_DIRS)
                 .replaceAll("%FS_HIDE_GIT%", FS_HIDE_GIT)
+                .replaceAll("%FS_WIPE%", FS_WIPE)
                 .replaceAll("%IS_GIT_HIDDEN%", isGitHidden);
             this.ctrl.set("didResetContents", true);
         });
