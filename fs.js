@@ -14,12 +14,14 @@ function FSContext() {
         this.didClickWipe = false;
         this.didLaunch = false;
         this.didResetContents = false;
+        this.didWipe = false;
         this.htmlFiles = "";
         this.isGitHidden = true;
         this.selectedItemId = -1;
         this.sideId = -1;
         this.sideSelectedItemId = -1;
         this.walkedFiles = [];
+        this.wipe = false;
 
         this.recentField = "";
     };
@@ -38,6 +40,8 @@ function FSContext() {
             return this.didLaunch;
         } else if (name == "didResetContents") {
             return this.didResetContents;
+        } else if (name == "didWipe") {
+            return this.didWipe;
         } else if (name == "htmlFiles") {
             return this.htmlFiles;
         } else if (name == "isGitHidden") {
@@ -50,6 +54,8 @@ function FSContext() {
             return this.sideSelectedItemId;
         } else if (name == "walkedFiles") {
             return this.walkedFiles;
+        } else if (name == "wipe") {
+            return this.wipe;
         }
 
         return "unknown-field-name";
@@ -63,12 +69,14 @@ function FSContext() {
         that.didClickWipe = this.didClickWipe;
         that.didLaunch = this.didLaunch;
         that.didResetContents = this.didResetContents;
+        that.didWipe = this.didWipe;
         that.htmlFiles = this.htmlFiles;
         that.isGitHidden = this.isGitHidden;
         that.selectedItemId = this.selectedItemId;
         that.sideId = this.sideId;
         that.sideSelectedItemId = this.sideSelectedItemId;
         that.walkedFiles = this.walkedFiles;
+        that.wipe = this.wipe;
 
         that.recentField = this.recentField;
         return that;
@@ -87,6 +95,8 @@ function FSContext() {
             this.didLaunch = value;
         } else if (name == "didResetContents") {
             this.didResetContents = value;
+        } else if (name == "didWipe") {
+            this.didWipe  = value;
         } else if (name == "htmlFiles") {
             this.htmlFiles = value;
         } else if (name == "isGitHidden") {
@@ -99,6 +109,8 @@ function FSContext() {
             this.sideSelectedItemId = value;
         } else if (name == "walkedFiles") {
             this.walkedFiles = value;
+        } else if (name == "wipe") {
+            this.wipe = value;
         }
     };
 }
@@ -164,6 +176,7 @@ let FS_PAGES = {
 `
 };
 let FS_WIPE = "fs-wipe";
+let FS_WIPE_KEY = "fs-wipe";
 
 //<!-- Component -->
 
@@ -175,12 +188,19 @@ function FSComponent() {
             console.log(`ИГР FSC._construct ctrl key/value: '${c.recentField}'/'${c.field(c.recentField)}'`);
         });
 
-        this.fs = new LightningFS(FS_NAME);
+        // Wipe file system if requested so.
+        let doWipe = localStorage.getItem(FS_WIPE_KEY) != null;
+        this.fs = new LightningFS(FS_NAME, {wipe: doWipe});
         this.pfs = this.fs.promises;
 
         this.setupSideMenu();
         this.setupEffects();
         this.setupShoulds();
+
+        // Reset wiping flag.
+        if (doWipe) {
+            this.ctrl.set("didWipe", true);
+        }
     };
 
     this.resetEvents = function() {
@@ -207,10 +227,6 @@ function FSComponent() {
     };
 
     this.setupEffects = function() {
-        this.ctrl.registerFieldCallback("didClickWipe", (c) => {
-            console.log("TODO wipe");
-        });
-
         this.ctrl.registerFieldCallback("didResetContents", (c) => {
             this.resetEvents();
         });
@@ -239,6 +255,10 @@ function FSComponent() {
                 this.ctrl.set("walkedFiles", files);
             })();
         });
+
+        this.ctrl.registerFieldCallback("wipe", (c) => {
+            localStorage.setItem(FS_WIPE_KEY, c.wipe);
+        });
     };
 
     this.setupShoulds = function() {
@@ -247,6 +267,7 @@ function FSComponent() {
             fsShouldResetHiddenGit,
             fsShouldResetHTMLFiles,
             fsShouldResetSelectedItemId,
+            fsShouldWipe,
         ].forEach((f) => {
             this.ctrl.registerFunction(f);
         });
@@ -346,6 +367,25 @@ function fsShouldResetSelectedItemId(c) {
         let ids = sideSelectionIds(c.sideSelectedItemId);
         c.selectedItemId = ids[1];
         c.recentField = "selectedItemId";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Wipe button has been clicked
+function fsShouldWipe(c) {
+    if (c.recentField == "didClickWipe") {
+        c.wipe = true;
+        c.recentField = "wipe";
+        return c;
+    }
+
+    if (c.recentField == "didWipe") {
+        c.wipe = false;
+        c.recentField = "wipe";
         return c;
     }
 
