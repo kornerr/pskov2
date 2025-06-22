@@ -20,8 +20,9 @@ function FSContext() {
         this.selectedItemId = -1;
         this.sideId = -1;
         this.sideSelectedItemId = -1;
+        this.startWiping = false;
+        this.stopWiping = false;
         this.walkedFiles = [];
-        this.wipe = false;
 
         this.recentField = "";
     };
@@ -52,10 +53,10 @@ function FSContext() {
             return this.sideId;
         } else if (name == "sideSelectedItemId") {
             return this.sideSelectedItemId;
+        } else if (name == "startWiping") {
+            return this.startWiping;
         } else if (name == "walkedFiles") {
             return this.walkedFiles;
-        } else if (name == "wipe") {
-            return this.wipe;
         }
 
         return "unknown-field-name";
@@ -75,8 +76,9 @@ function FSContext() {
         that.selectedItemId = this.selectedItemId;
         that.sideId = this.sideId;
         that.sideSelectedItemId = this.sideSelectedItemId;
+        that.startWiping = this.startWiping;
+        that.stopWiping = this.stopWiping;
         that.walkedFiles = this.walkedFiles;
-        that.wipe = this.wipe;
 
         that.recentField = this.recentField;
         return that;
@@ -107,10 +109,12 @@ function FSContext() {
             this.sideId = value;
         } else if (name == "sideSelectedItemId") {
             this.sideSelectedItemId = value;
+        } else if (name == "startWiping") {
+            this.startWiping = value;
+        } else if (name == "stopWiping") {
+            this.stopWiping = value;
         } else if (name == "walkedFiles") {
             this.walkedFiles = value;
-        } else if (name == "wipe") {
-            this.wipe = value;
         }
     };
 }
@@ -256,8 +260,13 @@ function FSComponent() {
             })();
         });
 
-        this.ctrl.registerFieldCallback("wipe", (c) => {
+        this.ctrl.registerFieldCallback("startWiping", (c) => {
             localStorage.setItem(FS_WIPE_KEY, c.wipe);
+            location.reload();
+        });
+
+        this.ctrl.registerFieldCallback("stopWiping", (c) => {
+            localStorage.removeItem(FS_WIPE_KEY);
         });
     };
 
@@ -267,7 +276,8 @@ function FSComponent() {
             fsShouldResetHiddenGit,
             fsShouldResetHTMLFiles,
             fsShouldResetSelectedItemId,
-            fsShouldWipe,
+            fsShouldStartWiping,
+            fsShouldStopWiping,
         ].forEach((f) => {
             this.ctrl.registerFunction(f);
         });
@@ -376,16 +386,23 @@ function fsShouldResetSelectedItemId(c) {
 
 // Conditions:
 // 1. Wipe button has been clicked
-function fsShouldWipe(c) {
+function fsShouldStartWiping(c) {
     if (c.recentField == "didClickWipe") {
-        c.wipe = true;
-        c.recentField = "wipe";
+        c.startWiping = true;
+        c.recentField = "startWiping";
         return c;
     }
 
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Wiping did happen
+function fsShouldStopWiping(c) {
     if (c.recentField == "didWipe") {
-        c.wipe = false;
-        c.recentField = "wipe";
+        c.stopWiping = true;
+        c.recentField = "stopWiping";
         return c;
     }
 

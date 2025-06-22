@@ -135,6 +135,7 @@ function GitComponent() {
                       dir: GIT_REPO_DIR,
                       url: c.clone,
                   });
+                  console.log("ИГР TODO didClone");
               } catch (e) {
                   console.log("ERR GitC.setupE clone error:", e);
               }
