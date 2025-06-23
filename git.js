@@ -3,9 +3,13 @@
 function GitContext() {
     this._construct = function() {
         this.clone = "";
+        this.cloneError = "";
         this.didClickClone = false;
+        this.didClone = false;
         this.didLaunch = false;
         this.didResetContents = false;
+        this.isCloning = false;
+        this.resetContents = false;
         this.selectedItemId = -1;
         this.sideId = -1;
         this.sideSelectedItemId = -1;
@@ -18,12 +22,20 @@ function GitContext() {
     this.field = function(name) {
         if (name == "clone") {
             return this.clone;
+        } else if (name == "cloneError") {
+            return this.cloneError;
         } else if (name == "didClickClone") {
             return this.didClickClone;
+        } else if (name == "didClone") {
+            return this.didClone;
         } else if (name == "didLaunch") {
             return this.didLaunch;
         } else if (name == "didResetContents") {
             return this.didResetContents;
+        } else if (name == "isCloning") {
+            return this.isCloning;
+        } else if (name == "resetContents") {
+            return this.resetContents;
         } else if (name == "selectedItemId") {
             return this.selectedItemId;
         } else if (name == "sideId") {
@@ -40,9 +52,13 @@ function GitContext() {
     this.selfCopy = function() {
         let that = new GitContext();
         that.clone = this.clone;
+        that.cloneError = this.cloneError;
         that.didClickClone = this.didClickClone;
+        that.didClone = this.didClone;
         that.didLaunch = this.didLaunch;
         that.didResetContents = this.didResetContents;
+        that.isCloning = this.isCloning;
+        that.resetContents = this.resetContents;
         that.selectedItemId = this.selectedItemId;
         that.sideId = this.sideId;
         that.sideSelectedItemId = this.sideSelectedItemId;
@@ -55,12 +71,20 @@ function GitContext() {
     this.setField = function(name, value) {
         if (name == "clone") {
             this.clone = value;
+        } else if (name == "cloneError") {
+            this.cloneError = value;
         } else if (name == "didClickClone") {
             this.didClickClone = value;
+        } else if (name == "didClone") {
+            this.didClone = value;
         } else if (name == "didLaunch") {
             this.didLaunch = value;
         } else if (name == "didResetContents") {
             this.didResetContents = value;
+        } else if (name == "isCloning") {
+            this.isCloning = value;
+        } else if (name == "resetContents") {
+            this.resetContents = value;
         } else if (name == "selectedItemId") {
             this.selectedItemId = value;
         } else if (name == "sideId") {
@@ -83,9 +107,9 @@ let GIT_PAGES = {
         <fieldset class="uk-fieldset">
             <legend class="uk-legend">1. Clone new repository</legend>
             <div class="uk-margin">
-              <input id="%GIT_REPO_URL%" class="uk-input" type="text" placeholder="For example: https://git.opengamestudio.org/kornerr/study-gitjs-access" value="%URL%">
+              <input id="%GIT_REPO_URL%" class="uk-input" type="text" placeholder="For example: https://git.opengamestudio.org/kornerr/study-gitjs-access" value="%URL%" %IS_DISABLED%>
             </div>
-            <button id="%GIT_REPO_CLONE%" class="uk-button uk-button-default">Clone</button>
+            <button id="%GIT_REPO_CLONE%" class="uk-button uk-button-default" %IS_DISABLED%>Clone</button>
         </fieldset>
     </form>
 </div>
@@ -135,9 +159,9 @@ function GitComponent() {
                       dir: GIT_REPO_DIR,
                       url: c.clone,
                   });
-                  console.log("ИГР TODO didClone");
+                  this.ctrl.set("didClone", true);
               } catch (e) {
-                  console.log("ERR GitC.setupE clone error:", e);
+                  this.ctrl.set("cloneError", `${e}`);
               }
           })();
         });
@@ -146,11 +170,13 @@ function GitComponent() {
             this.resetEvents();
         });
 
-        this.ctrl.registerFieldCallback("selectedItemId", (c) => {
+        this.ctrl.registerFieldCallback("resetContents", (c) => {
+            let disabled = c.isCloning ? "disabled" : "";
             let contents = GIT_PAGES[c.selectedItemId]
                 .replaceAll("%GIT_REPO%", GIT_REPO)
                 .replaceAll("%GIT_REPO_CLONE%", GIT_REPO_CLONE)
                 .replaceAll("%GIT_REPO_URL%", GIT_REPO_URL)
+                .replaceAll("%IS_DISABLED%", disabled)
                 .replaceAll("%URL%", c.url);
             let main = deId(GIT_PANEL_MAIN);
             main.innerHTML = contents;
@@ -161,6 +187,8 @@ function GitComponent() {
     this.setupShoulds = function() {
         [
             gitShouldClone,
+            gitShouldResetCloningState,
+            gitShouldResetContents,
             gitShouldResetSelectedItemId,
         ].forEach((f) => {
             this.ctrl.registerFunction(f);
@@ -201,6 +229,53 @@ function gitShouldClone(c) {
     ) {
         c.clone = c.url;
         c.recentField = "clone";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Started cloning
+// 2. Finished cloning successfully
+// 3. Finished cloning with error
+function gitShouldResetCloningState(c) {
+    if (c.recentField == "clone") {
+        c.isCloning = true;
+        c.recentField = "isCloning";
+        return c;
+    }
+
+    if (c.recentField == "didClone") {
+        c.isCloning = false;
+        c.recentField = "isCloning";
+        return c;
+    }
+
+    if (c.recentField == "cloneError") {
+        c.isCloning = false;
+        c.recentField = "isCloning";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Selected side menu item
+// 2. Changed cloning state
+function gitShouldResetContents(c) {
+    if (c.recentField == "selectedItemId") {
+        c.resetContents = true;
+        c.recentField = "resetContents";
+        return c;
+    }
+
+    if (c.recentField == "isCloning") {
+        c.resetContents = true;
+        c.recentField = "resetContents";
         return c;
     }
 
