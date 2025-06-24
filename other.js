@@ -7,3 +7,18 @@ function deId(id) {
 async function asyncSleep(duration) {
     await new Promise((resolve) => setTimeout(resolve, duration));
 }
+
+// Report success with a slight delay
+//
+// The delay is necessary to overcome the conflict of UIkit and CLDController
+function reportSuccess(text) {
+    setTimeout(
+        () => {
+            UIkit.notification({
+                message: text,
+                status: "success",
+            });
+        },
+        0
+    );
+}

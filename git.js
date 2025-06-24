@@ -177,11 +177,7 @@ function GitComponent() {
         });
 
         this.ctrl.registerFieldCallback("didClone", (c) => {
-            UIkit.notification({
-                message: "Finished cloning the repository",
-                status: "success",
-            });
-            UIkit.modal.alert(html);
+            reportSuccess("Finished cloning the repository");
         });
 
         this.ctrl.registerFieldCallback("didResetContents", (c) => {
