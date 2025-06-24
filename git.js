@@ -121,6 +121,10 @@ let GIT_REPO = "repository";
 let GIT_REPO_CLONE = "repository-clone";
 let GIT_REPO_DIR = "/";
 let GIT_REPO_URL = "repository-url";
+let GIT_TEMPLATE_CLONE_ERROR = `
+<h2>Failed to clone the repository</h2>
+<p>Error: '%ERROR%'</p>
+`;
 
 //<!-- Component -->
 
@@ -164,6 +168,20 @@ function GitComponent() {
                   this.ctrl.set("cloneError", `${e}`);
               }
           })();
+        });
+
+        this.ctrl.registerFieldCallback("cloneError", (c) => {
+            let html = GIT_TEMPLATE_CLONE_ERROR
+                .replaceAll("%ERROR%", c.cloneError);
+            UIkit.modal.alert(html);
+        });
+
+        this.ctrl.registerFieldCallback("didClone", (c) => {
+            UIkit.notification({
+                message: "Finished cloning the repository",
+                status: "success",
+            });
+            UIkit.modal.alert(html);
         });
 
         this.ctrl.registerFieldCallback("didResetContents", (c) => {
