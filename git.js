@@ -327,6 +327,7 @@ function gitShouldResetCloningState(c) {
 // Conditions:
 // 1. Selected side menu item
 // 2. Changed cloning state
+// 3. Repository availability changed while we are at the Repository menu item
 function gitShouldResetContents(c) {
     if (c.recentField == "selectedItemId") {
         c.resetContents = true;
@@ -335,6 +336,15 @@ function gitShouldResetContents(c) {
     }
 
     if (c.recentField == "isCloning") {
+        c.resetContents = true;
+        c.recentField = "resetContents";
+        return c;
+    }
+
+    if (
+        c.recentField == "isRepositoryAvailable" &&
+        gitIsSideSelectionRelevant(c.sideSelectedItemId, c.sideId)
+    ) {
         c.resetContents = true;
         c.recentField = "resetContents";
         return c;
