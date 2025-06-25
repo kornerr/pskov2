@@ -2,6 +2,7 @@
 
 function GitContext() {
     this._construct = function() {
+        this.checkRepositoryAvailability = false;
         this.clone = "";
         this.cloneError = "";
         this.didClickClone = false;
@@ -9,6 +10,7 @@ function GitContext() {
         this.didLaunch = false;
         this.didResetContents = false;
         this.isCloning = false;
+        this.isRepositoryAvailable = false;
         this.resetContents = false;
         this.selectedItemId = -1;
         this.sideId = -1;
@@ -20,7 +22,9 @@ function GitContext() {
     this._construct();
 
     this.field = function(name) {
-        if (name == "clone") {
+        if (name == "checkRepositoryAvailability") {
+            return this.checkRepositoryAvailability;
+        } else if (name == "clone") {
             return this.clone;
         } else if (name == "cloneError") {
             return this.cloneError;
@@ -34,6 +38,8 @@ function GitContext() {
             return this.didResetContents;
         } else if (name == "isCloning") {
             return this.isCloning;
+        } else if (name == "isRepositoryAvailable") {
+            return this.isRepositoryAvailable;
         } else if (name == "resetContents") {
             return this.resetContents;
         } else if (name == "selectedItemId") {
@@ -51,6 +57,7 @@ function GitContext() {
 
     this.selfCopy = function() {
         let that = new GitContext();
+        that.checkRepositoryAvailability = this.checkRepositoryAvailability;
         that.clone = this.clone;
         that.cloneError = this.cloneError;
         that.didClickClone = this.didClickClone;
@@ -58,6 +65,7 @@ function GitContext() {
         that.didLaunch = this.didLaunch;
         that.didResetContents = this.didResetContents;
         that.isCloning = this.isCloning;
+        that.isRepositoryAvailable = this.isRepositoryAvailable;
         that.resetContents = this.resetContents;
         that.selectedItemId = this.selectedItemId;
         that.sideId = this.sideId;
@@ -69,7 +77,9 @@ function GitContext() {
     };
 
     this.setField = function(name, value) {
-        if (name == "clone") {
+        if (name == "checkRepositoryAvailability") {
+            this.checkRepositoryAvailability = value;
+        } else if (name == "clone") {
             this.clone = value;
         } else if (name == "cloneError") {
             this.cloneError = value;
@@ -83,6 +93,8 @@ function GitContext() {
             this.didResetContents = value;
         } else if (name == "isCloning") {
             this.isCloning = value;
+        } else if (name == "isRepositoryAvailable") {
+            this.isRepositoryAvailable = value;
         } else if (name == "resetContents") {
             this.resetContents = value;
         } else if (name == "selectedItemId") {
@@ -99,17 +111,18 @@ function GitContext() {
 
 //<!-- Constants -->
 
+let GIT_DOT_DIR = ".git";
 let GIT_PAGES = {
   0: `
 <div class="uk-container uk-padding">
-    <h1 class="uk-heading">Repository and branch</h1>
-    <form id="%GIT_REPO%" onclick="event.preventDefault();">
+    <h1 class="uk-heading">Repository</h1>
+    <form id="%GIT_REPO%" onclick="event.preventDefault();" %IS_CLONING_HIDDEN%>
         <fieldset class="uk-fieldset">
-            <legend class="uk-legend">1. Clone new repository</legend>
+            <legend class="uk-legend">Clone new repository</legend>
             <div class="uk-margin">
-              <input id="%GIT_REPO_URL%" class="uk-input" type="text" placeholder="For example: https://git.opengamestudio.org/kornerr/study-gitjs-access" value="%URL%" %IS_DISABLED%>
+              <input id="%GIT_REPO_URL%" class="uk-input" type="text" placeholder="For example: https://git.opengamestudio.org/kornerr/study-gitjs-access" value="%URL%" %IS_CLONING_DISABLED%>
             </div>
-            <button id="%GIT_REPO_CLONE%" class="uk-button uk-button-default" %IS_DISABLED%>Clone</button>
+            <button id="%GIT_REPO_CLONE%" class="uk-button uk-button-default" %IS_CLONING_DISABLED%>Clone</button>
         </fieldset>
     </form>
 </div>
@@ -141,6 +154,7 @@ function GitComponent() {
         this.setupSideMenu();
         this.setupShoulds();
         this.setupEffects();
+        this.setupEvents();
     };
 
     this.resetEvents = function() {
@@ -155,20 +169,24 @@ function GitComponent() {
     };
 
     this.setupEffects = function() {
-        this.ctrl.registerFieldCallback("clone", (c) => {
-          (async() => {
-              try {
-                  await git.clone({
-                      corsProxy: GIT_PROXY,
-                      dir: GIT_REPO_DIR,
-                      url: c.clone,
-                  });
-                  this.ctrl.set("didClone", true);
-              } catch (e) {
-                  this.ctrl.set("cloneError", `${e}`);
-              }
-          })();
-        });
+        this.ctrl.registerFieldCallback("checkRepositoryAvailability", (c) => { (async() => {
+            let files = await pfs().readdir(GIT_REPO_DIR);
+            let hasRepo = files.includes(GIT_DOT_DIR);
+            this.ctrl.set("isRepositoryAvailable", hasRepo);
+        })(); });
+
+        this.ctrl.registerFieldCallback("clone", (c) => { (async() => {
+            try {
+                await git.clone({
+                    corsProxy: GIT_PROXY,
+                    dir: GIT_REPO_DIR,
+                    url: c.clone,
+                });
+                this.ctrl.set("didClone", true);
+            } catch (e) {
+                this.ctrl.set("cloneError", `${e}`);
+            }
+        })(); });
 
         this.ctrl.registerFieldCallback("cloneError", (c) => {
             let html = GIT_TEMPLATE_CLONE_ERROR
@@ -185,12 +203,14 @@ function GitComponent() {
         });
 
         this.ctrl.registerFieldCallback("resetContents", (c) => {
-            let disabled = c.isCloning ? "disabled" : "";
+            let isCloningDisabled = c.isCloning ? "disabled" : "";
+            let isCloningHidden = c.isRepositoryAvailable ? "hidden" : "";
             let contents = GIT_PAGES[c.selectedItemId]
                 .replaceAll("%GIT_REPO%", GIT_REPO)
                 .replaceAll("%GIT_REPO_CLONE%", GIT_REPO_CLONE)
                 .replaceAll("%GIT_REPO_URL%", GIT_REPO_URL)
-                .replaceAll("%IS_DISABLED%", disabled)
+                .replaceAll("%IS_CLONING_DISABLED%", isCloningDisabled)
+                .replaceAll("%IS_CLONING_HIDDEN%", isCloningHidden)
                 .replaceAll("%URL%", c.url);
             let main = deId(GIT_PANEL_MAIN);
             main.innerHTML = contents;
@@ -198,8 +218,15 @@ function GitComponent() {
         });
     };
 
+    this.setupEvents = function() {
+        window.addEventListener("load", (e) => {
+            this.ctrl.set("didLaunch", true);
+        });
+    };
+
     this.setupShoulds = function() {
         [
+            gitShouldCheckRepositoryAvailability,
             gitShouldClone,
             gitShouldResetCloningState,
             gitShouldResetContents,
@@ -233,6 +260,26 @@ function GitComponent() {
 }
 
 //<!-- Shoulds -->
+
+// Conditions:
+// 1. Did clone successfully
+// 2. Did launch
+function gitShouldCheckRepositoryAvailability(c) {
+    if (c.recentField == "didClone") {
+        c.checkRepositoryAvailability = true;
+        c.recentField = "checkRepositoryAvailability";
+        return c;
+    }
+
+    if (c.recentField == "didLaunch") {
+        c.checkRepositoryAvailability = true;
+        c.recentField = "checkRepositoryAvailability";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
 
 // Conditions:
 // 1. URL is not empty and `Clone` button has been clicked

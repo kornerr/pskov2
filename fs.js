@@ -4,6 +4,10 @@ function fs() {
     return window.fsCmp.fs;
 }
 
+function pfs() {
+    return window.fsCmp.pfs;
+}
+
 //<!-- Context -->
 
 function FSContext() {
