@@ -450,6 +450,7 @@ async function fsWalkFiles(pfs, path, pathSt, collection) {
         st: pathSt,
     });
     var files = await pfs.readdir(path)
+    files.sort();
     for (var i in files) {
         var f = files[i];
         var fullPath = path + suffix + f;

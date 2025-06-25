@@ -1,29 +1,15 @@
-#panel-header {
-  background-color: #f8f8f8;
-  border-bottom: 1px solid lightgray;
-  height: 40px;
-  left: 0;
-  margin: 0;
-  position: fixed;
-  top: 0;
-  width: 100%;
-  z-index: 100;
-}
-
 #panel-left {
   border-right: 1px solid lightgray;
-  height: calc(100% - 40px);
+  height: 100%;
   overflow: auto;
   position: fixed;
-  top: 40px;
   width: 240px;
 }
 
 #panel-main {
-  height: calc(100% - 40px);
+  height: 100%;
   left: 240px;
   overflow: auto;
   position: fixed;
-  top: 40px;
   width: calc(100% - 240px);
 }

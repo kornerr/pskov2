@@ -216,7 +216,7 @@ function GitComponent() {
         sideResetItemTitles(
             sideId,
             [
-              "Repository and branch",
+              "Repository",
               "Commit",
               "Push & pull",
               "Browse files",
