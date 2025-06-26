@@ -3,7 +3,7 @@
 function GitContext() {
     this._construct = function() {
         this.checkRepositoryAvailability = false;
-        this.clone = "";
+        this.clone = false;
         this.cloneError = "";
         this.didClickClone = false;
         this.didClone = false;
@@ -117,13 +117,27 @@ let GIT_PAGES = {
 <div class="uk-container uk-padding">
     <h1 class="uk-heading">Repository</h1>
     <form id="%GIT_REPO%" onclick="event.preventDefault();" %IS_CLONING_HIDDEN%>
-        <fieldset class="uk-fieldset">
-            <legend class="uk-legend">Clone new repository</legend>
-            <div class="uk-margin">
-              <input id="%GIT_REPO_URL%" class="uk-input" type="text" placeholder="For example: https://git.opengamestudio.org/kornerr/study-gitjs-access" value="%URL%" %IS_CLONING_DISABLED%>
+        <div class="uk-margin">
+            <label class="uk-form-label" for="%GIT_REPO_URL%">Clone new repository:</label>
+            <div class="uk-form-controls">
+                <input id="%GIT_REPO_URL%" class="uk-input" type="text" placeholder="For example: https://git.opengamestudio.org/kornerr/study-gitjs-access" value="%URL%" %IS_CLONING_DISABLED%>
             </div>
-            <button id="%GIT_REPO_CLONE%" class="uk-button uk-button-default" %IS_CLONING_DISABLED%>Clone</button>
-        </fieldset>
+        </div>
+        <button id="%GIT_REPO_CLONE%" class="uk-button uk-button-default" %IS_CLONING_DISABLED%>Clone</button>
+    </form>
+    <form id="%GIT_ACTIVE_REPO%" class="uk-form-stacked" onclick="event.preventDefault();" %IS_REPOSITORY_AVAILABLE%>
+        <div class="uk-margin">
+            <label class="uk-form-label" for="%GIT_ACTIVE_REPO_URL%">Cloned repository:</label>
+            <div class="uk-form-controls">
+                <input id="%GIT_ACTIVE_REPO_URL%" class="uk-input" type="text" value="%URL%" disabled>
+            </div>
+        </div>
+        <div class="uk-margin">
+            <label class="uk-form-label" for="%GIT_ACTIVE_REPO_BRANCH%">Selected branch:</label>
+            <div class="uk-form-controls">
+                <input id="%GIT_ACTIVE_REPO_BRANCH%" class="uk-input" type="text" value="??" disabled>
+            </div>
+        </div>
     </form>
 </div>
 `,
@@ -180,7 +194,7 @@ function GitComponent() {
                 await git.clone({
                     corsProxy: GIT_PROXY,
                     dir: GIT_REPO_DIR,
-                    url: c.clone,
+                    url: c.url,
                 });
                 this.ctrl.set("didClone", true);
             } catch (e) {
@@ -205,12 +219,14 @@ function GitComponent() {
         this.ctrl.registerFieldCallback("resetContents", (c) => {
             let isCloningDisabled = c.isCloning ? "disabled" : "";
             let isCloningHidden = c.isRepositoryAvailable ? "hidden" : "";
+            let isRepositoryAvailable = c.isRepositoryAvailable ? "" : "hidden";
             let contents = GIT_PAGES[c.selectedItemId]
                 .replaceAll("%GIT_REPO%", GIT_REPO)
                 .replaceAll("%GIT_REPO_CLONE%", GIT_REPO_CLONE)
                 .replaceAll("%GIT_REPO_URL%", GIT_REPO_URL)
                 .replaceAll("%IS_CLONING_DISABLED%", isCloningDisabled)
                 .replaceAll("%IS_CLONING_HIDDEN%", isCloningHidden)
+                .replaceAll("%IS_REPOSITORY_AVAILABLE%", isRepositoryAvailable)
                 .replaceAll("%URL%", c.url);
             let main = deId(GIT_PANEL_MAIN);
             main.innerHTML = contents;
@@ -288,7 +304,7 @@ function gitShouldClone(c) {
         c.recentField == "didClickClone" &&
         c.url.length > 0
     ) {
-        c.clone = c.url;
+        c.clone = true;
         c.recentField = "clone";
         return c;
     }
