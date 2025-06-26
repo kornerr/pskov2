@@ -2,6 +2,7 @@
 
 function GitContext() {
     this._construct = function() {
+        this.cfgURL = "";
         this.checkRepositoryAvailability = false;
         this.clone = false;
         this.cloneError = "";
@@ -9,6 +10,7 @@ function GitContext() {
         this.didClone = false;
         this.didLaunch = false;
         this.didResetContents = false;
+        this.inputURL = "";
         this.isCloning = false;
         this.isRepositoryAvailable = false;
         this.resetContents = false;
@@ -22,7 +24,9 @@ function GitContext() {
     this._construct();
 
     this.field = function(name) {
-        if (name == "checkRepositoryAvailability") {
+        if (name == "cfgURL") {
+            return this.cfgURL;
+        } if (name == "checkRepositoryAvailability") {
             return this.checkRepositoryAvailability;
         } else if (name == "clone") {
             return this.clone;
@@ -36,6 +40,8 @@ function GitContext() {
             return this.didLaunch;
         } else if (name == "didResetContents") {
             return this.didResetContents;
+        } else if (name == "inputURL") {
+            return this.inputURL;
         } else if (name == "isCloning") {
             return this.isCloning;
         } else if (name == "isRepositoryAvailable") {
@@ -57,6 +63,7 @@ function GitContext() {
 
     this.selfCopy = function() {
         let that = new GitContext();
+        that.cfgURL = this.cfgURL;
         that.checkRepositoryAvailability = this.checkRepositoryAvailability;
         that.clone = this.clone;
         that.cloneError = this.cloneError;
@@ -64,6 +71,7 @@ function GitContext() {
         that.didClone = this.didClone;
         that.didLaunch = this.didLaunch;
         that.didResetContents = this.didResetContents;
+        that.inputURL = this.inputURL;
         that.isCloning = this.isCloning;
         that.isRepositoryAvailable = this.isRepositoryAvailable;
         that.resetContents = this.resetContents;
@@ -77,7 +85,9 @@ function GitContext() {
     };
 
     this.setField = function(name, value) {
-        if (name == "checkRepositoryAvailability") {
+        if (name == "cfgURL") {
+            this.cfgURL = value;
+        } else if (name == "checkRepositoryAvailability") {
             this.checkRepositoryAvailability = value;
         } else if (name == "clone") {
             this.clone = value;
@@ -91,6 +101,8 @@ function GitContext() {
             this.didLaunch = value;
         } else if (name == "didResetContents") {
             this.didResetContents = value;
+        } else if (name == "inputURL") {
+            this.inputURL = value;
         } else if (name == "isCloning") {
             this.isCloning = value;
         } else if (name == "isRepositoryAvailable") {
@@ -178,7 +190,7 @@ function GitComponent() {
         });
         let url = deId(GIT_REPO_URL);
         url.addEventListener("input", (e) => {
-            this.ctrl.set("url", url.value);
+            this.ctrl.set("inputURL", url.value);
         });
     };
 
@@ -191,6 +203,7 @@ function GitComponent() {
 
         this.ctrl.registerFieldCallback("clone", (c) => { (async() => {
             try {
+                print("ИГР git clone url:", c.url);
                 await git.clone({
                     corsProxy: GIT_PROXY,
                     dir: GIT_REPO_DIR,
@@ -247,6 +260,7 @@ function GitComponent() {
             gitShouldResetCloningState,
             gitShouldResetContents,
             gitShouldResetSelectedItemId,
+            gitShouldResetURL,
         ].forEach((f) => {
             this.ctrl.registerFunction(f);
         });
@@ -380,6 +394,26 @@ function gitShouldResetSelectedItemId(c) {
         let ids = sideSelectionIds(c.sideSelectedItemId);
         c.selectedItemId = ids[1];
         c.recentField = "selectedItemId";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Input URL changed
+// 2. Config URL has been loaded
+function gitShouldResetURL(c) {
+    if (c.recentField == "inputURL") {
+        c.url = c.inputURL;
+        c.recentField = "url";
+        return c;
+    }
+
+    if (c.recentField == "cfgURL") {
+        c.url = c.cfgURL;
+        c.recentField = "url";
         return c;
     }
 
