@@ -3,7 +3,6 @@
 function GitContext() {
     this._construct = function() {
         this.cfgContents = "";
-        this.cfgURL = "";
         this.checkRepositoryAvailability = false;
         this.clone = false;
         this.cloneError = "";
@@ -28,8 +27,6 @@ function GitContext() {
     this.field = function(name) {
         if (name == "cfgContents") {
             return this.cfgContents;
-        } else if (name == "cfgURL") {
-            return this.cfgURL;
         } else if (name == "checkRepositoryAvailability") {
             return this.checkRepositoryAvailability;
         } else if (name == "clone") {
@@ -70,7 +67,6 @@ function GitContext() {
     this.selfCopy = function() {
         let that = new GitContext();
         that.cfgContents = this.cfgContents;
-        that.cfgURL = this.cfgURL;
         that.checkRepositoryAvailability = this.checkRepositoryAvailability;
         that.clone = this.clone;
         that.cloneError = this.cloneError;
@@ -95,8 +91,6 @@ function GitContext() {
     this.setField = function(name, value) {
         if (name == "cfgContents") {
             this.cfgContents = value;
-        } else if (name == "cfgURL") {
-            this.cfgURL = value;
         } else if (name == "checkRepositoryAvailability") {
             this.checkRepositoryAvailability = value;
         } else if (name == "clone") {
@@ -136,6 +130,7 @@ function GitContext() {
 //<!-- Constants -->
 
 let GIT_CFG = "/.git/config";
+let GIT_CFG_URL_PREFIX = "url = ";
 let GIT_DOT_DIR = ".git";
 let GIT_PAGES = {
   0: `
@@ -243,7 +238,7 @@ function GitComponent() {
         });
 
         this.ctrl.registerFieldCallback("loadCfg", (c) => { (async() => {
-            let contents = await pfs().readFile(GIT_CFG);
+            let contents = await pfs().readFile(GIT_CFG, {encoding: "utf8"});
             this.ctrl.set("cfgContents", contents);
         })(); });
 
@@ -435,7 +430,7 @@ function gitShouldResetSelectedItemId(c) {
 
 // Conditions:
 // 1. Input URL changed
-// 2. Config URL has been loaded
+// 2. Config has been loaded
 function gitShouldResetURL(c) {
     if (c.recentField == "inputURL") {
         c.url = c.inputURL;
@@ -443,8 +438,8 @@ function gitShouldResetURL(c) {
         return c;
     }
 
-    if (c.recentField == "cfgURL") {
-        c.url = c.cfgURL;
+    if (c.recentField == "cfgContents") {
+        c.url = gitCfgURL(c.cfgContents);
         c.recentField = "url";
         return c;
     }
@@ -454,6 +449,21 @@ function gitShouldResetURL(c) {
 }
 
 //<!-- Other -->
+
+function gitCfgURL(contents) {
+    let lines = contents.split("\n");
+    for (let i in lines) {
+        let ln = lines[i];
+        let lnt = ln.trim();
+        // Find expected line
+        if (!lnt.startsWith(GIT_CFG_URL_PREFIX)) {
+            continue;
+        }
+        let prefixLen = GIT_CFG_URL_PREFIX.length;
+        return lnt.substring(prefixLen);
+    }
+    return "undefined-cfg-url";
+}
 
 // Make sure side selection is about Git items
 function gitIsSideSelectionRelevant(selectedItemId, sideId) {
