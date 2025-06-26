@@ -135,7 +135,7 @@ function GitContext() {
 
 //<!-- Constants -->
 
-let GIT_CFG = ".git/config";
+let GIT_CFG = "/.git/config";
 let GIT_DOT_DIR = ".git";
 let GIT_PAGES = {
   0: `
@@ -241,6 +241,11 @@ function GitComponent() {
         this.ctrl.registerFieldCallback("didResetContents", (c) => {
             this.resetEvents();
         });
+
+        this.ctrl.registerFieldCallback("loadCfg", (c) => { (async() => {
+            let contents = await pfs().readFile(GIT_CFG);
+            this.ctrl.set("cfgContents", contents);
+        })(); });
 
         this.ctrl.registerFieldCallback("resetContents", (c) => {
             let isCloningDisabled = c.isCloning ? "disabled" : "";
