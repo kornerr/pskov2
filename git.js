@@ -2,6 +2,7 @@
 
 function GitContext() {
     this._construct = function() {
+        this.cfgContents = "";
         this.cfgURL = "";
         this.checkRepositoryAvailability = false;
         this.clone = false;
@@ -13,6 +14,7 @@ function GitContext() {
         this.inputURL = "";
         this.isCloning = false;
         this.isRepositoryAvailable = false;
+        this.loadCfg = false;
         this.resetContents = false;
         this.selectedItemId = -1;
         this.sideId = -1;
@@ -24,9 +26,11 @@ function GitContext() {
     this._construct();
 
     this.field = function(name) {
-        if (name == "cfgURL") {
+        if (name == "cfgContents") {
+            return this.cfgContents;
+        } else if (name == "cfgURL") {
             return this.cfgURL;
-        } if (name == "checkRepositoryAvailability") {
+        } else if (name == "checkRepositoryAvailability") {
             return this.checkRepositoryAvailability;
         } else if (name == "clone") {
             return this.clone;
@@ -46,6 +50,8 @@ function GitContext() {
             return this.isCloning;
         } else if (name == "isRepositoryAvailable") {
             return this.isRepositoryAvailable;
+        } else if (name == "loadCfg") {
+            return this.loadCfg;
         } else if (name == "resetContents") {
             return this.resetContents;
         } else if (name == "selectedItemId") {
@@ -63,6 +69,7 @@ function GitContext() {
 
     this.selfCopy = function() {
         let that = new GitContext();
+        that.cfgContents = this.cfgContents;
         that.cfgURL = this.cfgURL;
         that.checkRepositoryAvailability = this.checkRepositoryAvailability;
         that.clone = this.clone;
@@ -74,6 +81,7 @@ function GitContext() {
         that.inputURL = this.inputURL;
         that.isCloning = this.isCloning;
         that.isRepositoryAvailable = this.isRepositoryAvailable;
+        that.loadCfg = this.loadCfg;
         that.resetContents = this.resetContents;
         that.selectedItemId = this.selectedItemId;
         that.sideId = this.sideId;
@@ -85,7 +93,9 @@ function GitContext() {
     };
 
     this.setField = function(name, value) {
-        if (name == "cfgURL") {
+        if (name == "cfgContents") {
+            this.cfgContents = value;
+        } else if (name == "cfgURL") {
             this.cfgURL = value;
         } else if (name == "checkRepositoryAvailability") {
             this.checkRepositoryAvailability = value;
@@ -107,6 +117,8 @@ function GitContext() {
             this.isCloning = value;
         } else if (name == "isRepositoryAvailable") {
             this.isRepositoryAvailable = value;
+        } else if (name == "loadCfg") {
+            this.loadCfg = value;
         } else if (name == "resetContents") {
             this.resetContents = value;
         } else if (name == "selectedItemId") {
@@ -123,6 +135,7 @@ function GitContext() {
 
 //<!-- Constants -->
 
+let GIT_CFG = ".git/config";
 let GIT_DOT_DIR = ".git";
 let GIT_PAGES = {
   0: `
@@ -257,6 +270,7 @@ function GitComponent() {
         [
             gitShouldCheckRepositoryAvailability,
             gitShouldClone,
+            gitShouldLoadCfg,
             gitShouldResetCloningState,
             gitShouldResetContents,
             gitShouldResetSelectedItemId,
@@ -320,6 +334,19 @@ function gitShouldClone(c) {
     ) {
         c.clone = true;
         c.recentField = "clone";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Did launch
+function gitShouldLoadCfg(c) {
+    if (c.recentField == "didLaunch") {
+        c.loadCfg = true;
+        c.recentField = "loadCfg";
         return c;
     }
 
