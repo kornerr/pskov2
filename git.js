@@ -211,7 +211,7 @@ function GitComponent() {
 
         this.ctrl.registerFieldCallback("clone", (c) => { (async() => {
             try {
-                print("ИГР git clone url:", c.url);
+                console.log("ИГР git clone url:", c.url);
                 await git.clone({
                     corsProxy: GIT_PROXY,
                     dir: GIT_REPO_DIR,
