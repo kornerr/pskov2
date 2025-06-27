@@ -2,6 +2,7 @@
 
 function GitContext() {
     this._construct = function() {
+        this.branch = "";
         this.cfgContents = "";
         this.checkRepositoryAvailability = false;
         this.clone = false;
@@ -14,6 +15,7 @@ function GitContext() {
         this.isCloning = false;
         this.isRepositoryAvailable = false;
         this.loadCfg = false;
+        this.resetBranch = false;
         this.resetContents = false;
         this.selectedItemId = -1;
         this.sideId = -1;
@@ -25,7 +27,9 @@ function GitContext() {
     this._construct();
 
     this.field = function(name) {
-        if (name == "cfgContents") {
+        if (name == "branch") {
+            return this.branch;
+        } else if (name == "cfgContents") {
             return this.cfgContents;
         } else if (name == "checkRepositoryAvailability") {
             return this.checkRepositoryAvailability;
@@ -49,6 +53,8 @@ function GitContext() {
             return this.isRepositoryAvailable;
         } else if (name == "loadCfg") {
             return this.loadCfg;
+        } else if (name == "resetBranch") {
+            return this.resetBranch;
         } else if (name == "resetContents") {
             return this.resetContents;
         } else if (name == "selectedItemId") {
@@ -66,6 +72,7 @@ function GitContext() {
 
     this.selfCopy = function() {
         let that = new GitContext();
+        that.branch = this.branch;
         that.cfgContents = this.cfgContents;
         that.checkRepositoryAvailability = this.checkRepositoryAvailability;
         that.clone = this.clone;
@@ -78,6 +85,7 @@ function GitContext() {
         that.isCloning = this.isCloning;
         that.isRepositoryAvailable = this.isRepositoryAvailable;
         that.loadCfg = this.loadCfg;
+        that.resetBranch = this.resetBranch;
         that.resetContents = this.resetContents;
         that.selectedItemId = this.selectedItemId;
         that.sideId = this.sideId;
@@ -89,7 +97,9 @@ function GitContext() {
     };
 
     this.setField = function(name, value) {
-        if (name == "cfgContents") {
+        if (name == "branch") {
+            this.branch = value;
+        } else if (name == "cfgContents") {
             this.cfgContents = value;
         } else if (name == "checkRepositoryAvailability") {
             this.checkRepositoryAvailability = value;
@@ -113,6 +123,8 @@ function GitContext() {
             this.isRepositoryAvailable = value;
         } else if (name == "loadCfg") {
             this.loadCfg = value;
+        } else if (name == "resetBranch") {
+            this.resetBranch = value;
         } else if (name == "resetContents") {
             this.resetContents = value;
         } else if (name == "selectedItemId") {
@@ -147,15 +159,15 @@ let GIT_PAGES = {
     </form>
     <form id="%GIT_ACTIVE_REPO%" class="uk-form-stacked" onclick="event.preventDefault();" %IS_REPOSITORY_AVAILABLE%>
         <div class="uk-margin">
-            <label class="uk-form-label" for="%GIT_ACTIVE_REPO_URL%">Cloned repository:</label>
+            <label class="uk-form-label" for="git-active-repo-url">Cloned repository:</label>
             <div class="uk-form-controls">
-                <input id="%GIT_ACTIVE_REPO_URL%" class="uk-input" type="text" value="%URL%" disabled>
+                <input id="git-active-repo-url" class="uk-input" type="text" value="%URL%" disabled>
             </div>
         </div>
         <div class="uk-margin">
-            <label class="uk-form-label" for="%GIT_ACTIVE_REPO_BRANCH%">Selected branch:</label>
+            <label class="uk-form-label" for="git-active-repo-branch">Current branch:</label>
             <div class="uk-form-controls">
-                <input id="%GIT_ACTIVE_REPO_BRANCH%" class="uk-input" type="text" value="??" disabled>
+                <input id="git-active-repo-branch" class="uk-input" type="text" value="%BRANCH%" disabled>
             </div>
         </div>
     </form>
@@ -211,7 +223,6 @@ function GitComponent() {
 
         this.ctrl.registerFieldCallback("clone", (c) => { (async() => {
             try {
-                console.log("ИГР git clone url:", c.url);
                 await git.clone({
                     corsProxy: GIT_PROXY,
                     dir: GIT_REPO_DIR,
@@ -242,11 +253,24 @@ function GitComponent() {
             this.ctrl.set("cfgContents", contents);
         })(); });
 
+        this.ctrl.registerFieldCallback("resetBranch", (c) => { (async() => {
+            try {
+                let name = await git.currentBranch({
+                    dir: GIT_REPO_DIR,
+                    fullname: false,
+                });
+                this.ctrl.set("branch", name);
+            } catch (e) {
+                this.ctrl.set("branchError", `${e}`);
+            }
+        })(); });
+
         this.ctrl.registerFieldCallback("resetContents", (c) => {
             let isCloningDisabled = c.isCloning ? "disabled" : "";
             let isCloningHidden = c.isRepositoryAvailable ? "hidden" : "";
             let isRepositoryAvailable = c.isRepositoryAvailable ? "" : "hidden";
             let contents = GIT_PAGES[c.selectedItemId]
+                .replaceAll("%BRANCH%", c.branch)
                 .replaceAll("%GIT_REPO%", GIT_REPO)
                 .replaceAll("%GIT_REPO_CLONE%", GIT_REPO_CLONE)
                 .replaceAll("%GIT_REPO_URL%", GIT_REPO_URL)
@@ -268,6 +292,7 @@ function GitComponent() {
 
     this.setupShoulds = function() {
         [
+            gitShouldResetBranch,
             gitShouldCheckRepositoryAvailability,
             gitShouldClone,
             gitShouldLoadCfg,
@@ -304,6 +329,29 @@ function GitComponent() {
 }
 
 //<!-- Shoulds -->
+
+// Conditions:
+// 1. Did clone repository
+// 2. Repository availability changed
+function gitShouldResetBranch(c) {
+    if (c.recentField == "didClone") {
+        c.resetBranch = true;
+        c.recentField = "resetBranch";
+        return c;
+    }
+
+    if (
+        c.recentField == "isRepositoryAvailable" &&
+        c.isRepositoryAvailable
+    ) {
+        c.resetBranch = true;
+        c.recentField = "resetBranch";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
 
 // Conditions:
 // 1. Did clone successfully
@@ -385,6 +433,7 @@ function gitShouldResetCloningState(c) {
 // 1. Selected side menu item
 // 2. Changed cloning state
 // 3. Repository availability changed while we are at the Repository menu item
+// 4. Branch name changed
 function gitShouldResetContents(c) {
     if (c.recentField == "selectedItemId") {
         c.resetContents = true;
@@ -400,6 +449,15 @@ function gitShouldResetContents(c) {
 
     if (
         c.recentField == "isRepositoryAvailable" &&
+        gitIsSideSelectionRelevant(c.sideSelectedItemId, c.sideId)
+    ) {
+        c.resetContents = true;
+        c.recentField = "resetContents";
+        return c;
+    }
+
+    if (
+        c.recentField == "branch" &&
         gitIsSideSelectionRelevant(c.sideSelectedItemId, c.sideId)
     ) {
         c.resetContents = true;
