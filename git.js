@@ -313,9 +313,6 @@ function GitComponent() {
             sideId,
             [
               "Repository",
-              "Commit",
-              "Push & pull",
-              "Browse files",
             ]
         );
 
