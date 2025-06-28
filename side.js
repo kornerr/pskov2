@@ -6,7 +6,7 @@ function sideCreateGroup(name) {
 }
 
 function sideCtrl() {
-    return window.sideMenu.ctrl;
+    return window.sideCmp.ctrl;
 }
 
 function sideDeleteGroup(id) {
@@ -34,10 +34,10 @@ function SideContext() {
     this._construct = function() {
         this.activeGroupId = -1;
         this.activeGroupTitles= [];
-        this.clickedItemId = "";
         this.createGroup = "";
         this.createdGroupId = -1;
         this.deleteGroup = -1;
+        this.didClickItemId = "";
         this.didLaunch = false;
         this.groupTitles = [];
         this.html = "";
@@ -52,14 +52,14 @@ function SideContext() {
             return this.activeGroupId;
         } else if (name == "activeGroupTitles") {
             return this.activeGroupTitles;
-        } else if (name == "clickedItemId") {
-            return this.clickedItemId;
         } else if (name == "createGroup") {
             return this.createGroup;
         } else if (name == "createdGroupId") {
             return this.createdGroupId;
         } else if (name == "deleteGroup") {
             return this.deleteGroup;
+        } else if (name == "didClickItemId") {
+            return this.didClickItemId;
         } else if (name == "didLaunch") {
             return this.didLaunch;
         } else if (name == "groupTitles") {
@@ -77,10 +77,10 @@ function SideContext() {
         let that = new SideContext();
         that.activeGroupId = this.activeGroupId;
         that.activeGroupTitles = this.activeGroupTitles
-        that.clickedItemId = this.clickedItemId;
         that.createGroup = this.createGroup;
         that.createdGroupId = this.createdGroupId;
         that.deleteGroup = this.deleteGroup;
+        that.didClickItemId = this.didClickItemId;
         that.didLaunch = this.didLaunch;
         that.groupTitles = this.groupTitles;
         that.html = this.html;
@@ -95,14 +95,14 @@ function SideContext() {
             this.activeGroupId = value;
         } else if (name == "activeGroupTitles") {
             this.activeGroupTitles = value;
-        } else if (name == "clickedItemId") {
-            this.clickedItemId = value;
         } else if (name == "createGroup") {
             this.createGroup = value;
         } else if (name == "createdGroupId") {
             this.createdGroupId = value;
         } else if (name == "deleteGroup") {
             this.deleteGroup = value;
+        } else if (name == "didClickItemId") {
+            this.didClickItemId = value;
         } else if (name == "didLaunch") {
             this.didLaunch = value;
         } else if (name == "groupTitles") {
@@ -140,7 +140,6 @@ function SideComponent() {
         // Dbg.
         this.ctrl.registerCallback((c) => {
             console.log(`ИГР SideC._construct ctrl key/value: '${c.recentField}'/'${c.field(c.recentField)}'`);
-
         });
         this.setupHTML();
         this.setupEvents();
@@ -166,7 +165,7 @@ function SideComponent() {
         let items = deId(SIDE_ITEMS_ID);
         items.addEventListener("click", (e) => {
             if (e.target.nodeName == "A") {
-                this.ctrl.set("clickedItemId", e.target.dataset.id);
+                this.ctrl.set("didClickItemId", e.target.dataset.id);
             }
         });
     };
@@ -202,8 +201,8 @@ function sideShouldResetSelectedItemId(c) {
         return c;
     }
 
-    if (c.recentField == "clickedItemId") {
-        c.selectedItemId = c.clickedItemId;
+    if (c.recentField == "didClickItemId") {
+        c.selectedItemId = c.didClickItemId;
         c.recentField = "selectedItemId";
         return c;
     }
@@ -308,5 +307,5 @@ function sideResetHTML(groupTitles) {
 
 //<!-- Setup -->
 
-window.sideMenu = new SideComponent();
-window.components.push(window.sideMenu);
+window.sideCmp = new SideComponent();
+window.components.push(window.sideCmp);
