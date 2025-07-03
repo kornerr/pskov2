@@ -146,7 +146,7 @@ let GIT_CFG_URL_PREFIX = "url = ";
 let GIT_DOT_DIR = ".git";
 let GIT_PAGES = {
   0: `
-<div class="uk-container uk-padding">
+<div class="uk-container uk-padding-small">
     <h1 class="uk-heading">Repository</h1>
     <form id="%GIT_REPO%" onclick="event.preventDefault();" %IS_CLONING_HIDDEN%>
         <div class="uk-margin">

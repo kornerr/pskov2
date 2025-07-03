@@ -4,6 +4,10 @@ function fs() {
     return window.fsCmp.fs;
 }
 
+function fsCtrl() {
+    return window.fsCmp.ctrl;
+}
+
 function pfs() {
     return window.fsCmp.pfs;
 }
@@ -21,6 +25,7 @@ function FSContext() {
         this.didWipe = false;
         this.htmlFiles = "";
         this.isGitHidden = true;
+        this.selectedFile = "";
         this.selectedItemId = -1;
         this.sideId = -1;
         this.sideSelectedItemId = -1;
@@ -51,6 +56,8 @@ function FSContext() {
             return this.htmlFiles;
         } else if (name == "isGitHidden") {
             return this.isGitHidden;
+        } else if (name == "selectedFile") {
+            return this.selectedFile;
         } else if (name == "selectedItemId") {
             return this.selectedItemId;
         } else if (name == "sideId") {
@@ -77,6 +84,7 @@ function FSContext() {
         that.didWipe = this.didWipe;
         that.htmlFiles = this.htmlFiles;
         that.isGitHidden = this.isGitHidden;
+        that.selectedFile = this.selectedFile;
         that.selectedItemId = this.selectedItemId;
         that.sideId = this.sideId;
         that.sideSelectedItemId = this.sideSelectedItemId;
@@ -107,6 +115,8 @@ function FSContext() {
             this.htmlFiles = value;
         } else if (name == "isGitHidden") {
             this.isGitHidden = value;
+        } else if (name == "selectedFile") {
+            this.selectedFile = value;
         } else if (name == "selectedItemId") {
             this.selectedItemId = value;
         } else if (name == "sideId") {
@@ -126,13 +136,12 @@ function FSContext() {
 //<!-- Constants -->
 
 let FS_FILES = `
-<table class='uk-table uk-table-hover uk-table-divider'>
+<table class="uk-table uk-table-hover uk-table-divider">
     <thead>
         <tr>
             <th>Name</th>
             <th>Type</th>
             <th>Size</th>
-            <th>Modified</th>
         </tr>
     </thead>
     <tbody>
@@ -142,12 +151,12 @@ let FS_FILES = `
 `;
 let FS_FILES_ITEM = `
 <tr>
-    <td>%PATH%</td>
+    <td><a onclick='fsCtrl().set("selectedFile", "%PATH%")'>%PATH%</a></td>
     <td>%TYPE%</td>
     <td>%SIZE%</td>
-    <td>%MTIME%</td>
 </tr>
 `;
+let FS_FILES_TABLE = "fs-files-table";
 let FS_HIDE_DIRS = "fs-hide-dirs";
 let FS_HIDE_GIT = "fs-hide-git";
 let FS_FILES_LOADING = "<p>Loading...</p>";
@@ -155,13 +164,13 @@ let FS_NAME = "pskov2-proto-fs";
 let FS_PANEL_MAIN = "panel-main";
 let FS_PAGES = {
     0: `
-<div class="uk-container uk-padding">
+<div class="uk-container uk-padding-small">
     <h1 class="uk-heading">Files</h1>
     %FILES%
 </div>
 `,
     1: `
-<div class="uk-container uk-padding">
+<div class="uk-container uk-padding-small">
     <h1 class="uk-heading">Cfg</h1>
     <form>
         <fieldset class="uk-fieldset">
@@ -359,10 +368,10 @@ function fsShouldResetHTMLFiles(c) {
             html += FS_FILES_ITEM
                 .replaceAll("%PATH%", item.path)
                 .replaceAll("%TYPE%", item.st.type)
-                .replaceAll("%SIZE%", item.st.size)
-                .replaceAll("%MTIME%", dt.toLocaleString());
+                .replaceAll("%SIZE%", item.st.size);
         }
-        c.htmlFiles = FS_FILES.replaceAll("%ITEMS%", html);
+        c.htmlFiles = FS_FILES
+            .replaceAll("%ITEMS%", html);
         c.recentField = "htmlFiles";
         return c;
     }
