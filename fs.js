@@ -141,6 +141,7 @@ function FSContext() {
 
 //<!-- Constants -->
 
+let FS_FILE_SIDE_ITEM = `<span uk-icon="file-text"></span>%NAME%`;
 let FS_FILES = `
 <table class="uk-table uk-table-hover uk-table-divider">
     <thead>
@@ -162,10 +163,10 @@ let FS_FILES_ITEM = `
     <td>%SIZE%</td>
 </tr>
 `;
+let FS_FILES_LOADING = "<p>Loading...</p>";
 let FS_FILES_TABLE = "fs-files-table";
 let FS_HIDE_DIRS = "fs-hide-dirs";
 let FS_HIDE_GIT = "fs-hide-git";
-let FS_FILES_LOADING = "<p>Loading...</p>";
 let FS_NAME = "pskov2-proto-fs";
 let FS_PANEL_MAIN = "panel-main";
 let FS_PAGES = {
@@ -410,9 +411,21 @@ function fsShouldResetSelectedItemId(c) {
 
 // Conditions:
 // 1. Did launch
+// 2. Selected file
 function fsShouldResetSideItems(c) {
+    let permanent = ["Files", "Cfg"];
+
     if (c.recentField == "didLaunch") {
-        c.sideItems = ["Files", "Cfg"];
+        c.sideItems = permanent;
+        c.recentField = "sideItems";
+        return c;
+    }
+
+    if (c.recentField == "selectedFile") {
+        var items = Array.from(permanent);
+        let fileItem = FS_FILE_SIDE_ITEM.replaceAll("%NAME%", c.selectedFile);
+        items.push(fileItem);
+        c.sideItems = items;
         c.recentField = "sideItems";
         return c;
     }
