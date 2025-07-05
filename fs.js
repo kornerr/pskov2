@@ -28,6 +28,7 @@ function FSContext() {
         this.selectedFile = "";
         this.selectedItemId = -1;
         this.sideId = -1;
+        this.sideItems = [];
         this.sideSelectedItemId = -1;
         this.startWiping = false;
         this.stopWiping = false;
@@ -62,6 +63,8 @@ function FSContext() {
             return this.selectedItemId;
         } else if (name == "sideId") {
             return this.sideId;
+        } else if (name == "sideItems") {
+            return this.sideItems;
         } else if (name == "sideSelectedItemId") {
             return this.sideSelectedItemId;
         } else if (name == "startWiping") {
@@ -87,6 +90,7 @@ function FSContext() {
         that.selectedFile = this.selectedFile;
         that.selectedItemId = this.selectedItemId;
         that.sideId = this.sideId;
+        that.sideItems = this.sideItems;
         that.sideSelectedItemId = this.sideSelectedItemId;
         that.startWiping = this.startWiping;
         that.stopWiping = this.stopWiping;
@@ -121,6 +125,8 @@ function FSContext() {
             this.selectedItemId = value;
         } else if (name == "sideId") {
             this.sideId = value;
+        } else if (name == "sideItems") {
+            this.sideItems = value;
         } else if (name == "sideSelectedItemId") {
             this.sideSelectedItemId = value;
         } else if (name == "startWiping") {
@@ -212,6 +218,7 @@ function FSComponent() {
 
         this.setupSideMenu();
         this.setupEffects();
+        this.setupEvents();
         this.setupShoulds();
 
         // Reset wiping flag.
@@ -273,6 +280,10 @@ function FSComponent() {
             })();
         });
 
+        this.ctrl.registerFieldCallback("sideItems", (c) => {
+            sideResetItemTitles(c.sideId, c.sideItems);
+        });
+
         this.ctrl.registerFieldCallback("startWiping", (c) => {
             localStorage.setItem(FS_WIPE_KEY, c.wipe);
             location.reload();
@@ -283,12 +294,19 @@ function FSComponent() {
         });
     };
 
+    this.setupEvents = function() {
+        window.addEventListener("load", (e) => {
+            this.ctrl.set("didLaunch", true);
+        });
+    };
+
     this.setupShoulds = function() {
         [
             fsShouldResetHiddenDirs,
             fsShouldResetHiddenGit,
             fsShouldResetHTMLFiles,
             fsShouldResetSelectedItemId,
+            fsShouldResetSideItems,
             fsShouldStartWiping,
             fsShouldStopWiping,
         ].forEach((f) => {
@@ -297,16 +315,9 @@ function FSComponent() {
     };
 
     this.setupSideMenu = function() {
-        // Register side menu group and items.
+        // Register side menu group.
         let sideId = sideCreateGroup("FS");
         this.ctrl.set("sideId", sideId);
-        sideResetItemTitles(
-            sideId,
-            [
-              "Files",
-              "Cfg",
-            ]
-        );
 
         // Track selections.
         sideCtrl().registerFieldCallback("selectedItemId", (c) => {
@@ -390,6 +401,19 @@ function fsShouldResetSelectedItemId(c) {
         let ids = sideSelectionIds(c.sideSelectedItemId);
         c.selectedItemId = ids[1];
         c.recentField = "selectedItemId";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Did launch
+function fsShouldResetSideItems(c) {
+    if (c.recentField == "didLaunch") {
+        c.sideItems = ["Files", "Cfg"];
+        c.recentField = "sideItems";
         return c;
     }
 
