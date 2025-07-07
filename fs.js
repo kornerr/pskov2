@@ -17,14 +17,15 @@ function pfs() {
 function FSContext() {
     this._construct = function() {
         this.areDirsHidden = true;
+        this.contents = "";
         this.didClickHideDirs = false;
         this.didClickHideGit = false;
         this.didClickWipe = false;
         this.didLaunch = false;
-        this.didResetContents = false;
         this.didWipe = false;
-        this.htmlFiles = "";
         this.isGitHidden = true;
+        this.isLoading = true;
+        this.reloadFiles = false;
         this.selectedFile = "";
         this.selectedItemId = -1;
         this.sideId = -1;
@@ -41,6 +42,8 @@ function FSContext() {
     this.field = function(name) {
         if (name == "areDirsHidden") {
             return this.areDirsHidden;
+        } else if (name == "contents") {
+            return this.contents;
         } else if (name == "didClickHideDirs") {
             return this.didClickHideDirs;
         } else if (name == "didClickHideGit") {
@@ -49,14 +52,14 @@ function FSContext() {
             return this.didClickWipe;
         } else if (name == "didLaunch") {
             return this.didLaunch;
-        } else if (name == "didResetContents") {
-            return this.didResetContents;
         } else if (name == "didWipe") {
             return this.didWipe;
-        } else if (name == "htmlFiles") {
-            return this.htmlFiles;
         } else if (name == "isGitHidden") {
             return this.isGitHidden;
+        } else if (name == "isLoading") {
+            return this.isLoading;
+        } else if (name == "reloadFiles") {
+            return this.reloadFiles;
         } else if (name == "selectedFile") {
             return this.selectedFile;
         } else if (name == "selectedItemId") {
@@ -79,14 +82,15 @@ function FSContext() {
     this.selfCopy = function() {
         let that = new FSContext();
         that.areDirsHidden = this.areDirsHidden;
+        that.contents = this.contents;
         that.didClickHideDirs = this.didClickHideDirs;
         that.didClickHideGit = this.didClickHideGit;
         that.didClickWipe = this.didClickWipe;
         that.didLaunch = this.didLaunch;
-        that.didResetContents = this.didResetContents;
         that.didWipe = this.didWipe;
-        that.htmlFiles = this.htmlFiles;
         that.isGitHidden = this.isGitHidden;
+        that.isLoading = this.isLoading;
+        that.reloadFiles = this.reloadFiles;
         that.selectedFile = this.selectedFile;
         that.selectedItemId = this.selectedItemId;
         that.sideId = this.sideId;
@@ -103,6 +107,8 @@ function FSContext() {
     this.setField = function(name, value) {
         if (name == "areDirsHidden") {
             this.areDirsHidden = value;
+        } else if (name == "contents") {
+            this.contents = value;
         } else if (name == "didClickHideDirs") {
             this.didClickHideDirs = value;
         } else if (name == "didClickHideGit") {
@@ -111,14 +117,14 @@ function FSContext() {
             this.didClickWipe = value;
         } else if (name == "didLaunch") {
             this.didLaunch = value;
-        } else if (name == "didResetContents") {
-            this.didResetContents = value;
         } else if (name == "didWipe") {
             this.didWipe  = value;
-        } else if (name == "htmlFiles") {
-            this.htmlFiles = value;
         } else if (name == "isGitHidden") {
             this.isGitHidden = value;
+        } else if (name == "isLoading") {
+            this.isLoading = value;
+        } else if (name == "reloadFiles") {
+            this.reloadFiles = value;
         } else if (name == "selectedFile") {
             this.selectedFile = value;
         } else if (name == "selectedItemId") {
@@ -141,30 +147,36 @@ function FSContext() {
 
 //<!-- Constants -->
 
-let FS_FILE_SIDE_ITEM = `<span uk-icon="file-text"></span>%NAME%`;
-let FS_FILES = `
-<table class="uk-table uk-table-hover uk-table-divider">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Size</th>
-        </tr>
-    </thead>
-    <tbody>
+let FS_CONTENTS_FILES = `
+<div class="uk-container uk-padding-small">
+    <h1 class="uk-heading">Files</h1>
+    <table class="uk-table uk-table-hover uk-table-divider">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Size</th>
+            </tr>
+        </thead>
+        <tbody>
 %ITEMS%
-    </tbody>
-</table>
+        </tbody>
+    </table>
+</div>
 `;
-let FS_FILES_ITEM = `
+let FS_CONTENTS_FILES_ITEM = `
 <tr>
     <td><a onclick='fsCtrl().set("selectedFile", "%PATH%")'>%PATH%</a></td>
     <td>%TYPE%</td>
     <td>%SIZE%</td>
 </tr>
 `;
-let FS_FILES_LOADING = "<p>Loading...</p>";
-let FS_FILES_TABLE = "fs-files-table";
+let FS_CONTENTS_LOADING = `
+<div class="uk-container uk-padding-small">
+    <p>Loading...</p>
+</div>
+`;
+let FS_FILE_SIDE_ITEM = `<span uk-icon="file-text"></span>%NAME%`;
 let FS_HIDE_DIRS = "fs-hide-dirs";
 let FS_HIDE_GIT = "fs-hide-git";
 let FS_NAME = "pskov2-proto-fs";
@@ -197,7 +209,10 @@ let FS_PAGES = {
     </form>
     <button id="%FS_WIPE%" class="uk-button uk-button-danger">Wipe file system and reload</button>
 </div>
-`
+`,
+    2: `
+    <p>TODO</p>
+`,
 };
 let FS_WIPE = "fs-wipe";
 let FS_WIPE_KEY = "fs-wipe";
@@ -252,10 +267,13 @@ function FSComponent() {
     };
 
     this.setupEffects = function() {
-        this.ctrl.registerFieldCallback("didResetContents", (c) => {
+        this.ctrl.registerFieldCallback("contents", (c) => {
+            let main = deId(FS_PANEL_MAIN);
+            main.innerHTML = c.contents;
             this.resetEvents();
         });
 
+        /*
         this.ctrl.registerFieldCallback("htmlFiles", (c) => {
             let contents = FS_PAGES[c.selectedItemId];
             let main = deId(FS_PANEL_MAIN);
@@ -271,8 +289,9 @@ function FSComponent() {
                 .replaceAll("%IS_GIT_HIDDEN%", isGitHidden);
             this.ctrl.set("didResetContents", true);
         });
+        */
 
-        this.ctrl.registerFieldCallback("selectedItemId", (c) => {
+        this.ctrl.registerFieldCallback("reloadFiles", (c) => {
             (async() => {
                 var files = [];
                 var st = await this.pfs.stat("/");
@@ -303,9 +322,11 @@ function FSComponent() {
 
     this.setupShoulds = function() {
         [
+            fsShouldReloadFiles,
+            fsShouldResetContents,
             fsShouldResetHiddenDirs,
             fsShouldResetHiddenGit,
-            fsShouldResetHTMLFiles,
+            fsShouldResetLoading,
             fsShouldResetSelectedItemId,
             fsShouldResetSideItems,
             fsShouldStartWiping,
@@ -330,6 +351,48 @@ function FSComponent() {
 }
 
 //<!-- Shoulds -->
+
+// Conditions:
+// 1. Started loading files
+function fsShouldReloadFiles(c) {
+    if (
+        c.recentField == "isLoading" &&
+        c.isLoading
+    ) {
+        c.reloadFiles = true;
+        c.recentField = "reloadFiles";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Started loading files
+// 2. Finished loading files
+function fsShouldResetContents(c) {
+    if (
+        c.recentField == "isLoading" &&
+        c.isLoading
+    ) {
+        c.contents = FS_CONTENTS_LOADING;
+        c.recentField = "contents";
+        return c;
+    }
+
+    if (
+        c.recentField == "isLoading" &&
+        !c.isLoading
+    ) {
+        c.contents = fsFilesHTML(c.areDirsHidden, c.isGitHidden, c.walkedFiles);
+        c.recentField = "contents";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
 
 // Conditions:
 // 1. Checkbox has been clicked
@@ -357,15 +420,10 @@ function fsShouldResetHiddenGit(c) {
     return c;
 }
 
+/*
 // Conditions:
-// 1. Files side menu item has been selected
-// 2. Files have been read
+// 2. Files have been walked through 
 function fsShouldResetHTMLFiles(c) {
-    if (c.recentField == "selectedItemId") {
-        c.htmlFiles = FS_FILES_LOADING;
-        c.recentField = "htmlFiles";
-        return c;
-    }
 
     if (c.recentField == "walkedFiles") {
         var html = "";
@@ -385,6 +443,29 @@ function fsShouldResetHTMLFiles(c) {
         c.htmlFiles = FS_FILES
             .replaceAll("%ITEMS%", html);
         c.recentField = "htmlFiles";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+*/
+
+// Conditions:
+// 1. `Files` side menu item has been selected
+function fsShouldResetLoading(c) {
+    if (
+        c.recentField == "selectedItemId" &&
+        c.selectedItemId == 0
+    ) {
+        c.isLoading = true;
+        c.recentField = "isLoading";
+        return c;
+    }
+
+    if (c.recentField == "walkedFiles") {
+        c.isLoading = false;
+        c.recentField = "isLoading";
         return c;
     }
 
@@ -462,10 +543,27 @@ function fsShouldStopWiping(c) {
 
 //<!-- Other -->
 
-function fsIsFileHidden(c, item) {
+function fsFilesHTML(areDirsHidden, isGitHidden, walkedFiles) {
+   var htmlItems = "";
+   for (let i in walkedFiles) {
+       let item = walkedFiles[i];
+       if (fsIsFileHidden(item, areDirsHidden, isGitHidden)) {
+           continue;
+       }
+
+       htmlItems += FS_CONTENTS_FILES_ITEM
+           .replaceAll("%PATH%", item.path)
+           .replaceAll("%TYPE%", item.st.type)
+           .replaceAll("%SIZE%", item.st.size);
+   }
+   return FS_CONTENTS_FILES
+       .replaceAll("%ITEMS%", htmlItems);
+}
+
+function fsIsFileHidden(item, areDirsHidden, isGitHidden) {
     // Ignore directories
     if (
-        c.areDirsHidden &&
+        areDirsHidden &&
         item.st.type == "dir"
     ) {
         return true;
@@ -473,7 +571,7 @@ function fsIsFileHidden(c, item) {
 
     // Ignore .git
     if (
-        c.isGitHidden &&
+        isGitHidden &&
         item.path.includes(".git")
     ) {
         return true;
