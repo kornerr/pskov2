@@ -26,8 +26,10 @@ function FSContext() {
         this.isGitHidden = true;
         this.isLoadingFile = false;
         this.isLoadingFiles = false;
+        this.reloadFile = false;
         this.reloadFiles = false;
         this.selectedFile = "";
+        this.selectedFileContents = "";
         this.selectedItemId = -1;
         this.sideId = -1;
         this.sideItems = [];
@@ -61,10 +63,14 @@ function FSContext() {
             return this.isLoadingFile;
         } else if (name == "isLoadingFiles") {
             return this.isLoadingFiles;
+        } else if (name == "reloadFile") {
+            return this.reloadFile;
         } else if (name == "reloadFiles") {
             return this.reloadFiles;
         } else if (name == "selectedFile") {
             return this.selectedFile;
+        } else if (name == "selectedFileContents") {
+            return this.selectedFileContents;
         } else if (name == "selectedItemId") {
             return this.selectedItemId;
         } else if (name == "sideId") {
@@ -94,8 +100,10 @@ function FSContext() {
         that.isGitHidden = this.isGitHidden;
         that.isLoadingFile = this.isLoadingFile;
         that.isLoadingFiles = this.isLoadingFiles;
+        that.reloadFile = this.reloadFile;
         that.reloadFiles = this.reloadFiles;
         that.selectedFile = this.selectedFile;
+        that.selectedFileContents = this.selectedFileContents;
         that.selectedItemId = this.selectedItemId;
         that.sideId = this.sideId;
         that.sideItems = this.sideItems;
@@ -129,10 +137,14 @@ function FSContext() {
             this.isLoadingFile = value;
         } else if (name == "isLoadingFiles") {
             this.isLoadingFiles = value;
+        } else if (name == "reloadFile") {
+            this.reloadFile = value;
         } else if (name == "reloadFiles") {
             this.reloadFiles = value;
         } else if (name == "selectedFile") {
             this.selectedFile = value;
+        } else if (name == "selectedFileContents") {
+            this.selectedFileContents = value;
         } else if (name == "selectedItemId") {
             this.selectedItemId = value;
         } else if (name == "sideId") {
@@ -153,7 +165,6 @@ function FSContext() {
 
 //<!-- Constants -->
 
-let FS_CFG_MENU_ID = 1;
 let FS_CONTENTS_CFG = `
 <div class="uk-container uk-padding-small">
     <h1 class="uk-heading">Cfg</h1>
@@ -208,6 +219,9 @@ let FS_CONTENTS_LOADING = `
 let FS_FILE_SIDE_ITEM = `<span uk-icon="file-text"></span>%NAME%`;
 let FS_HIDE_DIRS = "fs-hide-dirs";
 let FS_HIDE_GIT = "fs-hide-git";
+let FS_MENU_ID_FILE = 2;
+let FS_MENU_ID_FILES = 0;
+let FS_MENU_ID_CFG = 1;
 let FS_NAME = "pskov2-proto-fs";
 let FS_PANEL_MAIN = "panel-main";
 let FS_WIPE = "fs-wipe";
@@ -269,23 +283,12 @@ function FSComponent() {
             this.resetEvents();
         });
 
-        /*
-        this.ctrl.registerFieldCallback("htmlFiles", (c) => {
-            let contents = FS_PAGES[c.selectedItemId];
-            let main = deId(FS_PANEL_MAIN);
-
-            let isGitHidden = c.isGitHidden ? "checked" : "";
-            let areDirsHidden = c.areDirsHidden ? "checked" : "";
-            main.innerHTML = contents
-                .replaceAll("%ARE_DIRS_HIDDEN%", areDirsHidden)
-                .replaceAll("%FILES%", c.htmlFiles)
-                .replaceAll("%FS_HIDE_DIRS%", FS_HIDE_DIRS)
-                .replaceAll("%FS_HIDE_GIT%", FS_HIDE_GIT)
-                .replaceAll("%FS_WIPE%", FS_WIPE)
-                .replaceAll("%IS_GIT_HIDDEN%", isGitHidden);
-            this.ctrl.set("didResetContents", true);
+        this.ctrl.registerFieldCallback("reloadFile", (c) => {
+            (async() => {
+                let contents = await this.pfs.readFile(c.selectedFile, {encoding: "utf8"});
+                this.ctrl.set("selectedFileContents", contents);
+            })();
         });
-        */
 
         this.ctrl.registerFieldCallback("reloadFiles", (c) => {
             (async() => {
@@ -318,10 +321,12 @@ function FSComponent() {
 
     this.setupShoulds = function() {
         [
+            fsShouldReloadFile,
             fsShouldReloadFiles,
             fsShouldResetContents,
             fsShouldResetHiddenDirs,
             fsShouldResetHiddenGit,
+            fsShouldResetLoadingFile,
             fsShouldResetLoadingFiles,
             fsShouldResetSelectedItemId,
             fsShouldResetSideItems,
@@ -349,6 +354,22 @@ function FSComponent() {
 //<!-- Shoulds -->
 
 // Conditions:
+// 1. Started loading a file
+function fsShouldReloadFile(c) {
+    if (
+        c.recentField == "isLoadingFile" &&
+        c.isLoadingFile
+    ) {
+        c.reloadFile = true;
+        c.recentField = "reloadFile";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
 // 1. Started loading files
 function fsShouldReloadFiles(c) {
     if (
@@ -368,7 +389,8 @@ function fsShouldReloadFiles(c) {
 // 1. Started loading files
 // 2. Finished loading files
 // 3. Selected `Cfg`
-// 4. Selected file
+// 4. Started loading a file
+// 5. Finished loading a file
 function fsShouldResetContents(c) {
     if (
         c.recentField == "isLoadingFiles" &&
@@ -390,15 +412,27 @@ function fsShouldResetContents(c) {
 
     if (
         c.recentField == "selectedItemId" &&
-        c.selectedItemId == FS_CFG_MENU_ID
+        c.selectedItemId == FS_MENU_ID_CFG
     ) {
         c.contents = fsCfgHTML(c.areDirsHidden, c.isGitHidden);
         c.recentField = "contents";
         return c;
     }
 
-    if (c.recentField == "selectedFile") {
+    if (
+        c.recentField == "isLoadingFile" &&
+        c.isLoadingFile
+    ) {
         c.contents = FS_CONTENTS_LOADING;
+        c.recentField = "contents";
+        return c;
+    }
+
+    if (
+        c.recentField == "isLoadingFile" &&
+        !c.isLoadingFile
+    ) {
+        c.contents = c.selectedFileContents;
         c.recentField = "contents";
         return c;
     }
@@ -433,43 +467,41 @@ function fsShouldResetHiddenGit(c) {
     return c;
 }
 
-/*
 // Conditions:
-// 2. Files have been walked through 
-function fsShouldResetHTMLFiles(c) {
+// 1. Selected file in the file list
+// 2. Selected file in the side menu
+function fsShouldResetLoadingFile(c) {
+    if (c.recentField == "selectedFile") {
+        c.isLoadingFile = true;
+        c.recentField = "isLoadingFile";
+        return c;
+    }
 
-    if (c.recentField == "walkedFiles") {
-        var html = "";
-        for (let i in c.walkedFiles) {
-            let item = c.walkedFiles[i];
+    if (
+        c.recentField == "selectedItemId" &&
+        c.selectedItemId == FS_MENU_ID_FILE
+    ) {
+        c.isLoadingFile = true;
+        c.recentField = "isLoadingFile";
+        return c;
+    }
 
-            if (fsIsFileHidden(c, item)) {
-                continue;
-            }
-
-            let dt = new Date(item.st.mtimeMs);
-            html += FS_FILES_ITEM
-                .replaceAll("%PATH%", item.path)
-                .replaceAll("%TYPE%", item.st.type)
-                .replaceAll("%SIZE%", item.st.size);
-        }
-        c.htmlFiles = FS_FILES
-            .replaceAll("%ITEMS%", html);
-        c.recentField = "htmlFiles";
+    if (c.recentField == "selectedFileContents") {
+        c.isLoadingFile = false;
+        c.recentField = "isLoadingFile";
         return c;
     }
 
     c.recentField = "none";
     return c;
 }
-*/
 
 // Conditions:
 // 1. `Files` side menu item has been selected
 function fsShouldResetLoadingFiles(c) {
     if (
         c.recentField == "selectedItemId" &&
-        c.selectedItemId == 0
+        c.selectedItemId == FS_MENU_ID_FILES
     ) {
         c.isLoadingFiles = true;
         c.recentField = "isLoadingFiles";
