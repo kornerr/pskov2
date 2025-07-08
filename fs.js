@@ -147,6 +147,29 @@ function FSContext() {
 
 //<!-- Constants -->
 
+let FS_CFG_MENU_ID = 1;
+let FS_CONTENTS_CFG = `
+<div class="uk-container uk-padding-small">
+    <h1 class="uk-heading">Cfg</h1>
+    <form>
+        <fieldset class="uk-fieldset">
+            <div class="uk-margin">
+                <label>
+                    <input id="%FS_HIDE_DIRS%" class="uk-checkbox" type="checkbox" %ARE_DIRS_HIDDEN%>
+                    Hide directories
+                </label>
+            </div>
+            <div class="uk-margin">
+                <label>
+                    <input id="%FS_HIDE_GIT%" class="uk-checkbox" type="checkbox" %IS_GIT_HIDDEN%>
+                    Hide .git
+                </label>
+            </div>
+        </fieldset>
+    </form>
+    <button id="%FS_WIPE%" class="uk-button uk-button-danger">Wipe file system and reload</button>
+</div>
+`;
 let FS_CONTENTS_FILES = `
 <div class="uk-container uk-padding-small">
     <h1 class="uk-heading">Files</h1>
@@ -181,39 +204,6 @@ let FS_HIDE_DIRS = "fs-hide-dirs";
 let FS_HIDE_GIT = "fs-hide-git";
 let FS_NAME = "pskov2-proto-fs";
 let FS_PANEL_MAIN = "panel-main";
-let FS_PAGES = {
-    0: `
-<div class="uk-container uk-padding-small">
-    <h1 class="uk-heading">Files</h1>
-    %FILES%
-</div>
-`,
-    1: `
-<div class="uk-container uk-padding-small">
-    <h1 class="uk-heading">Cfg</h1>
-    <form>
-        <fieldset class="uk-fieldset">
-            <div class="uk-margin">
-                <label>
-                    <input id="%FS_HIDE_DIRS%" class="uk-checkbox" type="checkbox" %ARE_DIRS_HIDDEN%>
-                    Hide directories
-                </label>
-            </div>
-            <div class="uk-margin">
-                <label>
-                    <input id="%FS_HIDE_GIT%" class="uk-checkbox" type="checkbox" %IS_GIT_HIDDEN%>
-                    Hide .git
-                </label>
-            </div>
-        </fieldset>
-    </form>
-    <button id="%FS_WIPE%" class="uk-button uk-button-danger">Wipe file system and reload</button>
-</div>
-`,
-    2: `
-    <p>TODO</p>
-`,
-};
 let FS_WIPE = "fs-wipe";
 let FS_WIPE_KEY = "fs-wipe";
 
@@ -371,6 +361,7 @@ function fsShouldReloadFiles(c) {
 // Conditions:
 // 1. Started loading files
 // 2. Finished loading files
+// 3. Selected `Cfg`
 function fsShouldResetContents(c) {
     if (
         c.recentField == "isLoading" &&
@@ -386,6 +377,15 @@ function fsShouldResetContents(c) {
         !c.isLoading
     ) {
         c.contents = fsFilesHTML(c.areDirsHidden, c.isGitHidden, c.walkedFiles);
+        c.recentField = "contents";
+        return c;
+    }
+
+    if (
+        c.recentField == "selectedItemId" &&
+        c.selectedItemId == FS_CFG_MENU_ID
+    ) {
+        c.contents = fsCfgHTML(c.areDirsHidden, c.isGitHidden);
         c.recentField = "contents";
         return c;
     }
@@ -543,6 +543,19 @@ function fsShouldStopWiping(c) {
 
 //<!-- Other -->
 
+// Cfg page contents
+function fsCfgHTML(areDirsHidden, isGitHidden) {
+    let gitHidden = isGitHidden ? "checked" : "";
+    let dirsHidden = areDirsHidden ? "checked" : "";
+    return FS_CONTENTS_CFG
+        .replaceAll("%ARE_DIRS_HIDDEN%", dirsHidden)
+        .replaceAll("%FS_HIDE_DIRS%", FS_HIDE_DIRS)
+        .replaceAll("%FS_HIDE_GIT%", FS_HIDE_GIT)
+        .replaceAll("%FS_WIPE%", FS_WIPE)
+        .replaceAll("%IS_GIT_HIDDEN%", gitHidden);
+}
+
+// Files' page contents
 function fsFilesHTML(areDirsHidden, isGitHidden, walkedFiles) {
    var htmlItems = "";
    for (let i in walkedFiles) {
