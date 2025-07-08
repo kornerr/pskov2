@@ -24,7 +24,8 @@ function FSContext() {
         this.didLaunch = false;
         this.didWipe = false;
         this.isGitHidden = true;
-        this.isLoadingFiles = true;
+        this.isLoadingFile = false;
+        this.isLoadingFiles = false;
         this.reloadFiles = false;
         this.selectedFile = "";
         this.selectedItemId = -1;
@@ -56,6 +57,8 @@ function FSContext() {
             return this.didWipe;
         } else if (name == "isGitHidden") {
             return this.isGitHidden;
+        } else if (name == "isLoadingFile") {
+            return this.isLoadingFile;
         } else if (name == "isLoadingFiles") {
             return this.isLoadingFiles;
         } else if (name == "reloadFiles") {
@@ -89,6 +92,7 @@ function FSContext() {
         that.didLaunch = this.didLaunch;
         that.didWipe = this.didWipe;
         that.isGitHidden = this.isGitHidden;
+        that.isLoadingFile = this.isLoadingFile;
         that.isLoadingFiles = this.isLoadingFiles;
         that.reloadFiles = this.reloadFiles;
         that.selectedFile = this.selectedFile;
@@ -121,6 +125,8 @@ function FSContext() {
             this.didWipe  = value;
         } else if (name == "isGitHidden") {
             this.isGitHidden = value;
+        } else if (name == "isLoadingFile") {
+            this.isLoadingFile = value;
         } else if (name == "isLoadingFiles") {
             this.isLoadingFiles = value;
         } else if (name == "reloadFiles") {
@@ -316,7 +322,7 @@ function FSComponent() {
             fsShouldResetContents,
             fsShouldResetHiddenDirs,
             fsShouldResetHiddenGit,
-            fsShouldResetLoading,
+            fsShouldResetLoadingFiles,
             fsShouldResetSelectedItemId,
             fsShouldResetSideItems,
             fsShouldStartWiping,
@@ -392,7 +398,7 @@ function fsShouldResetContents(c) {
     }
 
     if (c.recentField == "selectedFile") {
-        c.contents = "TODO: file contents";
+        c.contents = FS_CONTENTS_LOADING;
         c.recentField = "contents";
         return c;
     }
@@ -460,7 +466,7 @@ function fsShouldResetHTMLFiles(c) {
 
 // Conditions:
 // 1. `Files` side menu item has been selected
-function fsShouldResetLoading(c) {
+function fsShouldResetLoadingFiles(c) {
     if (
         c.recentField == "selectedItemId" &&
         c.selectedItemId == 0
