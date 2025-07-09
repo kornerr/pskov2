@@ -299,6 +299,10 @@ function FSComponent() {
             })();
         });
 
+        this.ctrl.registerFieldCallback("selectedFileContents", (c) => {
+            sideSelectItem(c.sideId, FS_MENU_ID_FILE);
+        });
+
         this.ctrl.registerFieldCallback("sideItems", (c) => {
             sideResetItemTitles(c.sideId, c.sideItems);
         });

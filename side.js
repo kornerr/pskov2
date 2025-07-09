@@ -28,6 +28,11 @@ function sideSelectionIds(strId) {
     return result;
 }
 
+function sideSelectItem(groupId, itemId) {
+    sideCtrl().set("activeGroupId", groupId);
+    sideCtrl().set("selectItem", itemId);
+}
+
 //<!-- Context -->
 
 function SideContext() {
@@ -42,6 +47,7 @@ function SideContext() {
         this.groupTitles = [];
         this.html = "";
         this.selectedItemId = "";
+        this.selectItem = -1;
 
         this.recentField = "";
     };
@@ -68,6 +74,8 @@ function SideContext() {
             return this.html;
         } else if (name == "selectedItemId") {
             return this.selectedItemId;
+        } else if (name == "selectItem") {
+            return this.selectItem;
         }
 
         return "unknown-field-name";
@@ -85,6 +93,7 @@ function SideContext() {
         that.groupTitles = this.groupTitles;
         that.html = this.html;
         that.selectedItemId = this.selectedItemId;
+        that.selectItem = this.selectItem;
 
         that.recentField = this.recentField;
         return that;
@@ -111,6 +120,8 @@ function SideContext() {
             this.html = value;
         } else if (name == "selectedItemId") {
             this.selectedItemId = value;
+        } else if (name == "selectItem") {
+            this.selectItem = value;
         }
     };
 }
@@ -194,6 +205,7 @@ function SideComponent() {
 // Conditions:
 // 1. Did launch
 // 2. Item has been clicked
+// 3. Item selection has been explicitely requested and it differs
 function sideShouldResetSelectedItemId(c) {
     if (c.recentField == "didLaunch") {
         c.selectedItemId = "0/0";
@@ -203,6 +215,15 @@ function sideShouldResetSelectedItemId(c) {
 
     if (c.recentField == "clickedItemId") {
         c.selectedItemId = c.clickedItemId;
+        c.recentField = "selectedItemId";
+        return c;
+    }
+
+    if (
+        c.recentField == "selectItem" &&
+        c.selectedItemId != sideItemId(c.activeGroupId, c.selectItem)
+    ) {
+        c.selectedItemId = sideItemId(c.activeGroupId, c.selectItem);
         c.recentField = "selectedItemId";
         return c;
     }
