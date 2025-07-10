@@ -1,3 +1,11 @@
+#fs-editor {
+  height: calc(100% - 40px);
+  left: 240px;
+  position: fixed;
+  top: 40px;
+  width: calc(100% - 240px);
+}
+
 #panel-header {
   background-color: #f8f8f8;
   border-bottom: 1px solid lightgray;

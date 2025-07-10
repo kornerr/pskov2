@@ -187,6 +187,9 @@ let FS_CONTENTS_CFG = `
     <button id="%FS_WIPE%" class="uk-button uk-button-danger">Wipe file system and reload</button>
 </div>
 `;
+let FS_CONTENTS_EDITOR = `
+<div id="%EDITOR_ID%">%CONTENTS%</div>
+`;
 let FS_CONTENTS_FILES = `
 <div class="uk-container uk-padding-small">
     <h1 class="uk-heading">Files</h1>
@@ -216,6 +219,7 @@ let FS_CONTENTS_LOADING = `
     <p>Loading...</p>
 </div>
 `;
+let FS_EDITOR_ID = "fs-editor";
 let FS_FILE_SIDE_ITEM = `<span uk-icon="file-text"></span>%NAME%`;
 let FS_HIDE_DIRS = "fs-hide-dirs";
 let FS_HIDE_GIT = "fs-hide-git";
@@ -253,6 +257,14 @@ function FSComponent() {
         }
     };
 
+    this.resetEditor = function() {
+        let ed = deId(FS_EDITOR_ID);
+        if (ed != null) {
+            let editor = ace.edit(FS_EDITOR_ID);
+            editor.setReadOnly(true);
+        }
+    };
+
     this.resetEvents = function() {
         let hideDirs = deId(FS_HIDE_DIRS);
         if (hideDirs != null) {
@@ -280,6 +292,7 @@ function FSComponent() {
         this.ctrl.registerFieldCallback("contents", (c) => {
             let main = deId(FS_PANEL_MAIN);
             main.innerHTML = c.contents;
+            this.resetEditor();
             this.resetEvents();
         });
 
@@ -436,7 +449,9 @@ function fsShouldResetContents(c) {
         c.recentField == "isLoadingFile" &&
         !c.isLoadingFile
     ) {
-        c.contents = c.selectedFileContents;
+        c.contents = FS_CONTENTS_EDITOR
+            .replaceAll("%EDITOR_ID%", FS_EDITOR_ID)
+            .replaceAll("%CONTENTS%", c.selectedFileContents);
         c.recentField = "contents";
         return c;
     }
