@@ -2,7 +2,7 @@
 
 let WELCOME_PAGES = {
   0: `
-<div class="uk-container uk-padding">
+<div class="uk-container uk-padding-small">
     <h1 class="uk-heading">Welcome to PSKOV2</h1>
     <p>Time to generate static sites from web-browser!</p>
     <p>PSKOV 2 is a static site generator that works inside a web browser</p>
@@ -10,7 +10,7 @@ let WELCOME_PAGES = {
     <p>Though, by default, PSKOV 2 works directly with Git</p>
 </div>`,
   1: `
-<div class="uk-container uk-padding">
+<div class="uk-container uk-padding-small">
     <h1 class="uk-heading">PSKOV2 is not</h1>
     <ul>
       <li>It's not a WYSIWYG editor</li>
