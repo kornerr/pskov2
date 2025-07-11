@@ -188,7 +188,7 @@ let FS_CONTENTS_CFG = `
 </div>
 `;
 let FS_CONTENTS_EDITOR = `
-<div id="%EDITOR_ID%">%CONTENTS%</div>
+<div id="%EDITOR_ID%"></div>
 `;
 let FS_CONTENTS_FILES = `
 <div class="uk-container uk-padding-small">
@@ -257,12 +257,14 @@ function FSComponent() {
         }
     };
 
-    this.resetEditor = function() {
+    this.resetEditor = function(fileContents) {
         let ed = deId(FS_EDITOR_ID);
-        if (ed != null) {
-            let editor = ace.edit(FS_EDITOR_ID);
-            editor.setReadOnly(true);
+        if (ed == null) {
+            return;
         }
+        let editor = ace.edit(FS_EDITOR_ID);
+        editor.setReadOnly(true);
+        editor.session.setValue(fileContents);
     };
 
     this.resetEvents = function() {
@@ -292,7 +294,7 @@ function FSComponent() {
         this.ctrl.registerFieldCallback("contents", (c) => {
             let main = deId(FS_PANEL_MAIN);
             main.innerHTML = c.contents;
-            this.resetEditor();
+            this.resetEditor(c.selectedFileContents);
             this.resetEvents();
         });
 
@@ -450,8 +452,7 @@ function fsShouldResetContents(c) {
         !c.isLoadingFile
     ) {
         c.contents = FS_CONTENTS_EDITOR
-            .replaceAll("%EDITOR_ID%", FS_EDITOR_ID)
-            .replaceAll("%CONTENTS%", c.selectedFileContents);
+            .replaceAll("%EDITOR_ID%", FS_EDITOR_ID);
         c.recentField = "contents";
         return c;
     }
