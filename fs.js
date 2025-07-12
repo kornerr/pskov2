@@ -263,7 +263,6 @@ function FSComponent() {
             return;
         }
         let editor = ace.edit(FS_EDITOR_ID);
-        editor.setReadOnly(true);
         editor.session.setValue(fileContents);
     };
 
