@@ -11,12 +11,14 @@ function GitContext() {
         this.didClickPull = false;
         this.didClone = false;
         this.didLaunch = false;
+        this.didPull = false;
         this.didResetContents = false;
         this.inputURL = "";
         this.isCloning = false;
         this.isPulling = false;
         this.isRepositoryAvailable = false;
         this.loadCfg = false;
+        this.pullError = "";
         this.resetBranch = false;
         this.resetContents = false;
         this.selectedItemId = -1;
@@ -47,6 +49,8 @@ function GitContext() {
             return this.didClone;
         } else if (name == "didLaunch") {
             return this.didLaunch;
+        } else if (name == "didPull") {
+            return this.didPull;
         } else if (name == "didResetContents") {
             return this.didResetContents;
         } else if (name == "inputURL") {
@@ -59,6 +63,8 @@ function GitContext() {
             return this.isRepositoryAvailable;
         } else if (name == "loadCfg") {
             return this.loadCfg;
+        } else if (name == "pullError") {
+            return this.pullError;
         } else if (name == "resetBranch") {
             return this.resetBranch;
         } else if (name == "resetContents") {
@@ -87,12 +93,14 @@ function GitContext() {
         that.didClickPull = this.didClickPull;
         that.didClone = this.didClone;
         that.didLaunch = this.didLaunch;
+        that.didPull = this.didPull;
         that.didResetContents = this.didResetContents;
         that.inputURL = this.inputURL;
         that.isCloning = this.isCloning;
         that.isPulling = this.isPulling;
         that.isRepositoryAvailable = this.isRepositoryAvailable;
         that.loadCfg = this.loadCfg;
+        that.pullError = this.pullError;
         that.resetBranch = this.resetBranch;
         that.resetContents = this.resetContents;
         that.selectedItemId = this.selectedItemId;
@@ -123,6 +131,8 @@ function GitContext() {
             this.didClone = value;
         } else if (name == "didLaunch") {
             this.didLaunch = value;
+        } else if (name == "didPull") {
+            this.didPull = value;
         } else if (name == "didResetContents") {
             this.didResetContents = value;
         } else if (name == "inputURL") {
@@ -135,6 +145,8 @@ function GitContext() {
             this.isRepositoryAvailable = value;
         } else if (name == "loadCfg") {
             this.loadCfg = value;
+        } else if (name == "pullError") {
+            this.pullError = value;
         } else if (name == "resetBranch") {
             this.resetBranch = value;
         } else if (name == "resetContents") {
@@ -258,6 +270,18 @@ function GitComponent() {
             UIkit.modal.alert(html);
         });
 
+        this.ctrl.registerFieldCallback("didClickPull", (c) => { (async() => {
+            try {
+                await git.pull({
+                    corsProxy: GIT_PROXY,
+                    dir: GIT_REPO_DIR,
+                });
+                this.ctrl.set("didPull", true);
+            } catch (e) {
+                this.ctrl.set("pullError", `${e}`);
+            }
+        })(); });
+
         this.ctrl.registerFieldCallback("didClone", (c) => {
             reportSuccess("Finished cloning the repository");
         });
@@ -319,6 +343,7 @@ function GitComponent() {
             gitShouldLoadCfg,
             gitShouldResetCloningState,
             gitShouldResetContents,
+            gitShouldResetPullingState,
             gitShouldResetSelectedItemId,
             gitShouldResetURL,
         ].forEach((f) => {
@@ -449,9 +474,10 @@ function gitShouldResetCloningState(c) {
 
 // Conditions:
 // 1. Selected side menu item
-// 2. Changed cloning state
+// 2. Cloning state changed
 // 3. Repository availability changed while we are at the Repository menu item
 // 4. Branch name changed
+// 5. Pulling state changed
 function gitShouldResetContents(c) {
     if (c.recentField == "selectedItemId") {
         c.resetContents = true;
@@ -480,6 +506,40 @@ function gitShouldResetContents(c) {
     ) {
         c.resetContents = true;
         c.recentField = "resetContents";
+        return c;
+    }
+
+    if (c.recentField == "isPulling") {
+        c.resetContents = true;
+        c.recentField = "resetContents";
+        return c;
+    }
+
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Started pulling
+// 2. Finished pulling successfully
+// 3. Finished pulling with error
+function gitShouldResetPullingState(c) {
+    if (c.recentField == "didClickPull") {
+        c.isPulling = true;
+        c.recentField = "isPulling";
+        return c;
+    }
+
+    if (c.recentField == "didPull") {
+        c.isPulling = false;
+        c.recentField = "isPulling";
+        return c;
+    }
+
+    if (c.recentField == "pullError") {
+        c.isPulling = false;
+        c.recentField = "isPulling";
         return c;
     }
 
