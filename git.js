@@ -8,11 +8,13 @@ function GitContext() {
         this.clone = false;
         this.cloneError = "";
         this.didClickClone = false;
+        this.didClickPull = false;
         this.didClone = false;
         this.didLaunch = false;
         this.didResetContents = false;
         this.inputURL = "";
         this.isCloning = false;
+        this.isPulling = false;
         this.isRepositoryAvailable = false;
         this.loadCfg = false;
         this.resetBranch = false;
@@ -39,6 +41,8 @@ function GitContext() {
             return this.cloneError;
         } else if (name == "didClickClone") {
             return this.didClickClone;
+        } else if (name == "didClickPull") {
+            return this.didClickPull;
         } else if (name == "didClone") {
             return this.didClone;
         } else if (name == "didLaunch") {
@@ -49,6 +53,8 @@ function GitContext() {
             return this.inputURL;
         } else if (name == "isCloning") {
             return this.isCloning;
+        } else if (name == "isPulling") {
+            return this.isPulling;
         } else if (name == "isRepositoryAvailable") {
             return this.isRepositoryAvailable;
         } else if (name == "loadCfg") {
@@ -78,11 +84,13 @@ function GitContext() {
         that.clone = this.clone;
         that.cloneError = this.cloneError;
         that.didClickClone = this.didClickClone;
+        that.didClickPull = this.didClickPull;
         that.didClone = this.didClone;
         that.didLaunch = this.didLaunch;
         that.didResetContents = this.didResetContents;
         that.inputURL = this.inputURL;
         that.isCloning = this.isCloning;
+        that.isPulling = this.isPulling;
         that.isRepositoryAvailable = this.isRepositoryAvailable;
         that.loadCfg = this.loadCfg;
         that.resetBranch = this.resetBranch;
@@ -109,6 +117,8 @@ function GitContext() {
             this.cloneError = value;
         } else if (name == "didClickClone") {
             this.didClickClone = value;
+        } else if (name == "didClickPull") {
+            this.didClickPull = value;
         } else if (name == "didClone") {
             this.didClone = value;
         } else if (name == "didLaunch") {
@@ -119,6 +129,8 @@ function GitContext() {
             this.inputURL = value;
         } else if (name == "isCloning") {
             this.isCloning = value;
+        } else if (name == "isPulling") {
+            this.isPulling = value;
         } else if (name == "isRepositoryAvailable") {
             this.isRepositoryAvailable = value;
         } else if (name == "loadCfg") {
@@ -170,6 +182,7 @@ let GIT_PAGES = {
                 <input id="git-active-repo-branch" class="uk-input" type="text" value="%BRANCH%" disabled>
             </div>
         </div>
+        <button id="%GIT_REPO_PULL%" class="uk-button uk-button-default" %IS_PULLING_DISABLED%>Pull</button>
     </form>
 </div>
 `,
@@ -179,6 +192,7 @@ let GIT_PROXY = "https://vercel-cors-proxy-pi.vercel.app";
 let GIT_REPO = "repository";
 let GIT_REPO_CLONE = "repository-clone";
 let GIT_REPO_DIR = "/";
+let GIT_REPO_PULL = "repository-pull";
 let GIT_REPO_URL = "repository-url";
 let GIT_TEMPLATE_CLONE_ERROR = `
 <h2>Failed to clone the repository</h2>
@@ -207,6 +221,10 @@ function GitComponent() {
         let clone = deId(GIT_REPO_CLONE);
         clone.addEventListener("click", (e) => {
             this.ctrl.set("didClickClone", true);
+        });
+        let pull = deId(GIT_REPO_PULL);
+        pull.addEventListener("click", (e) => {
+            this.ctrl.set("didClickPull", true);
         });
         let url = deId(GIT_REPO_URL);
         url.addEventListener("input", (e) => {
@@ -268,14 +286,17 @@ function GitComponent() {
         this.ctrl.registerFieldCallback("resetContents", (c) => {
             let isCloningDisabled = c.isCloning ? "disabled" : "";
             let isCloningHidden = c.isRepositoryAvailable ? "hidden" : "";
+            let isPullingDisabled = c.isPulling ? "disabled" : "";
             let isRepositoryAvailable = c.isRepositoryAvailable ? "" : "hidden";
             let contents = GIT_PAGES[c.selectedItemId]
                 .replaceAll("%BRANCH%", c.branch)
                 .replaceAll("%GIT_REPO%", GIT_REPO)
                 .replaceAll("%GIT_REPO_CLONE%", GIT_REPO_CLONE)
+                .replaceAll("%GIT_REPO_PULL%", GIT_REPO_PULL)
                 .replaceAll("%GIT_REPO_URL%", GIT_REPO_URL)
                 .replaceAll("%IS_CLONING_DISABLED%", isCloningDisabled)
                 .replaceAll("%IS_CLONING_HIDDEN%", isCloningHidden)
+                .replaceAll("%IS_PULLING_DISABLED%", isPullingDisabled)
                 .replaceAll("%IS_REPOSITORY_AVAILABLE%", isRepositoryAvailable)
                 .replaceAll("%URL%", c.url);
             let main = deId(GIT_PANEL_MAIN);
