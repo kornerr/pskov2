@@ -283,7 +283,11 @@ function GitComponent() {
         })(); });
 
         this.ctrl.registerFieldCallback("didClone", (c) => {
-            reportSuccess("Finished cloning the repository");
+            reportSuccess("Git: Finished cloning");
+        });
+
+        this.ctrl.registerFieldCallback("didPull", (c) => {
+            reportSuccess("Git: Finished pulling");
         });
 
         this.ctrl.registerFieldCallback("didResetContents", (c) => {
