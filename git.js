@@ -17,6 +17,8 @@ function GitContext() {
         this.didPull = false;
         this.didResetContents = false;
         this.inputURL = "";
+        this.isCheckingOut = false;
+        this.isCheckoutVisible = false;
         this.isCloning = false;
         this.isPulling = false;
         this.isRepositoryAvailable = false;
@@ -66,6 +68,10 @@ function GitContext() {
             return this.didResetContents;
         } else if (name == "inputURL") {
             return this.inputURL;
+        } else if (name == "isCheckingOut") {
+            return this.isCheckingOut;
+        } else if (name == "isCheckoutVisible") {
+            return this.isCheckoutVisible;
         } else if (name == "isCloning") {
             return this.isCloning;
         } else if (name == "isPulling") {
@@ -114,6 +120,8 @@ function GitContext() {
         that.didPull = this.didPull;
         that.didResetContents = this.didResetContents;
         that.inputURL = this.inputURL;
+        that.isCheckingOut = this.isCheckingOut;
+        that.isCheckoutVisible = this.isCheckoutVisible;
         that.isCloning = this.isCloning;
         that.isPulling = this.isPulling;
         that.isRepositoryAvailable = this.isRepositoryAvailable;
@@ -163,6 +171,10 @@ function GitContext() {
             this.didResetContents = value;
         } else if (name == "inputURL") {
             this.inputURL = value;
+        } else if (name == "isCheckingOut") {
+            this.isCheckingOut = value;
+        } else if (name == "isCheckoutVisible") {
+            this.isCheckoutVisible = value;
         } else if (name == "isCloning") {
             this.isCloning = value;
         } else if (name == "isPulling") {
@@ -231,6 +243,7 @@ let GIT_PAGES = {
                 </select>
             </div>
         </div>
+        <button id="%GIT_REPO_CHECKOUT%" class="uk-button uk-button-default" %IS_CHECKOUT_ENABLED% %IS_CHECKOUT_VISIBLE%>Checkout</button>
         <button id="%GIT_REPO_PULL%" class="uk-button uk-button-default" %IS_PULLING_DISABLED%>Pull</button>
     </form>
 </div>
@@ -240,6 +253,7 @@ let GIT_PANEL_MAIN = "panel-main";
 let GIT_PROXY = "https://vercel-cors-proxy-pi.vercel.app";
 let GIT_REPO = "repository";
 let GIT_REPO_BRANCH = "repository-branch";
+let GIT_REPO_CHECKOUT = "repository-checkout";
 let GIT_REPO_CLONE = "repository-clone";
 let GIT_REPO_DIR = "/";
 let GIT_REPO_PULL = "repository-pull";
@@ -378,6 +392,8 @@ function GitComponent() {
         })(); });
 
         this.ctrl.registerFieldCallback("resetContents", (c) => {
+            let isCheckoutEnabled = c.isCheckingOut ? "disabled" : "";
+            let isCheckoutVisible = c.isCheckoutVisible ? "" : "hidden";
             let isCloningDisabled = c.isCloning ? "disabled" : "";
             let isCloningHidden = c.isRepositoryAvailable ? "hidden" : "";
             let isPullingDisabled = c.isPulling ? "disabled" : "";
@@ -387,9 +403,12 @@ function GitComponent() {
                 .replaceAll("%BRANCHES%", branches)
                 .replaceAll("%GIT_REPO%", GIT_REPO)
                 .replaceAll("%GIT_REPO_BRANCH%", GIT_REPO_BRANCH)
+                .replaceAll("%GIT_REPO_CHECKOUT%", GIT_REPO_CHECKOUT)
                 .replaceAll("%GIT_REPO_CLONE%", GIT_REPO_CLONE)
                 .replaceAll("%GIT_REPO_PULL%", GIT_REPO_PULL)
                 .replaceAll("%GIT_REPO_URL%", GIT_REPO_URL)
+                .replaceAll("%IS_CHECKOUT_ENABLED%", isCheckoutEnabled)
+                .replaceAll("%IS_CHECKOUT_VISIBLE%", isCheckoutVisible)
                 .replaceAll("%IS_CLONING_DISABLED%", isCloningDisabled)
                 .replaceAll("%IS_CLONING_HIDDEN%", isCloningHidden)
                 .replaceAll("%IS_PULLING_DISABLED%", isPullingDisabled)
@@ -414,6 +433,7 @@ function GitComponent() {
             gitShouldCheckRepositoryAvailability,
             gitShouldClone,
             gitShouldLoadCfg,
+            gitShouldResetCheckoutVisibility,
             gitShouldResetCloningState,
             gitShouldResetContents,
             gitShouldResetPullingState,
@@ -532,6 +552,60 @@ function gitShouldLoadCfg(c) {
 }
 
 // Conditions:
+// 1. Selected branch changed and it differs from the checked out one
+// 2. Selected branch changed to the checked out one
+// 3. Checked out branch changed
+// 4. TODO Reset when we simply did nothing after selecting an option
+function gitShouldResetCheckoutVisibility(c) {
+    if (
+        c.recentField == "selectedBranch" &&
+        c.selectedBranch != c.branch && 
+        !c.isCheckoutVisible
+    ) {
+        c.isCheckoutVisible = true;
+        c.recentField = "isCheckoutVisible";
+        return c;
+    }
+
+    if (
+        c.recentField == "selectedBranch" &&
+        c.selectedBranch == c.branch &&
+        c.isCheckoutVisible
+    ) {
+        c.isCheckoutVisible = false;
+        c.recentField = "isCheckoutVisible";
+        return c;
+    }
+
+
+    if (
+        c.recentField = "branch" &&
+        c.selectedBranch == c.branch &&
+        c.isCheckoutVisible
+    ) {
+        c.isCheckoutVisible = false;
+        c.recentField = "isCheckoutVisible";
+        return c;
+    }
+
+
+    if (c.recentField == "didClone") {
+        c.isCloning = false;
+        c.recentField = "isCloning";
+        return c;
+    }
+
+    if (c.recentField == "cloneError") {
+        c.isCloning = false;
+        c.recentField = "isCloning";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
 // 1. Started cloning
 // 2. Finished cloning successfully
 // 3. Finished cloning with error
@@ -564,6 +638,7 @@ function gitShouldResetCloningState(c) {
 // 3. Repository availability changed while we are at the Repository menu item
 // 4. Branches changed
 // 5. Pulling state changed
+// 6. Branch was selected to check out
 function gitShouldResetContents(c) {
     if (c.recentField == "selectedItemId") {
         c.resetContents = true;
@@ -600,7 +675,14 @@ function gitShouldResetContents(c) {
         c.recentField = "resetContents";
         return c;
     }
+    /*
 
+    if (c.recentField == "selectedBranch") {
+        c.resetContents = true;
+        c.recentField = "resetContents";
+        return c;
+    }
+    */
 
     c.recentField = "none";
     return c;
