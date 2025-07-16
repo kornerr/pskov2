@@ -3,6 +3,9 @@
 function GitContext() {
     this._construct = function() {
         this.branch = "";
+        this.branchError = "";
+        this.branches = [];
+        this.branchesError = "";
         this.cfgContents = "";
         this.checkRepositoryAvailability = false;
         this.clone = false;
@@ -20,7 +23,9 @@ function GitContext() {
         this.loadCfg = false;
         this.pullError = "";
         this.resetBranch = false;
+        this.resetBranches = false;
         this.resetContents = false;
+        this.selectedBranch = "";
         this.selectedItemId = -1;
         this.sideId = -1;
         this.sideSelectedItemId = -1;
@@ -33,6 +38,12 @@ function GitContext() {
     this.field = function(name) {
         if (name == "branch") {
             return this.branch;
+        } else if (name == "branchError") {
+            return this.branchError;
+        } else if (name == "branches") {
+            return this.branches;
+        } else if (name == "branchesError") {
+            return this.branchesError;
         } else if (name == "cfgContents") {
             return this.cfgContents;
         } else if (name == "checkRepositoryAvailability") {
@@ -67,8 +78,12 @@ function GitContext() {
             return this.pullError;
         } else if (name == "resetBranch") {
             return this.resetBranch;
+        } else if (name == "resetBranches") {
+            return this.resetBranches;
         } else if (name == "resetContents") {
             return this.resetContents;
+        } else if (name == "selectedBranch") {
+            return this.selectedBranch;
         } else if (name == "selectedItemId") {
             return this.selectedItemId;
         } else if (name == "sideId") {
@@ -85,6 +100,9 @@ function GitContext() {
     this.selfCopy = function() {
         let that = new GitContext();
         that.branch = this.branch;
+        that.branchError = this.branchError;
+        that.branches = this.branches;
+        that.branchesError = this.branchesError;
         that.cfgContents = this.cfgContents;
         that.checkRepositoryAvailability = this.checkRepositoryAvailability;
         that.clone = this.clone;
@@ -102,7 +120,9 @@ function GitContext() {
         that.loadCfg = this.loadCfg;
         that.pullError = this.pullError;
         that.resetBranch = this.resetBranch;
+        that.resetBranches = this.resetBranches;
         that.resetContents = this.resetContents;
+        that.selectedBranch = this.selectedBranch;
         that.selectedItemId = this.selectedItemId;
         that.sideId = this.sideId;
         that.sideSelectedItemId = this.sideSelectedItemId;
@@ -115,6 +135,12 @@ function GitContext() {
     this.setField = function(name, value) {
         if (name == "branch") {
             this.branch = value;
+        } else if (name == "branchError") {
+            this.branchError = value;
+        } else if (name == "branches") {
+            this.branches = value;
+        } else if (name == "branchesError") {
+            this.branchesError = value;
         } else if (name == "cfgContents") {
             this.cfgContents = value;
         } else if (name == "checkRepositoryAvailability") {
@@ -149,8 +175,12 @@ function GitContext() {
             this.pullError = value;
         } else if (name == "resetBranch") {
             this.resetBranch = value;
+        } else if (name == "resetBranches") {
+            this.resetBranches = value;
         } else if (name == "resetContents") {
             this.resetContents = value;
+        } else if (name == "selectedBranch") {
+            this.selectedBranch = value;
         } else if (name == "selectedItemId") {
             this.selectedItemId = value;
         } else if (name == "sideId") {
@@ -168,6 +198,11 @@ function GitContext() {
 let GIT_CFG = "/.git/config";
 let GIT_CFG_URL_PREFIX = "url = ";
 let GIT_DOT_DIR = ".git";
+let GIT_ERROR_BRANCH = "Failed to get current branch";
+let GIT_ERROR_BRANCHES = "Failed to get remote branches";
+let GIT_ERROR_CLONE = "Failed to clone the repository";
+let GIT_ERROR_PULL = "Failed to pull the repository";
+let GIT_ORIGIN = "origin";
 let GIT_PAGES = {
   0: `
 <div class="uk-container uk-padding-small">
@@ -191,7 +226,9 @@ let GIT_PAGES = {
         <div class="uk-margin">
             <label class="uk-form-label" for="git-active-repo-branch">Current branch:</label>
             <div class="uk-form-controls">
-                <input id="git-active-repo-branch" class="uk-input" type="text" value="%BRANCH%" disabled>
+                <select id="%GIT_REPO_BRANCH%" class="uk-select">
+                    %BRANCHES%
+                </select>
             </div>
         </div>
         <button id="%GIT_REPO_PULL%" class="uk-button uk-button-default" %IS_PULLING_DISABLED%>Pull</button>
@@ -202,13 +239,13 @@ let GIT_PAGES = {
 let GIT_PANEL_MAIN = "panel-main";
 let GIT_PROXY = "https://vercel-cors-proxy-pi.vercel.app";
 let GIT_REPO = "repository";
+let GIT_REPO_BRANCH = "repository-branch";
 let GIT_REPO_CLONE = "repository-clone";
 let GIT_REPO_DIR = "/";
 let GIT_REPO_PULL = "repository-pull";
 let GIT_REPO_URL = "repository-url";
-let GIT_TEMPLATE_CLONE_ERROR = `
-<h2>Failed to clone the repository</h2>
-<p>Error: '%ERROR%'</p>
+let GIT_TEMPLATE_BRANCHES_ITEM = `
+<option %SELECTED%>%BRANCH%</option>
 `;
 
 //<!-- Component -->
@@ -230,6 +267,11 @@ function GitComponent() {
     };
 
     this.resetEvents = function() {
+        let branch = deId(GIT_REPO_BRANCH);
+        branch.addEventListener("change", (e) => {
+            this.ctrl.set("selectedBranch", e.target.value);
+        });
+
         let clone = deId(GIT_REPO_CLONE);
         clone.addEventListener("click", (e) => {
             this.ctrl.set("didClickClone", true);
@@ -245,6 +287,14 @@ function GitComponent() {
     };
 
     this.setupEffects = function() {
+        this.ctrl.registerFieldCallback("branchError", (c) => {
+            reportFailure(GIT_ERROR_BRANCH, c.branchError);
+        });
+
+        this.ctrl.registerFieldCallback("branchesError", (c) => {
+            reportFailure(GIT_ERROR_BRANCHES, c.branchesError);
+        });
+
         this.ctrl.registerFieldCallback("checkRepositoryAvailability", (c) => { (async() => {
             let files = await pfs().readdir(GIT_REPO_DIR);
             let hasRepo = files.includes(GIT_DOT_DIR);
@@ -265,9 +315,7 @@ function GitComponent() {
         })(); });
 
         this.ctrl.registerFieldCallback("cloneError", (c) => {
-            let html = GIT_TEMPLATE_CLONE_ERROR
-                .replaceAll("%ERROR%", c.cloneError);
-            UIkit.modal.alert(html);
+            reportFailure(GIT_ERROR_CLONE, c.cloneError);
         });
 
         this.ctrl.registerFieldCallback("didClickPull", (c) => { (async() => {
@@ -299,6 +347,10 @@ function GitComponent() {
             this.ctrl.set("cfgContents", contents);
         })(); });
 
+        this.ctrl.registerFieldCallback("pullError", (c) => {
+            reportFailure(GIT_ERROR_PULL, c.pullError);
+        });
+
         this.ctrl.registerFieldCallback("resetBranch", (c) => { (async() => {
             try {
                 let name = await git.currentBranch({
@@ -311,14 +363,30 @@ function GitComponent() {
             }
         })(); });
 
+        this.ctrl.registerFieldCallback("resetBranches", (c) => { (async() => {
+            try {
+                let names = await git.listBranches({
+                    dir: GIT_REPO_DIR,
+                    remote: GIT_ORIGIN,
+                });
+                // Exclude `HEAD` because it's not a branch
+                names = names.filter((name) => name != "HEAD");
+                this.ctrl.set("branches", names);
+            } catch (e) {
+                this.ctrl.set("branchesError", `${e}`);
+            }
+        })(); });
+
         this.ctrl.registerFieldCallback("resetContents", (c) => {
             let isCloningDisabled = c.isCloning ? "disabled" : "";
             let isCloningHidden = c.isRepositoryAvailable ? "hidden" : "";
             let isPullingDisabled = c.isPulling ? "disabled" : "";
             let isRepositoryAvailable = c.isRepositoryAvailable ? "" : "hidden";
+            let branches = gitBranchesHTML(c.branches, c.branch);
             let contents = GIT_PAGES[c.selectedItemId]
-                .replaceAll("%BRANCH%", c.branch)
+                .replaceAll("%BRANCHES%", branches)
                 .replaceAll("%GIT_REPO%", GIT_REPO)
+                .replaceAll("%GIT_REPO_BRANCH%", GIT_REPO_BRANCH)
                 .replaceAll("%GIT_REPO_CLONE%", GIT_REPO_CLONE)
                 .replaceAll("%GIT_REPO_PULL%", GIT_REPO_PULL)
                 .replaceAll("%GIT_REPO_URL%", GIT_REPO_URL)
@@ -342,6 +410,7 @@ function GitComponent() {
     this.setupShoulds = function() {
         [
             gitShouldResetBranch,
+            gitShouldResetBranches,
             gitShouldCheckRepositoryAvailability,
             gitShouldClone,
             gitShouldLoadCfg,
@@ -393,6 +462,19 @@ function gitShouldResetBranch(c) {
     ) {
         c.resetBranch = true;
         c.recentField = "resetBranch";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Did reset branch
+function gitShouldResetBranches(c) {
+    if (c.recentField == "branch") {
+        c.resetBranches = true;
+        c.recentField = "resetBranches";
         return c;
     }
 
@@ -480,7 +562,7 @@ function gitShouldResetCloningState(c) {
 // 1. Selected side menu item
 // 2. Cloning state changed
 // 3. Repository availability changed while we are at the Repository menu item
-// 4. Branch name changed
+// 4. Branches changed
 // 5. Pulling state changed
 function gitShouldResetContents(c) {
     if (c.recentField == "selectedItemId") {
@@ -505,7 +587,7 @@ function gitShouldResetContents(c) {
     }
 
     if (
-        c.recentField == "branch" &&
+        c.recentField == "branches" &&
         gitIsSideSelectionRelevant(c.sideSelectedItemId, c.sideId)
     ) {
         c.resetContents = true;
@@ -589,6 +671,18 @@ function gitShouldResetURL(c) {
 }
 
 //<!-- Other -->
+
+function gitBranchesHTML(items, selectedItem) {
+    var o = "";
+    for (i in items) {
+        let name = items[i];
+        let selected = (name == selectedItem) ? "selected" : "";
+        o += GIT_TEMPLATE_BRANCHES_ITEM
+            .replaceAll("%BRANCH%", name)
+            .replaceAll("%SELECTED%", selected);
+    }
+    return o;
+}
 
 function gitCfgURL(contents) {
     let lines = contents.split("\n");
