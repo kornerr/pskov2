@@ -7,9 +7,11 @@ function GitContext() {
         this.branches = [];
         this.branchesError = "";
         this.cfgContents = "";
+        this.checkoutError = "";
         this.checkRepositoryAvailability = false;
         this.clone = false;
         this.cloneError = "";
+        this.didCheckout = false;
         this.didClickClone = false;
         this.didClickPull = false;
         this.didClone = false;
@@ -18,7 +20,6 @@ function GitContext() {
         this.didResetContents = false;
         this.inputURL = "";
         this.isCheckingOut = false;
-        this.isCheckoutVisible = false;
         this.isCloning = false;
         this.isPulling = false;
         this.isRepositoryAvailable = false;
@@ -48,12 +49,16 @@ function GitContext() {
             return this.branchesError;
         } else if (name == "cfgContents") {
             return this.cfgContents;
+        } else if (name == "checkoutError") {
+            return this.checkoutError;
         } else if (name == "checkRepositoryAvailability") {
             return this.checkRepositoryAvailability;
         } else if (name == "clone") {
             return this.clone;
         } else if (name == "cloneError") {
             return this.cloneError;
+        } else if (name == "didCheckout") {
+            return this.didCheckout;
         } else if (name == "didClickClone") {
             return this.didClickClone;
         } else if (name == "didClickPull") {
@@ -70,8 +75,6 @@ function GitContext() {
             return this.inputURL;
         } else if (name == "isCheckingOut") {
             return this.isCheckingOut;
-        } else if (name == "isCheckoutVisible") {
-            return this.isCheckoutVisible;
         } else if (name == "isCloning") {
             return this.isCloning;
         } else if (name == "isPulling") {
@@ -110,9 +113,11 @@ function GitContext() {
         that.branches = this.branches;
         that.branchesError = this.branchesError;
         that.cfgContents = this.cfgContents;
+        that.checkoutError = this.checkoutError;
         that.checkRepositoryAvailability = this.checkRepositoryAvailability;
         that.clone = this.clone;
         that.cloneError = this.cloneError;
+        that.didCheckout = this.didCheckout;
         that.didClickClone = this.didClickClone;
         that.didClickPull = this.didClickPull;
         that.didClone = this.didClone;
@@ -121,7 +126,6 @@ function GitContext() {
         that.didResetContents = this.didResetContents;
         that.inputURL = this.inputURL;
         that.isCheckingOut = this.isCheckingOut;
-        that.isCheckoutVisible = this.isCheckoutVisible;
         that.isCloning = this.isCloning;
         that.isPulling = this.isPulling;
         that.isRepositoryAvailable = this.isRepositoryAvailable;
@@ -151,12 +155,16 @@ function GitContext() {
             this.branchesError = value;
         } else if (name == "cfgContents") {
             this.cfgContents = value;
+        } else if (name == "checkoutError") {
+            this.checkoutError = value;
         } else if (name == "checkRepositoryAvailability") {
             this.checkRepositoryAvailability = value;
         } else if (name == "clone") {
             this.clone = value;
         } else if (name == "cloneError") {
             this.cloneError = value;
+        } else if (name == "didCheckout") {
+            this.didCheckout = value;
         } else if (name == "didClickClone") {
             this.didClickClone = value;
         } else if (name == "didClickPull") {
@@ -173,8 +181,6 @@ function GitContext() {
             this.inputURL = value;
         } else if (name == "isCheckingOut") {
             this.isCheckingOut = value;
-        } else if (name == "isCheckoutVisible") {
-            this.isCheckoutVisible = value;
         } else if (name == "isCloning") {
             this.isCloning = value;
         } else if (name == "isPulling") {
@@ -212,6 +218,7 @@ let GIT_CFG_URL_PREFIX = "url = ";
 let GIT_DOT_DIR = ".git";
 let GIT_ERROR_BRANCH = "Failed to get current branch";
 let GIT_ERROR_BRANCHES = "Failed to get remote branches";
+let GIT_ERROR_CHECKOUT = "Failed to checkout the branch";
 let GIT_ERROR_CLONE = "Failed to clone the repository";
 let GIT_ERROR_PULL = "Failed to pull the repository";
 let GIT_ORIGIN = "origin";
@@ -238,12 +245,11 @@ let GIT_PAGES = {
         <div class="uk-margin">
             <label class="uk-form-label" for="git-active-repo-branch">Current branch:</label>
             <div class="uk-form-controls">
-                <select id="%GIT_REPO_BRANCH%" class="uk-select">
+                <select id="%GIT_REPO_BRANCH%" class="uk-select" %IS_CHECKING_OUT_ENABLED%>
                     %BRANCHES%
                 </select>
             </div>
         </div>
-        <button id="%GIT_REPO_CHECKOUT%" class="uk-button uk-button-default" %IS_CHECKOUT_ENABLED% %IS_CHECKOUT_VISIBLE%>Checkout</button>
         <button id="%GIT_REPO_PULL%" class="uk-button uk-button-default" %IS_PULLING_DISABLED%>Pull</button>
     </form>
 </div>
@@ -309,6 +315,10 @@ function GitComponent() {
             reportFailure(GIT_ERROR_BRANCHES, c.branchesError);
         });
 
+        this.ctrl.registerFieldCallback("checkoutError", (c) => {
+            reportFailure(GIT_ERROR_CHECKOUT, c.checkoutError);
+        });
+
         this.ctrl.registerFieldCallback("checkRepositoryAvailability", (c) => { (async() => {
             let files = await pfs().readdir(GIT_REPO_DIR);
             let hasRepo = files.includes(GIT_DOT_DIR);
@@ -330,6 +340,10 @@ function GitComponent() {
 
         this.ctrl.registerFieldCallback("cloneError", (c) => {
             reportFailure(GIT_ERROR_CLONE, c.cloneError);
+        });
+
+        this.ctrl.registerFieldCallback("didCheckout", (c) => {
+            reportSuccess("Git: Finished checking out");
         });
 
         this.ctrl.registerFieldCallback("didClickPull", (c) => { (async() => {
@@ -392,13 +406,13 @@ function GitComponent() {
         })(); });
 
         this.ctrl.registerFieldCallback("resetContents", (c) => {
-            let isCheckoutEnabled = c.isCheckingOut ? "disabled" : "";
-            let isCheckoutVisible = c.isCheckoutVisible ? "" : "hidden";
+            let isCheckingOutEnabled = c.isCheckingOut ? "disabled" : "";
             let isCloningDisabled = c.isCloning ? "disabled" : "";
             let isCloningHidden = c.isRepositoryAvailable ? "hidden" : "";
             let isPullingDisabled = c.isPulling ? "disabled" : "";
             let isRepositoryAvailable = c.isRepositoryAvailable ? "" : "hidden";
-            let branches = gitBranchesHTML(c.branches, c.branch);
+            let branch = c.isCheckingOut ? c.selectedBranch : c.branch;
+            let branches = gitBranchesHTML(c.branches, branch);
             let contents = GIT_PAGES[c.selectedItemId]
                 .replaceAll("%BRANCHES%", branches)
                 .replaceAll("%GIT_REPO%", GIT_REPO)
@@ -407,8 +421,7 @@ function GitComponent() {
                 .replaceAll("%GIT_REPO_CLONE%", GIT_REPO_CLONE)
                 .replaceAll("%GIT_REPO_PULL%", GIT_REPO_PULL)
                 .replaceAll("%GIT_REPO_URL%", GIT_REPO_URL)
-                .replaceAll("%IS_CHECKOUT_ENABLED%", isCheckoutEnabled)
-                .replaceAll("%IS_CHECKOUT_VISIBLE%", isCheckoutVisible)
+                .replaceAll("%IS_CHECKING_OUT_ENABLED%", isCheckingOutEnabled)
                 .replaceAll("%IS_CLONING_DISABLED%", isCloningDisabled)
                 .replaceAll("%IS_CLONING_HIDDEN%", isCloningHidden)
                 .replaceAll("%IS_PULLING_DISABLED%", isPullingDisabled)
@@ -418,6 +431,18 @@ function GitComponent() {
             main.innerHTML = contents;
             this.ctrl.set("didResetContents", true);
         });
+
+        this.ctrl.registerFieldCallback("selectedBranch", (c) => { (async() => {
+            try {
+                await git.checkout({
+                    dir: GIT_REPO_DIR,
+                    ref: c.selectedBranch,
+                });
+                this.ctrl.set("didCheckout", true);
+            } catch (e) {
+                this.ctrl.set("checkoutError", `${e}`);
+            }
+        })(); });
     };
 
     this.setupEvents = function() {
@@ -433,7 +458,7 @@ function GitComponent() {
             gitShouldCheckRepositoryAvailability,
             gitShouldClone,
             gitShouldLoadCfg,
-            gitShouldResetCheckoutVisibility,
+            gitShouldResetCheckingOutState,
             gitShouldResetCloningState,
             gitShouldResetContents,
             gitShouldResetPullingState,
@@ -469,6 +494,7 @@ function GitComponent() {
 // Conditions:
 // 1. Did clone repository
 // 2. Repository availability changed
+// 3. Did checkout
 function gitShouldResetBranch(c) {
     if (c.recentField == "didClone") {
         c.resetBranch = true;
@@ -480,6 +506,12 @@ function gitShouldResetBranch(c) {
         c.recentField == "isRepositoryAvailable" &&
         c.isRepositoryAvailable
     ) {
+        c.resetBranch = true;
+        c.recentField = "resetBranch";
+        return c;
+    }
+
+    if (c.recentField == "didCheckout") {
         c.resetBranch = true;
         c.recentField = "resetBranch";
         return c;
@@ -553,51 +585,27 @@ function gitShouldLoadCfg(c) {
 
 // Conditions:
 // 1. Selected branch changed and it differs from the checked out one
-// 2. Selected branch changed to the checked out one
-// 3. Checked out branch changed
-// 4. TODO Reset when we simply did nothing after selecting an option
-function gitShouldResetCheckoutVisibility(c) {
+// 2. Finished checking out successfully
+// 3. Finished checking out with error
+function gitShouldResetCheckingOutState(c) {
     if (
         c.recentField == "selectedBranch" &&
-        c.selectedBranch != c.branch && 
-        !c.isCheckoutVisible
+        c.selectedBranch != c.branch
     ) {
-        c.isCheckoutVisible = true;
-        c.recentField = "isCheckoutVisible";
+        c.isCheckingOut = true;
+        c.recentField = "isCheckingOut";
         return c;
     }
 
-    if (
-        c.recentField == "selectedBranch" &&
-        c.selectedBranch == c.branch &&
-        c.isCheckoutVisible
-    ) {
-        c.isCheckoutVisible = false;
-        c.recentField = "isCheckoutVisible";
+    if (c.recentField == "didCheckout") {
+        c.isCheckingOut = false;
+        c.recentField = "isCheckingOut";
         return c;
     }
 
-
-    if (
-        c.recentField = "branch" &&
-        c.selectedBranch == c.branch &&
-        c.isCheckoutVisible
-    ) {
-        c.isCheckoutVisible = false;
-        c.recentField = "isCheckoutVisible";
-        return c;
-    }
-
-
-    if (c.recentField == "didClone") {
-        c.isCloning = false;
-        c.recentField = "isCloning";
-        return c;
-    }
-
-    if (c.recentField == "cloneError") {
-        c.isCloning = false;
-        c.recentField = "isCloning";
+    if (c.recentField == "checkoutError") {
+        c.isCheckingOut = false;
+        c.recentField = "isCheckingOut";
         return c;
     }
 
@@ -638,7 +646,7 @@ function gitShouldResetCloningState(c) {
 // 3. Repository availability changed while we are at the Repository menu item
 // 4. Branches changed
 // 5. Pulling state changed
-// 6. Branch was selected to check out
+// 6. Checking out state changed
 function gitShouldResetContents(c) {
     if (c.recentField == "selectedItemId") {
         c.resetContents = true;
@@ -675,14 +683,12 @@ function gitShouldResetContents(c) {
         c.recentField = "resetContents";
         return c;
     }
-    /*
 
-    if (c.recentField == "selectedBranch") {
+    if (c.recentField == "isCheckingOut") {
         c.resetContents = true;
         c.recentField = "resetContents";
         return c;
     }
-    */
 
     c.recentField = "none";
     return c;
