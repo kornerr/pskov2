@@ -16,8 +16,10 @@ function pfs() {
 
 function FSContext() {
     this._construct = function() {
+        this.addFile = "";
         this.areDirsHidden = true;
         this.contents = "";
+        this.didClickAddFile = false;
         this.didClickHideDirs = false;
         this.didClickHideGit = false;
         this.didClickWipe = false;
@@ -43,10 +45,14 @@ function FSContext() {
     this._construct();
 
     this.field = function(name) {
-        if (name == "areDirsHidden") {
+        if (name == "addFile") {
+            return this.addFile;
+        } else if (name == "areDirsHidden") {
             return this.areDirsHidden;
         } else if (name == "contents") {
             return this.contents;
+        } else if (name == "didClickAddFile") {
+            return this.didClickAddFile;
         } else if (name == "didClickHideDirs") {
             return this.didClickHideDirs;
         } else if (name == "didClickHideGit") {
@@ -90,8 +96,10 @@ function FSContext() {
 
     this.selfCopy = function() {
         let that = new FSContext();
+        that.addFile = this.addFile;
         that.areDirsHidden = this.areDirsHidden;
         that.contents = this.contents;
+        that.didClickAddFile = this.didClickAddFile;
         that.didClickHideDirs = this.didClickHideDirs;
         that.didClickHideGit = this.didClickHideGit;
         that.didClickWipe = this.didClickWipe;
@@ -117,10 +125,14 @@ function FSContext() {
     };
 
     this.setField = function(name, value) {
-        if (name == "areDirsHidden") {
+        if (name == "addFile") {
+            this.addFile = value;
+        } else if (name == "areDirsHidden") {
             this.areDirsHidden = value;
         } else if (name == "contents") {
             this.contents = value;
+        } else if (name == "didClickAddFile") {
+            this.didClickAddFile = value;
         } else if (name == "didClickHideDirs") {
             this.didClickHideDirs = value;
         } else if (name == "didClickHideGit") {
@@ -165,6 +177,7 @@ function FSContext() {
 
 //<!-- Constants -->
 
+let FS_ADD = "fs-add";
 let FS_CONTENTS_CFG = `
 <div class="uk-container uk-padding-small">
     <h1 class="uk-heading">Cfg</h1>
@@ -193,6 +206,7 @@ let FS_CONTENTS_EDITOR = `
 let FS_CONTENTS_FILES = `
 <div class="uk-container uk-padding-small">
     <h1 class="uk-heading">Files</h1>
+    <button id="%FS_ADD%" class="uk-button uk-button-default">Add</button>
     <table class="uk-table uk-table-hover uk-table-divider">
         <thead>
             <tr>
@@ -267,6 +281,13 @@ function FSComponent() {
     };
 
     this.resetEvents = function() {
+        let add = deId(FS_ADD);
+        if (add != null) {
+            add.addEventListener("click", (e) => {
+                this.ctrl.set("didClickAddFile", true);
+            });
+        }
+
         let hideDirs = deId(FS_HIDE_DIRS);
         if (hideDirs != null) {
             hideDirs.addEventListener("click", (e) => {
@@ -295,6 +316,12 @@ function FSComponent() {
             main.innerHTML = c.contents;
             this.resetEditor(c.selectedFileContents);
             this.resetEvents();
+        });
+
+        this.ctrl.registerFieldCallback("didClickAddFile", (c) => {
+            UIkit.modal.prompt("File path:", "/full/path/to/file.txt").then((path) => {
+                this.ctrl.set("addFile", path);
+            });
         });
 
         this.ctrl.registerFieldCallback("reloadFile", (c) => {
@@ -634,6 +661,7 @@ function fsFilesHTML(areDirsHidden, isGitHidden, walkedFiles) {
            .replaceAll("%SIZE%", item.st.size);
    }
    return FS_CONTENTS_FILES
+       .replaceAll("%FS_ADD%", FS_ADD)
        .replaceAll("%ITEMS%", htmlItems);
 }
 
