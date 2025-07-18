@@ -523,8 +523,15 @@ function gitShouldResetBranch(c) {
 
 // Conditions:
 // 1. Did reset branch
+// 2. Did finish pulling
 function gitShouldResetBranches(c) {
     if (c.recentField == "branch") {
+        c.resetBranches = true;
+        c.recentField = "resetBranches";
+        return c;
+    }
+
+    if (c.recentField == "didPull") {
         c.resetBranches = true;
         c.recentField = "resetBranches";
         return c;
