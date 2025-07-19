@@ -18,7 +18,9 @@ function FSContext() {
     this._construct = function() {
         this.addFile = "";
         this.areDirsHidden = true;
+        this.clickedFile = "";
         this.contents = "";
+        this.didAddFile = false;
         this.didClickAddFile = false;
         this.didClickHideDirs = false;
         this.didClickHideGit = false;
@@ -49,8 +51,12 @@ function FSContext() {
             return this.addFile;
         } else if (name == "areDirsHidden") {
             return this.areDirsHidden;
+        } else if (name == "clickedFile") {
+            return this.clickedFile;
         } else if (name == "contents") {
             return this.contents;
+        } else if (name == "didAddFile") {
+            return this.didAddFile;
         } else if (name == "didClickAddFile") {
             return this.didClickAddFile;
         } else if (name == "didClickHideDirs") {
@@ -98,7 +104,9 @@ function FSContext() {
         let that = new FSContext();
         that.addFile = this.addFile;
         that.areDirsHidden = this.areDirsHidden;
+        that.clickedFile = this.clickedFile;
         that.contents = this.contents;
+        that.didAddFile = this.didAddFile;
         that.didClickAddFile = this.didClickAddFile;
         that.didClickHideDirs = this.didClickHideDirs;
         that.didClickHideGit = this.didClickHideGit;
@@ -129,8 +137,12 @@ function FSContext() {
             this.addFile = value;
         } else if (name == "areDirsHidden") {
             this.areDirsHidden = value;
+        } else if (name == "clickedFile") {
+            this.clickedFile = value;
         } else if (name == "contents") {
             this.contents = value;
+        } else if (name == "didAddFile") {
+            this.didAddFile = value;
         } else if (name == "didClickAddFile") {
             this.didClickAddFile = value;
         } else if (name == "didClickHideDirs") {
@@ -223,7 +235,7 @@ let FS_CONTENTS_FILES = `
 `;
 let FS_CONTENTS_FILES_ITEM = `
 <tr>
-    <td><a onclick='fsCtrl().set("selectedFile", "%PATH%")'>%PATH%</a></td>
+    <td><a onclick='fsCtrl().set("clickedFile", "%PATH%")'>%PATH%</a></td>
     <td>%TYPE%</td>
     <td>%SIZE%</td>
 </tr>
@@ -311,6 +323,14 @@ function FSComponent() {
     };
 
     this.setupEffects = function() {
+        this.ctrl.registerFieldCallback("addFile", (c) => {
+            (async() => {
+                let contents = "";
+                await this.pfs.writeFile(c.addFile, contents, {encoding: "utf8"});
+                this.ctrl.set("didAddFile", true);
+            })();
+        });
+
         this.ctrl.registerFieldCallback("contents", (c) => {
             let main = deId(FS_PANEL_MAIN);
             main.innerHTML = c.contents;
@@ -373,6 +393,7 @@ function FSComponent() {
             fsShouldResetHiddenGit,
             fsShouldResetLoadingFile,
             fsShouldResetLoadingFiles,
+            fsShouldResetSelectedFile,
             fsShouldResetSelectedItemId,
             fsShouldResetSideItems,
             fsShouldStartWiping,
@@ -557,6 +578,26 @@ function fsShouldResetLoadingFiles(c) {
     if (c.recentField == "walkedFiles") {
         c.isLoadingFiles = false;
         c.recentField = "isLoadingFiles";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Clicked file in the list of files
+// 2. Added new file
+function fsShouldResetSelectedFile(c) {
+    if (c.recentField == "clickedFile") {
+        c.selectedFile = c.clickedFile;
+        c.recentField = "selectedFile";
+        return c;
+    }
+
+    if (c.recentField == "didAddFile") {
+        c.selectedFile = c.addFile;
+        c.recentField = "selectedFile";
         return c;
     }
 
