@@ -192,7 +192,6 @@ function FSContext() {
 let FS_ADD = "fs-add";
 let FS_CONTENTS_CFG = `
 <div class="uk-container uk-padding-small">
-    <h1 class="uk-heading">Cfg</h1>
     <form>
         <fieldset class="uk-fieldset">
             <div class="uk-margin">
@@ -212,13 +211,16 @@ let FS_CONTENTS_CFG = `
     <button id="%FS_WIPE%" class="uk-button uk-button-danger">Wipe file system and reload</button>
 </div>
 `;
+let FS_CONTENTS_CFG_HEADER = `
+<div class="vert-align">
+    <strong class="uk-padding-small">Cfg</strong>
+</div>
+`;
 let FS_CONTENTS_EDITOR = `
 <div id="%EDITOR_ID%"></div>
 `;
 let FS_CONTENTS_FILES = `
 <div class="uk-container uk-padding-small">
-    <h1 class="uk-heading">Files</h1>
-    <button id="%FS_ADD%" class="uk-button uk-button-default">Add</button>
     <table class="uk-table uk-table-hover uk-table-divider">
         <thead>
             <tr>
@@ -231,6 +233,12 @@ let FS_CONTENTS_FILES = `
 %ITEMS%
         </tbody>
     </table>
+</div>
+`;
+let FS_CONTENTS_FILES_HEADER = `
+<div class="vert-align">
+    <strong class="uk-padding-small">Files</strong>
+    <button id="%FS_ADD%" class="uk-button uk-button-small uk-button-default">Add</button>
 </div>
 `;
 let FS_CONTENTS_FILES_ITEM = `
@@ -254,6 +262,7 @@ let FS_MENU_ID_FILES = 0;
 let FS_MENU_ID_CFG = 1;
 let FS_NAME = "pskov2-proto-fs";
 let FS_PANEL_MAIN = "panel-main";
+let FS_PANEL_MAIN_HEADER = "panel-main-header";
 let FS_WIPE = "fs-wipe";
 let FS_WIPE_KEY = "fs-wipe";
 
@@ -322,6 +331,17 @@ function FSComponent() {
         }
     };
 
+    this.resetHeader = function(itemId) {
+        var contents = "";
+        if (itemId == FS_MENU_ID_CFG) {
+            contents = FS_CONTENTS_CFG_HEADER;
+        } else if (itemId == FS_MENU_ID_FILES) {
+            contents = FS_CONTENTS_FILES_HEADER;
+        }
+        let header = deId(FS_PANEL_MAIN_HEADER);
+        header.innerHTML = contents;
+    }
+
     this.setupEffects = function() {
         this.ctrl.registerFieldCallback("addFile", (c) => {
             (async() => {
@@ -336,6 +356,7 @@ function FSComponent() {
             main.innerHTML = c.contents;
             this.resetEditor(c.selectedFileContents);
             this.resetEvents();
+            this.resetHeader(c.selectedItemId);
         });
 
         this.ctrl.registerFieldCallback("didClickAddFile", (c) => {
