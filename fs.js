@@ -238,7 +238,7 @@ let FS_CONTENTS_FILES = `
 let FS_CONTENTS_FILES_HEADER = `
 <div class="vert-align">
     <strong class="uk-padding-small">Files</strong>
-    <button id="%FS_ADD%" class="uk-button uk-button-small uk-button-default">Add</button>
+    <button id="%FS_ADD%" class="uk-button uk-button-small uk-button-default">➕</button>
 </div>
 `;
 let FS_CONTENTS_FILES_ITEM = `
@@ -336,7 +336,8 @@ function FSComponent() {
         if (itemId == FS_MENU_ID_CFG) {
             contents = FS_CONTENTS_CFG_HEADER;
         } else if (itemId == FS_MENU_ID_FILES) {
-            contents = FS_CONTENTS_FILES_HEADER;
+            contents = FS_CONTENTS_FILES_HEADER
+                .replaceAll("%FS_ADD%", FS_ADD);
         }
         let header = deId(FS_PANEL_MAIN_HEADER);
         header.innerHTML = contents;
@@ -355,12 +356,16 @@ function FSComponent() {
             let main = deId(FS_PANEL_MAIN);
             main.innerHTML = c.contents;
             this.resetEditor(c.selectedFileContents);
-            this.resetEvents();
             this.resetHeader(c.selectedItemId);
+            this.resetEvents();
         });
 
         this.ctrl.registerFieldCallback("didClickAddFile", (c) => {
-            UIkit.modal.prompt("File path:", "/full/path/to/file.txt").then((path) => {
+            UIkit.modal.prompt("Create a new file:", "/file.txt").then((path) => {
+                // Ignore cancellation.
+                if (path == null) {
+                    return;
+                }
                 this.ctrl.set("addFile", path);
             });
         });
@@ -723,7 +728,6 @@ function fsFilesHTML(areDirsHidden, isGitHidden, walkedFiles) {
            .replaceAll("%SIZE%", item.st.size);
    }
    return FS_CONTENTS_FILES
-       .replaceAll("%FS_ADD%", FS_ADD)
        .replaceAll("%ITEMS%", htmlItems);
 }
 
