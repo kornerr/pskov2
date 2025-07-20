@@ -356,7 +356,7 @@ function FSComponent() {
             let main = deId(FS_PANEL_MAIN);
             main.innerHTML = c.contents;
             this.resetEditor(c.selectedFileContents);
-            this.resetHeader(c.selectedItemId);
+            //this.resetHeader(c.selectedItemId);
             this.resetEvents();
         });
 
