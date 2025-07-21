@@ -281,6 +281,7 @@ function FSComponent() {
         this.fs = new LightningFS(FS_NAME, {wipe: doWipe});
         this.pfs = this.fs.promises;
 
+        this.setupHeader();
         this.setupSideMenu();
         this.setupEffects();
         this.setupEvents();
@@ -407,6 +408,15 @@ function FSComponent() {
     this.setupEvents = function() {
         window.addEventListener("load", (e) => {
             this.ctrl.set("didLaunch", true);
+        });
+    };
+
+    this.setupHeader = function() {
+        let id = headerCreateButton("💾");
+        this.ctrl.set("headerId", id);
+
+        headerCtrl().registerFieldCallback("clickedButtonId", (c) => {
+            this.ctrl.set("headerClickedButtonId", c.clickedButtonId);
         });
     };
 
