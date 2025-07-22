@@ -27,11 +27,16 @@ function FSContext() {
         this.didClickWipe = false;
         this.didLaunch = false;
         this.didWipe = false;
+        this.editedContents = "";
+        this.editedFileContents = {};
+        this.headerClickedButtonId = -1;
+        this.headerSaveButtonId = -1;
         this.isGitHidden = true;
         this.isLoadingFile = false;
         this.isLoadingFiles = false;
         this.reloadFile = false;
         this.reloadFiles = false;
+        this.saveFiles = false;
         this.selectedFile = "";
         this.selectedFileContents = "";
         this.selectedItemId = -1;
@@ -69,6 +74,16 @@ function FSContext() {
             return this.didLaunch;
         } else if (name == "didWipe") {
             return this.didWipe;
+        } else if (name == "editedContents") {
+            return this.editedContents;
+        } else if (name == "editedFileContents") {
+            return this.editedFileContents;
+        } else if (name == "headerClickedButtonId") {
+            return this.headerClickedButtonId;
+        } else if (name == "headerClickedButtonId") {
+            return this.headerClickedButtonId;
+        } else if (name == "headerSaveButtonId") {
+            return this.headerSaveButtonId;
         } else if (name == "isGitHidden") {
             return this.isGitHidden;
         } else if (name == "isLoadingFile") {
@@ -79,6 +94,8 @@ function FSContext() {
             return this.reloadFile;
         } else if (name == "reloadFiles") {
             return this.reloadFiles;
+        } else if (name == "saveFiles") {
+            return this.saveFiles;
         } else if (name == "selectedFile") {
             return this.selectedFile;
         } else if (name == "selectedFileContents") {
@@ -113,11 +130,16 @@ function FSContext() {
         that.didClickWipe = this.didClickWipe;
         that.didLaunch = this.didLaunch;
         that.didWipe = this.didWipe;
+        that.editedContents = this.editedContents;
+        that.editedFileContents = this.editedFileContents;
+        that.headerClickedButtonId = this.headerClickedButtonId;
+        that.headerSaveButtonId = this.headerSaveButtonId;
         that.isGitHidden = this.isGitHidden;
         that.isLoadingFile = this.isLoadingFile;
         that.isLoadingFiles = this.isLoadingFiles;
         that.reloadFile = this.reloadFile;
         that.reloadFiles = this.reloadFiles;
+        that.saveFiles = this.saveFiles;
         that.selectedFile = this.selectedFile;
         that.selectedFileContents = this.selectedFileContents;
         that.selectedItemId = this.selectedItemId;
@@ -155,6 +177,14 @@ function FSContext() {
             this.didLaunch = value;
         } else if (name == "didWipe") {
             this.didWipe  = value;
+        } else if (name == "editedContents") {
+            this.editedContents = value;
+        } else if (name == "editedFileContents") {
+            this.editedFileContents = value;
+        } else if (name == "headerClickedButtonId") {
+            this.headerClickedButtonId = value;
+        } else if (name == "headerSaveButtonId") {
+            this.headerSaveButtonId = value;
         } else if (name == "isGitHidden") {
             this.isGitHidden = value;
         } else if (name == "isLoadingFile") {
@@ -165,6 +195,8 @@ function FSContext() {
             this.reloadFile = value;
         } else if (name == "reloadFiles") {
             this.reloadFiles = value;
+        } else if (name == "saveFiles") {
+            this.saveFiles = value;
         } else if (name == "selectedFile") {
             this.selectedFile = value;
         } else if (name == "selectedFileContents") {
@@ -299,7 +331,10 @@ function FSComponent() {
             return;
         }
         let editor = ace.edit(FS_EDITOR_ID);
-        editor.session.setValue(fileContents);
+        editor.setValue(fileContents);
+        editor.session.on("change", (d) => {
+            this.ctrl.set("editedContents", editor.getValue());
+        });
     };
 
     this.resetEvents = function() {
@@ -332,18 +367,6 @@ function FSComponent() {
         }
     };
 
-    this.resetHeader = function(itemId) {
-        var contents = "";
-        if (itemId == FS_MENU_ID_CFG) {
-            contents = FS_CONTENTS_CFG_HEADER;
-        } else if (itemId == FS_MENU_ID_FILES) {
-            contents = FS_CONTENTS_FILES_HEADER
-                .replaceAll("%FS_ADD%", FS_ADD);
-        }
-        let header = deId(FS_PANEL_MAIN_HEADER);
-        header.innerHTML = contents;
-    }
-
     this.setupEffects = function() {
         this.ctrl.registerFieldCallback("addFile", (c) => {
             (async() => {
@@ -357,7 +380,6 @@ function FSComponent() {
             let main = deId(FS_PANEL_MAIN);
             main.innerHTML = c.contents;
             this.resetEditor(c.selectedFileContents);
-            //this.resetHeader(c.selectedItemId);
             this.resetEvents();
         });
 
@@ -413,7 +435,7 @@ function FSComponent() {
 
     this.setupHeader = function() {
         let id = headerCreateButton("💾");
-        this.ctrl.set("headerId", id);
+        this.ctrl.set("headerSaveButtonId", id);
 
         headerCtrl().registerFieldCallback("clickedButtonId", (c) => {
             this.ctrl.set("headerClickedButtonId", c.clickedButtonId);
@@ -432,6 +454,7 @@ function FSComponent() {
             fsShouldResetSelectedFile,
             fsShouldResetSelectedItemId,
             fsShouldResetSideItems,
+            fsShouldSaveFiles,
             fsShouldStartWiping,
             fsShouldStopWiping,
         ].forEach((f) => {
@@ -651,6 +674,22 @@ function fsShouldResetSelectedItemId(c) {
         let ids = sideSelectionIds(c.sideSelectedItemId);
         c.selectedItemId = ids[1];
         c.recentField = "selectedItemId";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Save button has been clicked in the header
+function fsShouldSaveFiles(c) {
+    if (
+        c.recentField == "headerClickedButtonId" &&
+        c.headerClickedButtonId == c.headerSaveButtonId
+    ) {
+        c.saveFiles = true;
+        c.recentField = "saveFiles";
         return c;
     }
 
