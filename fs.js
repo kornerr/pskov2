@@ -325,13 +325,18 @@ function FSComponent() {
         }
     };
 
-    this.resetEditor = function(fileContents) {
+    this.resetEditor = function(file, originalContents, editedContents) {
         let ed = deId(FS_EDITOR_ID);
         if (ed == null) {
             return;
         }
         let editor = ace.edit(FS_EDITOR_ID);
-        editor.setValue(fileContents);
+        var contents = editedContents[file];
+        if (contents == null) {
+            contents = originalContents;
+        }
+        editor.setValue(contents);
+        editor.getSelection().clearSelection();
         editor.session.on("change", (d) => {
             this.ctrl.set("editedContents", editor.getValue());
         });
@@ -379,7 +384,11 @@ function FSComponent() {
         this.ctrl.registerFieldCallback("contents", (c) => {
             let main = deId(FS_PANEL_MAIN);
             main.innerHTML = c.contents;
-            this.resetEditor(c.selectedFileContents);
+            this.resetEditor(
+                c.selectedFile,
+                c.selectedFileContents,
+                c.editedFileContents
+            );
             this.resetEvents();
         });
 
@@ -447,6 +456,7 @@ function FSComponent() {
             fsShouldReloadFile,
             fsShouldReloadFiles,
             fsShouldResetContents,
+            fsShouldResetEditedFileContents,
             fsShouldResetHiddenDirs,
             fsShouldResetHiddenGit,
             fsShouldResetLoadingFile,
@@ -560,6 +570,19 @@ function fsShouldResetContents(c) {
         c.contents = FS_CONTENTS_EDITOR
             .replaceAll("%EDITOR_ID%", FS_EDITOR_ID);
         c.recentField = "contents";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Editor reported new contents as a result of user input
+function fsShouldResetEditedFileContents(c) {
+    if (c.recentField == "editedContents") {
+        c.editedFileContents[c.selectedFile] = c.editedContents;
+        c.recentField = "editedFileContents";
         return c;
     }
 
