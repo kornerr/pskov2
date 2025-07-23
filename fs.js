@@ -222,6 +222,29 @@ function FSContext() {
 //<!-- Constants -->
 
 let FS_ADD = "fs-add";
+let FS_CONTENTS_ALL = `
+<div class="uk-container uk-padding-small">
+    <table class="uk-table uk-table-hover uk-table-divider">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Size</th>
+            </tr>
+        </thead>
+        <tbody>
+%ITEMS%
+        </tbody>
+    </table>
+</div>
+`;
+let FS_CONTENTS_ALL_ITEM = `
+<tr>
+    <td><a onclick='fsCtrl().set("clickedFile", "%PATH%")'>%PATH%</a></td>
+    <td>%TYPE%</td>
+    <td>%SIZE%</td>
+</tr>
+`;
 let FS_CONTENTS_CFG = `
 <div class="uk-container uk-padding-small">
     <form>
@@ -243,22 +266,28 @@ let FS_CONTENTS_CFG = `
     <button id="%FS_WIPE%" class="uk-button uk-button-danger">Wipe file system and reload</button>
 </div>
 `;
-let FS_CONTENTS_CFG_HEADER = `
-<div class="vert-align">
-    <strong class="uk-padding-small">Cfg</strong>
-</div>
-`;
 let FS_CONTENTS_EDITOR = `
 <div id="%EDITOR_ID%"></div>
 `;
-let FS_CONTENTS_FILES = `
+let FS_CONTENTS_FILES_HEADER = `
+<div class="vert-align">
+    <strong class="uk-padding-small">Files</strong>
+    <button id="%FS_ADD%" class="uk-button uk-button-small uk-button-default">➕</button>
+</div>
+`;
+let FS_CONTENTS_LOADING = `
+<div class="uk-container uk-padding-small">
+    <p>Loading...</p>
+</div>
+`;
+let FS_CONTENTS_RECENT = `
 <div class="uk-container uk-padding-small">
     <table class="uk-table uk-table-hover uk-table-divider">
         <thead>
             <tr>
                 <th>Name</th>
-                <th>Type</th>
-                <th>Size</th>
+                <th>Ago</th>
+                <th>Status</th>
             </tr>
         </thead>
         <tbody>
@@ -267,31 +296,21 @@ let FS_CONTENTS_FILES = `
     </table>
 </div>
 `;
-let FS_CONTENTS_FILES_HEADER = `
-<div class="vert-align">
-    <strong class="uk-padding-small">Files</strong>
-    <button id="%FS_ADD%" class="uk-button uk-button-small uk-button-default">➕</button>
-</div>
-`;
-let FS_CONTENTS_FILES_ITEM = `
+let FS_CONTENTS_RECENT_ITEM = `
 <tr>
-    <td><a onclick='fsCtrl().set("clickedFile", "%PATH%")'>%PATH%</a></td>
-    <td>%TYPE%</td>
-    <td>%SIZE%</td>
+    <td><a onclick='fsCtrl().set("clickedFile", "%PATH%")'>%NAME%</a></td>
+    <td>%LAST%</td>
+    <td><span class="uk-label uk-label-warning">Unsaved</span></td>
 </tr>
-`;
-let FS_CONTENTS_LOADING = `
-<div class="uk-container uk-padding-small">
-    <p>Loading...</p>
-</div>
 `;
 let FS_EDITOR_ID = "fs-editor";
 let FS_FILE_SIDE_ITEM = `<span uk-icon="file-text"></span>%NAME%`;
 let FS_HIDE_DIRS = "fs-hide-dirs";
 let FS_HIDE_GIT = "fs-hide-git";
-let FS_MENU_ID_FILE = 2;
-let FS_MENU_ID_FILES = 0;
-let FS_MENU_ID_CFG = 1;
+let FS_MENU_ID_ALL = 1;
+let FS_MENU_ID_CFG = 2;
+let FS_MENU_ID_FILE = 3;
+let FS_MENU_ID_RECENT = 0;
 let FS_NAME = "pskov2-proto-fs";
 let FS_PANEL_MAIN = "panel-main";
 let FS_PANEL_MAIN_HEADER = "panel-main-header";
@@ -443,7 +462,7 @@ function FSComponent() {
     };
 
     this.setupHeader = function() {
-        let id = headerCreateButton("💾");
+        let id = headerCreateButton('<span uk-tooltip="title: Save unsaved files; delay: 500">💾</span>');
         this.ctrl.set("headerSaveButtonId", id);
 
         headerCtrl().registerFieldCallback("clickedButtonId", (c) => {
@@ -474,7 +493,7 @@ function FSComponent() {
 
     this.setupSideMenu = function() {
         // Register side menu group.
-        let sideId = sideCreateGroup("FS");
+        let sideId = sideCreateGroup("Files");
         this.ctrl.set("sideId", sideId);
 
         // Track selections.
@@ -526,6 +545,7 @@ function fsShouldReloadFiles(c) {
 // 3. Selected `Cfg`
 // 4. Started loading a file
 // 5. Finished loading a file
+// 6. Selected `Recent`
 function fsShouldResetContents(c) {
     if (
         c.recentField == "isLoadingFiles" &&
@@ -540,7 +560,7 @@ function fsShouldResetContents(c) {
         c.recentField == "isLoadingFiles" &&
         !c.isLoadingFiles
     ) {
-        c.contents = fsFilesHTML(c.areDirsHidden, c.isGitHidden, c.walkedFiles);
+        c.contents = fsAllHTML(c.areDirsHidden, c.isGitHidden, c.walkedFiles);
         c.recentField = "contents";
         return c;
     }
@@ -572,6 +592,23 @@ function fsShouldResetContents(c) {
         c.recentField = "contents";
         return c;
     }
+
+    if (
+        c.recentField == "selectedItemId" &&
+        c.selectedItemId == FS_MENU_ID_RECENT
+    ) {
+        tmp = [
+            {
+                path: "/todo.file",
+                last: "5 min ago",
+                isUnsaved: true,
+            },
+        ]
+        c.contents = fsRecentHTML(tmp);
+        c.recentField = "contents";
+        return c;
+    }
+
 
     c.recentField = "none";
     return c;
@@ -650,7 +687,7 @@ function fsShouldResetLoadingFile(c) {
 function fsShouldResetLoadingFiles(c) {
     if (
         c.recentField == "selectedItemId" &&
-        c.selectedItemId == FS_MENU_ID_FILES
+        c.selectedItemId == FS_MENU_ID_ALL
     ) {
         c.isLoadingFiles = true;
         c.recentField = "isLoadingFiles";
@@ -724,7 +761,11 @@ function fsShouldSaveFiles(c) {
 // 1. Did launch
 // 2. Selected file
 function fsShouldResetSideItems(c) {
-    let permanent = ["Files", "Cfg"];
+    let permanent = [
+        'Recent <span class="uk-badge">1</span>',
+        "All",
+        "Cfg"
+    ];
 
     if (c.recentField == "didLaunch") {
         c.sideItems = permanent;
@@ -773,6 +814,24 @@ function fsShouldStopWiping(c) {
 
 //<!-- Other -->
 
+// All files' page contents
+function fsAllHTML(areDirsHidden, isGitHidden, walkedFiles) {
+   var htmlItems = "";
+   for (let i in walkedFiles) {
+       let item = walkedFiles[i];
+       if (fsIsFileHidden(item, areDirsHidden, isGitHidden)) {
+           continue;
+       }
+
+       htmlItems += FS_CONTENTS_ALL_ITEM
+           .replaceAll("%PATH%", item.path)
+           .replaceAll("%TYPE%", item.st.type)
+           .replaceAll("%SIZE%", item.st.size);
+   }
+   return FS_CONTENTS_ALL
+       .replaceAll("%ITEMS%", htmlItems);
+}
+
 // Cfg page contents
 function fsCfgHTML(areDirsHidden, isGitHidden) {
     let gitHidden = isGitHidden ? "checked" : "";
@@ -783,24 +842,6 @@ function fsCfgHTML(areDirsHidden, isGitHidden) {
         .replaceAll("%FS_HIDE_GIT%", FS_HIDE_GIT)
         .replaceAll("%FS_WIPE%", FS_WIPE)
         .replaceAll("%IS_GIT_HIDDEN%", gitHidden);
-}
-
-// Files' page contents
-function fsFilesHTML(areDirsHidden, isGitHidden, walkedFiles) {
-   var htmlItems = "";
-   for (let i in walkedFiles) {
-       let item = walkedFiles[i];
-       if (fsIsFileHidden(item, areDirsHidden, isGitHidden)) {
-           continue;
-       }
-
-       htmlItems += FS_CONTENTS_FILES_ITEM
-           .replaceAll("%PATH%", item.path)
-           .replaceAll("%TYPE%", item.st.type)
-           .replaceAll("%SIZE%", item.st.size);
-   }
-   return FS_CONTENTS_FILES
-       .replaceAll("%ITEMS%", htmlItems);
 }
 
 function fsIsFileHidden(item, areDirsHidden, isGitHidden) {
@@ -831,6 +872,20 @@ function fsIsSideSelectionRelevant(selectedItemId, sideId) {
     }
 
     return false;
+}
+
+// Recently updated files' page contents
+function fsRecentHTML(recentFiles) {
+   var htmlItems = "";
+   for (let i in recentFiles) {
+       let item = recentFiles[i];
+       htmlItems += FS_CONTENTS_RECENT_ITEM
+           .replaceAll("%LAST%", item.last)
+           .replaceAll("%NAME%", item.path)
+           .replaceAll("%PATH%", item.path);
+   }
+   return FS_CONTENTS_RECENT
+       .replaceAll("%ITEMS%", htmlItems);
 }
 
 // Collect a list of directories and files into the provided `collection`
