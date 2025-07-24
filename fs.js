@@ -34,6 +34,7 @@ function FSContext() {
         this.isGitHidden = true;
         this.isLoadingFile = false;
         this.isLoadingFiles = false;
+        this.recentFiles = {},
         this.reloadFile = false;
         this.reloadFiles = false;
         this.saveFiles = false;
@@ -90,6 +91,8 @@ function FSContext() {
             return this.isLoadingFile;
         } else if (name == "isLoadingFiles") {
             return this.isLoadingFiles;
+        } else if (name == "recentFiles") {
+            return this.recentFiles;
         } else if (name == "reloadFile") {
             return this.reloadFile;
         } else if (name == "reloadFiles") {
@@ -137,6 +140,7 @@ function FSContext() {
         that.isGitHidden = this.isGitHidden;
         that.isLoadingFile = this.isLoadingFile;
         that.isLoadingFiles = this.isLoadingFiles;
+        that.recentFiles = this.recentFiles;
         that.reloadFile = this.reloadFile;
         that.reloadFiles = this.reloadFiles;
         that.saveFiles = this.saveFiles;
@@ -191,6 +195,8 @@ function FSContext() {
             this.isLoadingFile = value;
         } else if (name == "isLoadingFiles") {
             this.isLoadingFiles = value;
+        } else if (name == "recentFiles") {
+            this.recentFiles = value;
         } else if (name == "reloadFile") {
             this.reloadFile = value;
         } else if (name == "reloadFiles") {
@@ -295,8 +301,7 @@ let FS_CONTENTS_RECENT = `
         <thead>
             <tr>
                 <th>Name</th>
-                <th>Ago</th>
-                <th>Status</th>
+                <th>Last accessed</th>
             </tr>
         </thead>
         <tbody>
@@ -307,9 +312,8 @@ let FS_CONTENTS_RECENT = `
 `;
 let FS_CONTENTS_RECENT_ITEM = `
 <tr>
-    <td><a onclick='fsCtrl().set("clickedFile", "%PATH%")'>%NAME%</a></td>
-    <td>%LAST%</td>
-    <td><span class="uk-label uk-label-warning">Unsaved</span></td>
+    <td><a onclick='fsCtrl().set("clickedRecentFile", "%PATH%")'>%PATH%</a></td>
+    <td>%DATE%</td>
 </tr>
 `;
 let FS_EDITOR_ID = "fs-editor";
@@ -489,6 +493,7 @@ function FSComponent() {
             fsShouldResetHiddenGit,
             fsShouldResetLoadingFile,
             fsShouldResetLoadingFiles,
+            fsShouldResetRecentFiles,
             fsShouldResetSelectedFile,
             fsShouldResetSelectedItemId,
             fsShouldResetSideItems,
@@ -606,14 +611,7 @@ function fsShouldResetContents(c) {
         c.recentField == "selectedItemId" &&
         c.selectedItemId == FS_MENU_ID_RECENT
     ) {
-        tmp = [
-            {
-                path: "/todo.file",
-                last: "5 min ago",
-                isUnsaved: true,
-            },
-        ]
-        c.contents = fsRecentHTML(tmp);
+        c.contents = fsRecentHTML(c.recentFiles);
         c.recentField = "contents";
         return c;
     }
@@ -706,6 +704,19 @@ function fsShouldResetLoadingFiles(c) {
     if (c.recentField == "walkedFiles") {
         c.isLoadingFiles = false;
         c.recentField = "isLoadingFiles";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Selected file in the file list
+function fsShouldResetRecentFiles(c) {
+    if (c.recentField == "selectedFile") {
+        c.recentFiles[c.selectedFile] = new Date();
+        c.recentField = "recentFiles";
         return c;
     }
 
@@ -884,14 +895,13 @@ function fsIsSideSelectionRelevant(selectedItemId, sideId) {
 }
 
 // Recently updated files' page contents
-function fsRecentHTML(recentFiles) {
+function fsRecentHTML(files) {
    var htmlItems = "";
-   for (let i in recentFiles) {
-       let item = recentFiles[i];
+   for (let path in files) {
+       let dt = files[path];
        htmlItems += FS_CONTENTS_RECENT_ITEM
-           .replaceAll("%LAST%", item.last)
-           .replaceAll("%NAME%", item.path)
-           .replaceAll("%PATH%", item.path);
+           .replaceAll("%DATE%", dt)
+           .replaceAll("%PATH%", path);
    }
    return FS_CONTENTS_RECENT
        .replaceAll("%ITEMS%", htmlItems);
