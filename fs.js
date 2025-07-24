@@ -224,6 +224,9 @@ function FSContext() {
 let FS_ADD = "fs-add";
 let FS_CONTENTS_ALL = `
 <div class="uk-container uk-padding-small">
+    <strong>All repository files</strong>
+</div>
+<div class="uk-container uk-padding-small">
     <table class="uk-table uk-table-hover uk-table-divider">
         <thead>
             <tr>
@@ -246,6 +249,9 @@ let FS_CONTENTS_ALL_ITEM = `
 </tr>
 `;
 let FS_CONTENTS_CFG = `
+<div class="uk-container uk-padding-small">
+    <strong>Configuration</strong>
+</div>
 <div class="uk-container uk-padding-small">
     <form>
         <fieldset class="uk-fieldset">
@@ -281,6 +287,9 @@ let FS_CONTENTS_LOADING = `
 </div>
 `;
 let FS_CONTENTS_RECENT = `
+<div class="uk-container uk-padding-small">
+    <strong>Recently opened and edited files</strong>
+</div>
 <div class="uk-container uk-padding-small">
     <table class="uk-table uk-table-hover uk-table-divider">
         <thead>
@@ -764,7 +773,7 @@ function fsShouldResetSideItems(c) {
     let permanent = [
         'Recent <span class="uk-badge">1</span>',
         "All",
-        "Cfg"
+        "Config"
     ];
 
     if (c.recentField == "didLaunch") {
