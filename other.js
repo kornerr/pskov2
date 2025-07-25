@@ -44,12 +44,12 @@ function strago(dt) {
         return "A minute ago";
     } else if (d >= 90 && d < 45 * 60) {
         let mins = Math.round(d / 60);
-        return `${mins} ago`;
+        return `${mins} minutes ago`;
     } else if (d >= 45 * 60 && d < 90 * 60) {
         return "An hour ago";
     } else if (d >= 90 * 60 && d < 22 * 60 * 60) {
         let hours = Math.round(d / 60 / 60);
-        return `${hours} ago`;
+        return `${hours} hours ago`;
     } 
     return dt.toLocaleString();
 }

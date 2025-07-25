@@ -338,6 +338,7 @@ function FSComponent() {
         // Dbg.
         this.ctrl.registerCallback((c) => {
             console.log(`ИГР FSC._construct ctrl key/value: '${c.recentField}'/'${c.field(c.recentField)}'`);
+            console.log(`ИГР FSC._construct context json: '${JSON.stringify(c)}'`);
         });
 
         // Wipe file system if requested so.
