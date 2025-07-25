@@ -31,3 +31,26 @@ function reportSuccess(text) {
         0
     );
 }
+
+// Return result similar to `fromNow()` of `Day.js`
+// https://day.js.org/docs/en/display/from-now
+function strago(dt) {
+    let now = new Date();
+    let d = Math.round((now - dt) / 1000);
+    console.log("ИГР strago d:", d);
+    if (d < 45) {
+        return "A few seconds ago";
+    } else if (d >= 45 && d < 90) {
+        return "A minute ago";
+    } else if (d >= 90 && d < 45 * 60) {
+        let mins = Math.round(d / 60);
+        return `${mins} ago`;
+    } else if (d >= 45 * 60 && d < 90 * 60) {
+        return "An hour ago";
+    } else if (d >= 90 * 60 && d < 22 * 60 * 60) {
+        let hours = Math.round(d / 60 / 60);
+        return `${hours} ago`;
+    } 
+    return dt.toLocaleString();
+}
+

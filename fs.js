@@ -899,8 +899,9 @@ function fsRecentHTML(files) {
    var htmlItems = "";
    for (let path in files) {
        let dt = files[path];
+       let ago = strago(dt);
        htmlItems += FS_CONTENTS_RECENT_ITEM
-           .replaceAll("%DATE%", dt)
+           .replaceAll("%DATE%", ago)
            .replaceAll("%PATH%", path);
    }
    return FS_CONTENTS_RECENT
