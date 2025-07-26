@@ -749,10 +749,13 @@ function fsShouldResetLoadingFiles(c) {
 }
 
 // Conditions:
-// 1. Selected file in the file list
+// 1. Finished loading file (after selection in All, Recent, or Side menu)
 // 2. Did load non-empty recent files
 function fsShouldResetRecentFiles(c) {
-    if (c.recentField == "selectedFile") {
+    if (
+        c.recentField == "isLoadingFile" &&
+        !c.isLoadingFile
+    ) {
         c.recentFiles[c.selectedFile] = new Date();
         c.recentField = "recentFiles";
         return c;
