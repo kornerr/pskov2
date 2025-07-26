@@ -34,6 +34,8 @@ function FSContext() {
         this.isGitHidden = true;
         this.isLoadingFile = false;
         this.isLoadingFiles = false;
+        this.loadedRecentFiles = {};
+        this.loadRecentFiles = false;
         this.recentFiles = {},
         this.reloadFile = false;
         this.reloadFiles = false;
@@ -91,6 +93,10 @@ function FSContext() {
             return this.isLoadingFile;
         } else if (name == "isLoadingFiles") {
             return this.isLoadingFiles;
+        } else if (name == "loadedRecentFiles") {
+            return this.loadedRecentFiles;
+        } else if (name == "loadRecentFiles") {
+            return this.loadRecentFiles;
         } else if (name == "recentFiles") {
             return this.recentFiles;
         } else if (name == "reloadFile") {
@@ -140,6 +146,8 @@ function FSContext() {
         that.isGitHidden = this.isGitHidden;
         that.isLoadingFile = this.isLoadingFile;
         that.isLoadingFiles = this.isLoadingFiles;
+        that.loadedRecentFiles = this.loadedRecentFiles;
+        that.loadRecentFiles = this.loadRecentFiles;
         that.recentFiles = this.recentFiles;
         that.reloadFile = this.reloadFile;
         that.reloadFiles = this.reloadFiles;
@@ -195,6 +203,10 @@ function FSContext() {
             this.isLoadingFile = value;
         } else if (name == "isLoadingFiles") {
             this.isLoadingFiles = value;
+        } else if (name == "loadedRecentFiles") {
+            this.loadedRecentFiles = value;
+        } else if (name == "loadRecentFiles") {
+            this.loadRecentFiles = value;
         } else if (name == "recentFiles") {
             this.recentFiles = value;
         } else if (name == "reloadFile") {
@@ -327,6 +339,7 @@ let FS_MENU_ID_RECENT = 0;
 let FS_NAME = "pskov2-proto-fs";
 let FS_PANEL_MAIN = "panel-main";
 let FS_PANEL_MAIN_HEADER = "panel-main-header";
+let FS_RECENT_FILES_KEY = "fs-recent-files";
 let FS_WIPE = "fs-wipe";
 let FS_WIPE_KEY = "fs-wipe";
 
@@ -338,7 +351,6 @@ function FSComponent() {
         // Dbg.
         this.ctrl.registerCallback((c) => {
             console.log(`ИГР FSC._construct ctrl key/value: '${c.recentField}'/'${c.field(c.recentField)}'`);
-            console.log(`ИГР FSC._construct context json: '${JSON.stringify(c)}'`);
         });
 
         // Wipe file system if requested so.
@@ -435,6 +447,12 @@ function FSComponent() {
             });
         });
 
+        this.ctrl.registerFieldCallback("loadRecentFiles", (c) => {
+            let r = fsLoadRecentFiles();
+            this.ctrl.set("loadedRecentFiles", r);
+        });
+
+
         this.ctrl.registerFieldCallback("reloadFile", (c) => {
             (async() => {
                 let contents = await this.pfs.readFile(c.selectedFile, {encoding: "utf8"});
@@ -449,6 +467,10 @@ function FSComponent() {
                 await fsWalkFiles(this.pfs, "/", st, files);
                 this.ctrl.set("walkedFiles", files);
             })();
+        });
+
+        this.ctrl.registerFieldCallback("recentFiles", (c) => {
+            fsSaveRecentFiles(c.recentFiles);
         });
 
         this.ctrl.registerFieldCallback("selectedFileContents", (c) => {
@@ -486,6 +508,7 @@ function FSComponent() {
 
     this.setupShoulds = function() {
         [
+            fsShouldLoadRecentFiles,
             fsShouldReloadFile,
             fsShouldReloadFiles,
             fsShouldResetContents,
@@ -521,6 +544,19 @@ function FSComponent() {
 }
 
 //<!-- Shoulds -->
+
+// Conditions:
+// 1. Did launch
+function fsShouldLoadRecentFiles(c) {
+    if (c.recentField == "didLaunch") {
+        c.loadRecentFiles = true;
+        c.recentField = "loadRecentFiles";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
 
 // Conditions:
 // 1. Started loading a file
@@ -714,9 +750,20 @@ function fsShouldResetLoadingFiles(c) {
 
 // Conditions:
 // 1. Selected file in the file list
+// 2. Did load non-empty recent files
 function fsShouldResetRecentFiles(c) {
     if (c.recentField == "selectedFile") {
         c.recentFiles[c.selectedFile] = new Date();
+        c.recentField = "recentFiles";
+        return c;
+    }
+
+    if (
+        c.recentField == "loadedRecentFiles" &&
+        c.loadedRecentFiles != null &&
+        Object.keys(c.loadedRecentFiles).length > 0
+    ) {
+        c.recentFiles = c.loadedRecentFiles;
         c.recentField = "recentFiles";
         return c;
     }
@@ -895,6 +942,18 @@ function fsIsSideSelectionRelevant(selectedItemId, sideId) {
     return false;
 }
 
+// Deserialize recent files after the launch
+function fsLoadRecentFiles(files) {
+    let json = localStorage.getItem(FS_RECENT_FILES_KEY);
+    var obj = JSON.parse(json);
+    // Convert string dates to actual dates
+    for (let key in obj) {
+        let strdt = obj[key];
+        obj[key] = new Date(strdt);
+    }
+    return obj;
+}
+
 // Recently updated files' page contents
 function fsRecentHTML(files) {
    var htmlItems = "";
@@ -907,6 +966,12 @@ function fsRecentHTML(files) {
    }
    return FS_CONTENTS_RECENT
        .replaceAll("%ITEMS%", htmlItems);
+}
+
+// Serialize recent files between launches
+function fsSaveRecentFiles(files) {
+    let json = JSON.stringify(files);
+    localStorage.setItem(FS_RECENT_FILES_KEY, json);
 }
 
 // Collect a list of directories and files into the provided `collection`
