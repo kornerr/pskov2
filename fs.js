@@ -345,13 +345,17 @@ let FS_EDITOR_ID = "fs-editor";
 let FS_FILE_SIDE_ITEM = `<span uk-icon="file-text"></span>%NAME%`;
 let FS_HIDE_DIRS = "fs-hide-dirs";
 let FS_HIDE_GIT = "fs-hide-git";
-let FS_MENU_ID_ALL = 1;
+let FS_MENU_ID_ALL = 0;
 let FS_MENU_ID_CFG = 2;
 let FS_MENU_ID_FILE = 3;
-let FS_MENU_ID_RECENT = 0;
+let FS_MENU_ID_RECENT = 1;
+let FS_MENU_TITLE_ALL = "All";
+let FS_MENU_TITLE_CFG = "Config";
+let FS_MENU_TITLE_RECENT = "Recent";
 let FS_NAME = "pskov2-proto-fs";
 let FS_PANEL_MAIN = "panel-main";
 let FS_PANEL_MAIN_HEADER = "panel-main-header";
+let FS_RECENT_UNSAVED_COUNT = "fs-recent-unsaved-count";
 let FS_RECENT_FILES_KEY = "fs-recent-files";
 let FS_WIPE = "fs-wipe";
 let FS_WIPE_KEY = "fs-wipe";
@@ -853,10 +857,12 @@ function fsShouldSaveFiles(c) {
 // 2. Selected file
 function fsShouldResetSideItems(c) {
     let permanent = [
-        'Recent <span class="uk-badge">1</span>',
-        "All",
-        "Config"
+        FS_MENU_TITLE_ALL,
+        FS_MENU_TITLE_RECENT,
+        FS_MENU_TITLE_CFG,
     ];
+
+        //'Recent <span id="" class="uk-badge">1</span>',
 
     if (c.recentField == "didLaunch") {
         c.sideItems = permanent;
