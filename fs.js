@@ -330,9 +330,16 @@ let FS_CONTENTS_RECENT = `
 `;
 let FS_CONTENTS_RECENT_ITEM = `
 <tr>
-    <td><a onclick='fsCtrl().set("clickedRecentFile", "%PATH%")'>%PATH%</a></td>
+    <td>
+        <a onclick='fsCtrl().set("clickedRecentFile", "%PATH%")'>
+            %PATH%%BADGE%
+        </a>
+    </td>
     <td>%DATE%</td>
 </tr>
+`;
+let FS_CONTENTS_RECENT_ITEM_UNSAVED = `
+<span class="uk-badge">Unsaved</span>
 `;
 let FS_EDITOR_ID = "fs-editor";
 let FS_FILE_SIDE_ITEM = `<span uk-icon="file-text"></span>%NAME%`;
@@ -654,7 +661,7 @@ function fsShouldResetContents(c) {
         c.recentField == "selectedItemId" &&
         c.selectedItemId == FS_MENU_ID_RECENT
     ) {
-        c.contents = fsRecentHTML(c.recentFiles);
+        c.contents = fsRecentHTML(c.recentFiles, c.editedFileContents);
         c.recentField = "contents";
         return c;
     }
@@ -971,12 +978,14 @@ function fsLoadRecentFiles(files) {
 }
 
 // Recently updated files' page contents
-function fsRecentHTML(files) {
+function fsRecentHTML(files, edited) {
    var htmlItems = "";
    for (let path in files) {
        let dt = files[path];
        let ago = strago(dt);
+       let badge = edited[path] != null ? FS_CONTENTS_RECENT_ITEM_UNSAVED : "";
        htmlItems += FS_CONTENTS_RECENT_ITEM
+           .replaceAll("%BADGE%", badge)
            .replaceAll("%DATE%", ago)
            .replaceAll("%PATH%", path);
    }
