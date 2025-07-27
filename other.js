@@ -32,12 +32,11 @@ function reportSuccess(text) {
     );
 }
 
-// Return result similar to `fromNow()` of `Day.js`
+// Return result similar to `fromNow()` of `Day.js` (up to elapsed hours)
 // https://day.js.org/docs/en/display/from-now
 function strago(dt) {
     let now = new Date();
     let d = Math.round((now - dt) / 1000);
-    console.log("ИГР strago d:", d);
     if (d < 45) {
         return "A few seconds ago";
     } else if (d >= 45 && d < 90) {

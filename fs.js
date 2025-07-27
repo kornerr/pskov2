@@ -19,6 +19,7 @@ function FSContext() {
         this.addFile = "";
         this.areDirsHidden = true;
         this.clickedFile = "";
+        this.clickedRecentFile = "";
         this.contents = "";
         this.didAddFile = false;
         this.didClickAddFile = false;
@@ -61,6 +62,8 @@ function FSContext() {
             return this.areDirsHidden;
         } else if (name == "clickedFile") {
             return this.clickedFile;
+        } else if (name == "clickedRecentFile") {
+            return this.clickedRecentFile;
         } else if (name == "contents") {
             return this.contents;
         } else if (name == "didAddFile") {
@@ -131,6 +134,7 @@ function FSContext() {
         that.addFile = this.addFile;
         that.areDirsHidden = this.areDirsHidden;
         that.clickedFile = this.clickedFile;
+        that.clickedRecentFile = this.clickedRecentFile;
         that.contents = this.contents;
         that.didAddFile = this.didAddFile;
         that.didClickAddFile = this.didClickAddFile;
@@ -173,6 +177,8 @@ function FSContext() {
             this.areDirsHidden = value;
         } else if (name == "clickedFile") {
             this.clickedFile = value;
+        } else if (name == "clickedRecentFile") {
+            this.clickedRecentFile = value;
         } else if (name == "contents") {
             this.contents = value;
         } else if (name == "didAddFile") {
@@ -306,7 +312,7 @@ let FS_CONTENTS_LOADING = `
 `;
 let FS_CONTENTS_RECENT = `
 <div class="uk-container uk-padding-small">
-    <strong>Recently opened and edited files</strong>
+    <strong>Recently opened files</strong>
 </div>
 <div class="uk-container uk-padding-small">
     <table class="uk-table uk-table-hover uk-table-divider">
@@ -776,8 +782,9 @@ function fsShouldResetRecentFiles(c) {
 }
 
 // Conditions:
-// 1. Clicked file in the list of files
+// 1. Clicked file in the list of all files
 // 2. Added new file
+// 3. Clicked file in the list of recent files
 function fsShouldResetSelectedFile(c) {
     if (c.recentField == "clickedFile") {
         c.selectedFile = c.clickedFile;
@@ -787,6 +794,12 @@ function fsShouldResetSelectedFile(c) {
 
     if (c.recentField == "didAddFile") {
         c.selectedFile = c.addFile;
+        c.recentField = "selectedFile";
+        return c;
+    }
+
+    if (c.recentField == "clickedRecentFile") {
+        c.selectedFile = c.clickedRecentFile;
         c.recentField = "selectedFile";
         return c;
     }
