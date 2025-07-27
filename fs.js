@@ -352,10 +352,10 @@ let FS_MENU_ID_RECENT = 1;
 let FS_MENU_TITLE_ALL = "All";
 let FS_MENU_TITLE_CFG = "Config";
 let FS_MENU_TITLE_RECENT = "Recent";
+let FS_MENU_TITLE_RECENT_UNSAVED = FS_MENU_TITLE_RECENT + ' <span class="uk-badge">%COUNT%</span>';
 let FS_NAME = "pskov2-proto-fs";
 let FS_PANEL_MAIN = "panel-main";
 let FS_PANEL_MAIN_HEADER = "panel-main-header";
-let FS_RECENT_UNSAVED_COUNT = "fs-recent-unsaved-count";
 let FS_RECENT_FILES_KEY = "fs-recent-files";
 let FS_WIPE = "fs-wipe";
 let FS_WIPE_KEY = "fs-wipe";
@@ -854,27 +854,15 @@ function fsShouldSaveFiles(c) {
 
 // Conditions:
 // 1. Did launch
-// 2. Selected file
+// 2. Selected a file
+// 3. Edited a file
 function fsShouldResetSideItems(c) {
-    let permanent = [
-        FS_MENU_TITLE_ALL,
-        FS_MENU_TITLE_RECENT,
-        FS_MENU_TITLE_CFG,
-    ];
-
-        //'Recent <span id="" class="uk-badge">1</span>',
-
-    if (c.recentField == "didLaunch") {
-        c.sideItems = permanent;
-        c.recentField = "sideItems";
-        return c;
-    }
-
-    if (c.recentField == "selectedFile") {
-        var items = Array.from(permanent);
-        let fileItem = FS_FILE_SIDE_ITEM.replaceAll("%NAME%", c.selectedFile);
-        items.push(fileItem);
-        c.sideItems = items;
+    if (
+        c.recentField == "didLaunch" ||
+        c.recentField == "selectedFile" ||
+        c.recentField == "editedFileContents"
+    ) {
+        c.sideItems = fsSideMenuItems(c.selectedFile, c.editedFileContents);
         c.recentField = "sideItems";
         return c;
     }
@@ -1003,6 +991,34 @@ function fsRecentHTML(files, edited) {
 function fsSaveRecentFiles(files) {
     let json = JSON.stringify(files);
     localStorage.setItem(FS_RECENT_FILES_KEY, json);
+}
+
+// Construct a list of side menu items
+function fsSideMenuItems(
+    selectedFile,
+    edited
+) {
+    var items = [];
+    items.push(FS_MENU_TITLE_ALL);
+
+    // Display badge number of unsaved files if there are any
+    var recent = FS_MENU_TITLE_RECENT;
+    var count = Object.keys(edited).length;
+    if (count > 0) {
+        recent = FS_MENU_TITLE_RECENT_UNSAVED.replaceAll("%COUNT%", count);
+    }
+    items.push(recent);
+
+    items.push(FS_MENU_TITLE_CFG);
+
+    // Display last opened file name as the last side menu item.
+    if (selectedFile != "") {
+        let fileItem = FS_FILE_SIDE_ITEM.replaceAll("%NAME%", selectedFile);
+        items.push(fileItem);
+    }
+
+
+    return items;
 }
 
 // Collect a list of directories and files into the provided `collection`
