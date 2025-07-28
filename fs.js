@@ -27,6 +27,7 @@ function FSContext() {
         this.didClickHideGit = false;
         this.didClickWipe = false;
         this.didLaunch = false;
+        this.didSaveFiles = false;
         this.didWipe = false;
         this.editedContents = "";
         this.editedFileContents = {};
@@ -78,6 +79,8 @@ function FSContext() {
             return this.didClickWipe;
         } else if (name == "didLaunch") {
             return this.didLaunch;
+        } else if (name == "didSaveFiles") {
+            return this.didSaveFiles;
         } else if (name == "didWipe") {
             return this.didWipe;
         } else if (name == "editedContents") {
@@ -142,6 +145,7 @@ function FSContext() {
         that.didClickHideGit = this.didClickHideGit;
         that.didClickWipe = this.didClickWipe;
         that.didLaunch = this.didLaunch;
+        that.didSaveFiles = this.didSaveFiles;
         that.didWipe = this.didWipe;
         that.editedContents = this.editedContents;
         that.editedFileContents = this.editedFileContents;
@@ -193,6 +197,8 @@ function FSContext() {
             this.didClickWipe = value;
         } else if (name == "didLaunch") {
             this.didLaunch = value;
+        } else if (name == "didSaveFiles") {
+            this.didSaveFiles = value;
         } else if (name == "didWipe") {
             this.didWipe  = value;
         } else if (name == "editedContents") {
@@ -319,7 +325,7 @@ let FS_CONTENTS_RECENT = `
         <thead>
             <tr>
                 <th>Name</th>
-                <th>Last accessed</th>
+                <th>Last opened</th>
             </tr>
         </thead>
         <tbody>
@@ -488,6 +494,13 @@ function FSComponent() {
 
         this.ctrl.registerFieldCallback("recentFiles", (c) => {
             fsSaveRecentFiles(c.recentFiles);
+        });
+
+        this.ctrl.registerFieldCallback("saveFiles", (c) => {
+            (async() => {
+                await fsSaveFiles(this.pfs, c.editedFileContents);
+                this.ctrl.set("didSaveFiles", true);
+            })();
         });
 
         this.ctrl.registerFieldCallback("selectedFileContents", (c) => {
@@ -677,9 +690,16 @@ function fsShouldResetContents(c) {
 
 // Conditions:
 // 1. Editor reported new contents as a result of user input
+// 2. Did save files
 function fsShouldResetEditedFileContents(c) {
     if (c.recentField == "editedContents") {
         c.editedFileContents[c.selectedFile] = c.editedContents;
+        c.recentField = "editedFileContents";
+        return c;
+    }
+
+    if (c.recentField == "didSaveFiles") {
+        c.editedFileContents = {};
         c.recentField = "editedFileContents";
         return c;
     }
@@ -985,6 +1005,14 @@ function fsRecentHTML(files, edited) {
    }
    return FS_CONTENTS_RECENT
        .replaceAll("%ITEMS%", htmlItems);
+}
+
+// Save edited unsaved files to file system
+async function fsSaveFiles(pfs, edited) {
+    for (var file in edited) {
+        let contents = edited[file];
+        await pfs.writeFile(file, contents, {encoding: "utf8"});
+    }
 }
 
 // Serialize recent files between launches
