@@ -20,12 +20,13 @@ function reportFailure(title, details) {
 // Report success with a slight delay
 //
 // The delay is necessary to overcome the conflict of UIkit and CLDController
-function reportSuccess(text) {
+function reportSuccess(text, timeout = 5000) {
     setTimeout(
         () => {
             UIkit.notification({
                 message: text,
                 status: "success",
+                timeout: timeout,
             });
         },
         0

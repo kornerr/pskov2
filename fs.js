@@ -470,6 +470,10 @@ function FSComponent() {
             });
         });
 
+        this.ctrl.registerFieldCallback("didSaveFiles", (c) => {
+            reportSuccess("💾 Did save", 500)
+        });
+
         this.ctrl.registerFieldCallback("loadRecentFiles", (c) => {
             let r = fsLoadRecentFiles();
             this.ctrl.set("loadedRecentFiles", r);
