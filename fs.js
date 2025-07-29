@@ -285,13 +285,13 @@ let FS_CONTENTS_CFG = `
 <div class="uk-container uk-padding-small">
     <form>
         <fieldset class="uk-fieldset">
-            <div class="uk-margin">
+            <div class="uk-margin-small">
                 <label>
                     <input id="%FS_HIDE_DIRS%" class="uk-checkbox" type="checkbox" %ARE_DIRS_HIDDEN%>
                     Hide directories
                 </label>
             </div>
-            <div class="uk-margin">
+            <div class="uk-margin-small">
                 <label>
                     <input id="%FS_HIDE_GIT%" class="uk-checkbox" type="checkbox" %IS_GIT_HIDDEN%>
                     Hide .git
@@ -364,8 +364,31 @@ let FS_MENU_TITLE_RECENT_UNSAVED = FS_MENU_TITLE_RECENT + ' <span class="uk-badg
 let FS_NAME = "pskov2-proto-fs";
 let FS_PAGE_ADD = `
 <div class="uk-container uk-padding-small">
-    <strong>Add or remove files</strong>
-</div>
+    <div class="uk-container uk-padding-small">
+        <strong>Add file:</strong>
+    </div>
+    <form onclick="event.preventDefault();">
+        <div class="uk-margin-small">
+            <div class="uk-form-controls">
+                <input id="%FS_NEW_FILE%" class="uk-input" type="text" placeholder="For example: /abc.txt" value="%EDITED_FILE%">
+            </div>
+        </div>
+        <button id="%FS_ADD_NEW_FILE%" class="uk-button uk-button-default">Add</button>
+    </form>
+    <br/> <br/>
+    <div class="uk-container uk-padding-small">
+        <strong>Remove file:</strong>
+    </div>
+    <form>
+        <div class="uk-margin-small">
+            <div class="uk-form-controls">
+                <select id="%FS_FILE_SELECTION%" class="uk-select">
+                    %FILES%
+                </select>
+            </div>
+        </div>
+        <button id="%FS_RM_FILE%" class="uk-button uk-button-default">Remove</button>
+    </form>
 `;
 let FS_PANEL_MAIN = "panel-main";
 let FS_PANEL_MAIN_HEADER = "panel-main-header";
