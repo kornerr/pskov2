@@ -351,15 +351,22 @@ let FS_EDITOR_ID = "fs-editor";
 let FS_FILE_SIDE_ITEM = `<span uk-icon="file-text"></span>%NAME%`;
 let FS_HIDE_DIRS = "fs-hide-dirs";
 let FS_HIDE_GIT = "fs-hide-git";
+let FS_MENU_ID_ADD = 2;
 let FS_MENU_ID_ALL = 0;
-let FS_MENU_ID_CFG = 2;
-let FS_MENU_ID_FILE = 3;
+let FS_MENU_ID_CFG = 3;
+let FS_MENU_ID_FILE = 4;
 let FS_MENU_ID_RECENT = 1;
+let FS_MENU_TITLE_ADD = "Add / remove";
 let FS_MENU_TITLE_ALL = "All";
 let FS_MENU_TITLE_CFG = "Config";
 let FS_MENU_TITLE_RECENT = "Recent";
 let FS_MENU_TITLE_RECENT_UNSAVED = FS_MENU_TITLE_RECENT + ' <span class="uk-badge">%COUNT%</span>';
 let FS_NAME = "pskov2-proto-fs";
+let FS_PAGE_ADD = `
+<div class="uk-container uk-padding-small">
+    <strong>Add or remove files</strong>
+</div>
+`;
 let FS_PANEL_MAIN = "panel-main";
 let FS_PANEL_MAIN_HEADER = "panel-main-header";
 let FS_RECENT_FILES_KEY = "fs-recent-files";
@@ -627,10 +634,11 @@ function fsShouldReloadFiles(c) {
 // Conditions:
 // 1. Started loading files
 // 2. Finished loading files
-// 3. Selected `Cfg`
+// 3. Selected `Confg`
 // 4. Started loading a file
 // 5. Finished loading a file
 // 6. Selected `Recent`
+// 7. Selected `Add / remove`
 function fsShouldResetContents(c) {
     if (
         c.recentField == "isLoadingFiles" &&
@@ -687,6 +695,14 @@ function fsShouldResetContents(c) {
         return c;
     }
 
+    if (
+        c.recentField == "selectedItemId" &&
+        c.selectedItemId == FS_MENU_ID_ADD
+    ) {
+        c.contents = fsPageAdd();
+        c.recentField = "contents";
+        return c;
+    }
 
     c.recentField = "none";
     return c;
@@ -995,6 +1011,11 @@ function fsLoadRecentFiles(files) {
     return obj;
 }
 
+// Page contents for adding or removing files
+function fsPageAdd() {
+   return FS_PAGE_ADD;
+}
+
 // Recently updated files' page contents
 function fsRecentHTML(files, edited) {
    var htmlItems = "";
@@ -1041,6 +1062,8 @@ function fsSideMenuItems(
     }
     items.push(recent);
 
+    items.push(FS_MENU_TITLE_ADD);
+
     items.push(FS_MENU_TITLE_CFG);
 
     // Display last opened file name as the last side menu item.
@@ -1048,7 +1071,6 @@ function fsSideMenuItems(
         let fileItem = FS_FILE_SIDE_ITEM.replaceAll("%NAME%", selectedFile);
         items.push(fileItem);
     }
-
 
     return items;
 }
