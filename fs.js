@@ -16,7 +16,7 @@ function pfs() {
 
 function FSContext() {
     this._construct = function() {
-        this.addFile = "";
+        this.addedFile = "";
         this.areDirsHidden = true;
         this.clickedFile = "";
         this.clickedRecentFile = "";
@@ -33,6 +33,7 @@ function FSContext() {
         this.editedFileContents = {};
         this.headerClickedButtonId = -1;
         this.headerSaveButtonId = -1;
+        this.inputAddedFile = "";
         this.isGitHidden = true;
         this.isLoadingFile = false;
         this.isLoadingFiles = false;
@@ -57,8 +58,8 @@ function FSContext() {
     this._construct();
 
     this.field = function(name) {
-        if (name == "addFile") {
-            return this.addFile;
+        if (name == "addedFile") {
+            return this.addedFile;
         } else if (name == "areDirsHidden") {
             return this.areDirsHidden;
         } else if (name == "clickedFile") {
@@ -93,6 +94,8 @@ function FSContext() {
             return this.headerClickedButtonId;
         } else if (name == "headerSaveButtonId") {
             return this.headerSaveButtonId;
+        } else if (name == "inputAddedFile") {
+            return this.inputAddedFile;
         } else if (name == "isGitHidden") {
             return this.isGitHidden;
         } else if (name == "isLoadingFile") {
@@ -134,7 +137,7 @@ function FSContext() {
 
     this.selfCopy = function() {
         let that = new FSContext();
-        that.addFile = this.addFile;
+        that.addedFile = this.addedFile;
         that.areDirsHidden = this.areDirsHidden;
         that.clickedFile = this.clickedFile;
         that.clickedRecentFile = this.clickedRecentFile;
@@ -151,6 +154,7 @@ function FSContext() {
         that.editedFileContents = this.editedFileContents;
         that.headerClickedButtonId = this.headerClickedButtonId;
         that.headerSaveButtonId = this.headerSaveButtonId;
+        that.inputAddedFile = this.inputAddedFile;
         that.isGitHidden = this.isGitHidden;
         that.isLoadingFile = this.isLoadingFile;
         that.isLoadingFiles = this.isLoadingFiles;
@@ -175,8 +179,8 @@ function FSContext() {
     };
 
     this.setField = function(name, value) {
-        if (name == "addFile") {
-            this.addFile = value;
+        if (name == "addedFile") {
+            this.addedFile = value;
         } else if (name == "areDirsHidden") {
             this.areDirsHidden = value;
         } else if (name == "clickedFile") {
@@ -209,6 +213,8 @@ function FSContext() {
             this.headerClickedButtonId = value;
         } else if (name == "headerSaveButtonId") {
             this.headerSaveButtonId = value;
+        } else if (name == "inputAddedFile") {
+            this.inputAddedFile = value;
         } else if (name == "isGitHidden") {
             this.isGitHidden = value;
         } else if (name == "isLoadingFile") {
@@ -251,7 +257,7 @@ function FSContext() {
 
 //<!-- Constants -->
 
-let FS_ADD = "fs-add";
+let FS_ADDED_FILE = "fs-added-file";
 let FS_CONTENTS_ALL = `
 <div class="uk-container uk-padding-small">
     <strong>All repository files</strong>
@@ -304,12 +310,6 @@ let FS_CONTENTS_CFG = `
 `;
 let FS_CONTENTS_EDITOR = `
 <div id="%EDITOR_ID%"></div>
-`;
-let FS_CONTENTS_FILES_HEADER = `
-<div class="vert-align">
-    <strong class="uk-padding-small">Files</strong>
-    <button id="%FS_ADD%" class="uk-button uk-button-small uk-button-default">➕</button>
-</div>
 `;
 let FS_CONTENTS_LOADING = `
 <div class="uk-container uk-padding-small">
@@ -370,10 +370,10 @@ let FS_PAGE_ADD = `
     <form onclick="event.preventDefault();">
         <div class="uk-margin-small">
             <div class="uk-form-controls">
-                <input id="%FS_NEW_FILE%" class="uk-input" type="text" placeholder="For example: /abc.txt" value="%EDITED_FILE%">
+                <input id="%FS_ADDED_FILE%" class="uk-input" type="text" placeholder="For example: /abc.txt" value="%FILE%">
             </div>
         </div>
-        <button id="%FS_ADD_NEW_FILE%" class="uk-button uk-button-default">Add</button>
+        <button class="uk-button uk-button-default" onclick='fsCtrl().set("didClickAddFile", true)'>Add</button>
     </form>
     <br/> <br/>
     <div class="uk-container uk-padding-small">
@@ -441,10 +441,10 @@ function FSComponent() {
     };
 
     this.resetEvents = function() {
-        let add = deId(FS_ADD);
-        if (add != null) {
-            add.addEventListener("click", (e) => {
-                this.ctrl.set("didClickAddFile", true);
+        let added = deId(FS_ADDED_FILE);
+        if (added != null ) {
+            added.addEventListener("input", (e) => {
+                this.ctrl.set("inputAddedFile", added.value);
             });
         }
 
@@ -471,10 +471,10 @@ function FSComponent() {
     };
 
     this.setupEffects = function() {
-        this.ctrl.registerFieldCallback("addFile", (c) => {
+        this.ctrl.registerFieldCallback("didClickAddFile", (c) => {
             (async() => {
                 let contents = "";
-                await this.pfs.writeFile(c.addFile, contents, {encoding: "utf8"});
+                await this.pfs.writeFile(c.addedFile, contents, {encoding: "utf8"});
                 this.ctrl.set("didAddFile", true);
             })();
         });
@@ -490,6 +490,7 @@ function FSComponent() {
             this.resetEvents();
         });
 
+        /*
         this.ctrl.registerFieldCallback("didClickAddFile", (c) => {
             UIkit.modal.prompt("Create a new file:", "/file.txt").then((path) => {
                 // Ignore cancellation.
@@ -499,6 +500,7 @@ function FSComponent() {
                 this.ctrl.set("addFile", path);
             });
         });
+        */
 
         this.ctrl.registerFieldCallback("didSaveFiles", (c) => {
             reportSuccess("💾 Did save", 500)
@@ -575,6 +577,7 @@ function FSComponent() {
             fsShouldLoadRecentFiles,
             fsShouldReloadFile,
             fsShouldReloadFiles,
+            fsShouldResetAddedFile,
             fsShouldResetContents,
             fsShouldResetEditedFileContents,
             fsShouldResetHiddenDirs,
@@ -655,6 +658,26 @@ function fsShouldReloadFiles(c) {
 }
 
 // Conditions:
+// 1. User changed input field
+// 2. Did add file
+function fsShouldResetAddedFile(c) {
+    if (c.recentField == "inputAddedFile") {
+        c.addedFile = c.inputAddedFile;
+        c.recentField = "addedFile";
+        return c;
+    }
+
+    if (c.recentField == "didAddFile") {
+        c.addedFile = "";
+        c.recentField = "addedFile";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
 // 1. Started loading files
 // 2. Finished loading files
 // 3. Selected `Confg`
@@ -662,8 +685,9 @@ function fsShouldReloadFiles(c) {
 // 5. Finished loading a file
 // 6. Selected `Recent`
 // 7. Selected `Add / remove`
+// 8. Edited file contents changed (by pressing Save) while at `Recent`
 function fsShouldResetContents(c) {
-    if (
+    /* 1 */ if (
         c.recentField == "isLoadingFiles" &&
         c.isLoadingFiles
     ) {
@@ -672,7 +696,7 @@ function fsShouldResetContents(c) {
         return c;
     }
 
-    if (
+    /* 2 */ if (
         c.recentField == "isLoadingFiles" &&
         !c.isLoadingFiles
     ) {
@@ -681,7 +705,7 @@ function fsShouldResetContents(c) {
         return c;
     }
 
-    if (
+    /* 3 */ if (
         c.recentField == "selectedItemId" &&
         c.selectedItemId == FS_MENU_ID_CFG
     ) {
@@ -690,7 +714,7 @@ function fsShouldResetContents(c) {
         return c;
     }
 
-    if (
+    /* 4 */ if (
         c.recentField == "isLoadingFile" &&
         c.isLoadingFile
     ) {
@@ -699,7 +723,7 @@ function fsShouldResetContents(c) {
         return c;
     }
 
-    if (
+    /* 5 */ if (
         c.recentField == "isLoadingFile" &&
         !c.isLoadingFile
     ) {
@@ -709,7 +733,7 @@ function fsShouldResetContents(c) {
         return c;
     }
 
-    if (
+    /* 6 */ if (
         c.recentField == "selectedItemId" &&
         c.selectedItemId == FS_MENU_ID_RECENT
     ) {
@@ -718,11 +742,20 @@ function fsShouldResetContents(c) {
         return c;
     }
 
-    if (
+    /* 7 */ if (
         c.recentField == "selectedItemId" &&
         c.selectedItemId == FS_MENU_ID_ADD
     ) {
-        c.contents = fsPageAdd();
+        c.contents = fsPageAdd(c.addedFile);
+        c.recentField = "contents";
+        return c;
+    }
+
+    /* 8 */ if (
+        c.recentField == "editedFileContents" &&
+        c.selectedItemId == FS_MENU_ID_RECENT
+    ) {
+        c.contents = fsRecentHTML(c.recentFiles, c.editedFileContents);
         c.recentField = "contents";
         return c;
     }
@@ -867,7 +900,7 @@ function fsShouldResetSelectedFile(c) {
     }
 
     if (c.recentField == "didAddFile") {
-        c.selectedFile = c.addFile;
+        c.selectedFile = c.addedFile;
         c.recentField = "selectedFile";
         return c;
     }
@@ -1035,8 +1068,10 @@ function fsLoadRecentFiles(files) {
 }
 
 // Page contents for adding or removing files
-function fsPageAdd() {
-   return FS_PAGE_ADD;
+function fsPageAdd(fileName) {
+   return FS_PAGE_ADD
+      .replaceAll("%FS_ADDED_FILE%", FS_ADDED_FILE)
+      .replaceAll("%FILE%", fileName);
 }
 
 // Recently updated files' page contents
