@@ -348,6 +348,7 @@ let FS_CONTENTS_RECENT_ITEM_UNSAVED = `
 <span class="uk-badge">Unsaved</span>
 `;
 let FS_EDITOR_ID = "fs-editor";
+let FS_FILE_SELECTION_ID = "fs-file-selection";
 let FS_FILE_SIDE_ITEM = `<span uk-icon="file-text"></span>%NAME%`;
 let FS_HIDE_DIRS = "fs-hide-dirs";
 let FS_HIDE_GIT = "fs-hide-git";
@@ -382,13 +383,16 @@ let FS_PAGE_ADD = `
     <form>
         <div class="uk-margin-small">
             <div class="uk-form-controls">
-                <select id="%FS_FILE_SELECTION%" class="uk-select">
+                <select id="%FS_FILE_SELECTION_ID%" class="uk-select">
                     %FILES%
                 </select>
             </div>
         </div>
         <button id="%FS_RM_FILE%" class="uk-button uk-button-default">Remove</button>
     </form>
+`;
+let FS_PAGE_DELETE_ITEM = `
+<option>%FILE%</option>
 `;
 let FS_PANEL_MAIN = "panel-main";
 let FS_PANEL_MAIN_HEADER = "panel-main-header";
@@ -679,12 +683,12 @@ function fsShouldResetAddedFile(c) {
 
 // Conditions:
 // 1. Started loading files
-// 2. Finished loading files
+// 2. Finished loading files while at `All` side menu
 // 3. Selected `Confg`
 // 4. Started loading a file
 // 5. Finished loading a file
 // 6. Selected `Recent`
-// 7. Selected `Add / remove`
+// 7. Finished loading files while at `Add / remove`
 // 8. Edited file contents changed (by pressing Save) while at `Recent`
 function fsShouldResetContents(c) {
     /* 1 */ if (
@@ -698,7 +702,8 @@ function fsShouldResetContents(c) {
 
     /* 2 */ if (
         c.recentField == "isLoadingFiles" &&
-        !c.isLoadingFiles
+        !c.isLoadingFiles &&
+        c.selectedItemId == FS_MENU_ID_ALL
     ) {
         c.contents = fsAllHTML(c.areDirsHidden, c.isGitHidden, c.walkedFiles);
         c.recentField = "contents";
@@ -743,10 +748,13 @@ function fsShouldResetContents(c) {
     }
 
     /* 7 */ if (
-        c.recentField == "selectedItemId" &&
+        c.recentField == "isLoadingFiles" &&
+        !c.isLoadingFiles &&
         c.selectedItemId == FS_MENU_ID_ADD
     ) {
-        c.contents = fsPageAdd(c.addedFile);
+        var filesHTML = fsFilesToRemoveHTML(c.walkedFiles, c.areDirsHidden, c.isGitHidden);
+        /**/console.log("ИГР fsSRC-7 files:", filesHTML);
+        c.contents = fsPageAdd(c.addedFile, filesHTML);
         c.recentField = "contents";
         return c;
     }
@@ -841,6 +849,8 @@ function fsShouldResetLoadingFile(c) {
 
 // Conditions:
 // 1. `Files` side menu item has been selected
+// 2. List of files is now available
+// 3. `Add/Remove` side menu item has been selected
 function fsShouldResetLoadingFiles(c) {
     if (
         c.recentField == "selectedItemId" &&
@@ -853,6 +863,15 @@ function fsShouldResetLoadingFiles(c) {
 
     if (c.recentField == "walkedFiles") {
         c.isLoadingFiles = false;
+        c.recentField = "isLoadingFiles";
+        return c;
+    }
+
+    if (
+        c.recentField == "selectedItemId" &&
+        c.selectedItemId == FS_MENU_ID_ADD
+    ) {
+        c.isLoadingFiles = true;
         c.recentField = "isLoadingFiles";
         return c;
     }
@@ -997,20 +1016,20 @@ function fsShouldStopWiping(c) {
 
 // All files' page contents
 function fsAllHTML(areDirsHidden, isGitHidden, walkedFiles) {
-   var htmlItems = "";
-   for (let i in walkedFiles) {
-       let item = walkedFiles[i];
-       if (fsIsFileHidden(item, areDirsHidden, isGitHidden)) {
-           continue;
-       }
-
-       htmlItems += FS_CONTENTS_ALL_ITEM
-           .replaceAll("%PATH%", item.path)
-           .replaceAll("%TYPE%", item.st.type)
-           .replaceAll("%SIZE%", item.st.size);
-   }
-   return FS_CONTENTS_ALL
-       .replaceAll("%ITEMS%", htmlItems);
+    var htmlItems = "";
+    for (let i in walkedFiles) {
+        let item = walkedFiles[i];
+        if (fsIsFileHidden(item, areDirsHidden, isGitHidden)) {
+            continue;
+        }
+   
+        htmlItems += FS_CONTENTS_ALL_ITEM
+            .replaceAll("%PATH%", item.path)
+            .replaceAll("%TYPE%", item.st.type)
+            .replaceAll("%SIZE%", item.st.size);
+    }
+    return FS_CONTENTS_ALL
+        .replaceAll("%ITEMS%", htmlItems);
 }
 
 // Cfg page contents
@@ -1024,6 +1043,22 @@ function fsCfgHTML(areDirsHidden, isGitHidden) {
         .replaceAll("%FS_WIPE%", FS_WIPE)
         .replaceAll("%IS_GIT_HIDDEN%", gitHidden);
 }
+
+// Files to select for removal
+function fsFilesToRemoveHTML(files, areDirsHidden, isGitHidden) {
+    var o = "";
+    for (let i in files) {
+        let item = files[i];
+        if (fsIsFileHidden(item, areDirsHidden, isGitHidden)) {
+            continue;
+        }
+        let name = item.path;
+        o += FS_PAGE_DELETE_ITEM
+            .replaceAll("%FILE%", name);
+    }
+    return o;
+}
+
 
 function fsIsFileHidden(item, areDirsHidden, isGitHidden) {
     // Ignore directories
@@ -1068,10 +1103,12 @@ function fsLoadRecentFiles(files) {
 }
 
 // Page contents for adding or removing files
-function fsPageAdd(fileName) {
+function fsPageAdd(fileName, filesToRemove) {
    return FS_PAGE_ADD
       .replaceAll("%FS_ADDED_FILE%", FS_ADDED_FILE)
-      .replaceAll("%FILE%", fileName);
+      .replaceAll("%FILE%", fileName)
+      .replaceAll("%FS_FILE_SELECTION_ID%", FS_FILE_SELECTION_ID)
+      .replaceAll("%FILES%", filesToRemove);
 }
 
 // Recently updated files' page contents
