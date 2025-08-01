@@ -21,11 +21,14 @@ function FSContext() {
         this.clickedFile = "";
         this.clickedRecentFile = "";
         this.contents = "";
+        this.deletedFile = "";
         this.didAddFile = false;
         this.didClickAddFile = false;
+        this.didClickDeleteFile = false;
         this.didClickHideDirs = false;
         this.didClickHideGit = false;
         this.didClickWipe = false;
+        this.didDeleteFile = false;
         this.didLaunch = false;
         this.didSaveFiles = false;
         this.didWipe = false;
@@ -34,6 +37,7 @@ function FSContext() {
         this.headerClickedButtonId = -1;
         this.headerSaveButtonId = -1;
         this.inputAddedFile = "";
+        this.inputDeletedFileId = -1;
         this.isGitHidden = true;
         this.isLoadingFile = false;
         this.isLoadingFiles = false;
@@ -68,16 +72,22 @@ function FSContext() {
             return this.clickedRecentFile;
         } else if (name == "contents") {
             return this.contents;
+        } else if (name == "deletedFile") {
+            return this.deletedFile;
         } else if (name == "didAddFile") {
             return this.didAddFile;
         } else if (name == "didClickAddFile") {
             return this.didClickAddFile;
+        } else if (name == "didClickDeleteFile") {
+            return this.didClickDeleteFile;
         } else if (name == "didClickHideDirs") {
             return this.didClickHideDirs;
         } else if (name == "didClickHideGit") {
             return this.didClickHideGit;
         } else if (name == "didClickWipe") {
             return this.didClickWipe;
+        } else if (name == "didDeleteFile") {
+            return this.didDeleteFile;
         } else if (name == "didLaunch") {
             return this.didLaunch;
         } else if (name == "didSaveFiles") {
@@ -96,6 +106,8 @@ function FSContext() {
             return this.headerSaveButtonId;
         } else if (name == "inputAddedFile") {
             return this.inputAddedFile;
+        } else if (name == "inputDeletedFileId") {
+            return this.inputDeletedFileId;
         } else if (name == "isGitHidden") {
             return this.isGitHidden;
         } else if (name == "isLoadingFile") {
@@ -142,11 +154,14 @@ function FSContext() {
         that.clickedFile = this.clickedFile;
         that.clickedRecentFile = this.clickedRecentFile;
         that.contents = this.contents;
+        that.deletedFile = this.deletedFile;
         that.didAddFile = this.didAddFile;
         that.didClickAddFile = this.didClickAddFile;
+        that.didClickDeleteFile = this.didClickDeleteFile;
         that.didClickHideDirs = this.didClickHideDirs;
         that.didClickHideGit = this.didClickHideGit;
         that.didClickWipe = this.didClickWipe;
+        that.didDeleteFile = this.didDeleteFile;
         that.didLaunch = this.didLaunch;
         that.didSaveFiles = this.didSaveFiles;
         that.didWipe = this.didWipe;
@@ -155,6 +170,7 @@ function FSContext() {
         that.headerClickedButtonId = this.headerClickedButtonId;
         that.headerSaveButtonId = this.headerSaveButtonId;
         that.inputAddedFile = this.inputAddedFile;
+        that.inputDeletedFileId = this.inputDeletedFileId;
         that.isGitHidden = this.isGitHidden;
         that.isLoadingFile = this.isLoadingFile;
         that.isLoadingFiles = this.isLoadingFiles;
@@ -189,16 +205,22 @@ function FSContext() {
             this.clickedRecentFile = value;
         } else if (name == "contents") {
             this.contents = value;
+        } else if (name == "deletedFile") {
+            this.deletedFile = value;
         } else if (name == "didAddFile") {
             this.didAddFile = value;
         } else if (name == "didClickAddFile") {
             this.didClickAddFile = value;
+        } else if (name == "didClickDeleteFile") {
+            this.didClickDeleteFile = value;
         } else if (name == "didClickHideDirs") {
             this.didClickHideDirs = value;
         } else if (name == "didClickHideGit") {
             this.didClickHideGit = value;
         } else if (name == "didClickWipe") {
             this.didClickWipe = value;
+        } else if (name == "didDeleteFile") {
+            this.didDeleteFile = value;
         } else if (name == "didLaunch") {
             this.didLaunch = value;
         } else if (name == "didSaveFiles") {
@@ -215,6 +237,8 @@ function FSContext() {
             this.headerSaveButtonId = value;
         } else if (name == "inputAddedFile") {
             this.inputAddedFile = value;
+        } else if (name == "inputDeletedFileId") {
+            this.inputDeletedFileId = value;
         } else if (name == "isGitHidden") {
             this.isGitHidden = value;
         } else if (name == "isLoadingFile") {
@@ -348,7 +372,7 @@ let FS_CONTENTS_RECENT_ITEM_UNSAVED = `
 <span class="uk-badge">Unsaved</span>
 `;
 let FS_EDITOR_ID = "fs-editor";
-let FS_FILE_SELECTION_ID = "fs-file-selection";
+let FS_FILE_DELETION_ID = "fs-file-deletion";
 let FS_FILE_SIDE_ITEM = `<span uk-icon="file-text"></span>%NAME%`;
 let FS_HIDE_DIRS = "fs-hide-dirs";
 let FS_HIDE_GIT = "fs-hide-git";
@@ -380,19 +404,20 @@ let FS_PAGE_ADD = `
     <div class="uk-container uk-padding-small">
         <strong>Remove file:</strong>
     </div>
-    <form>
+    <form onclick="event.preventDefault();">
         <div class="uk-margin-small">
             <div class="uk-form-controls">
-                <select id="%FS_FILE_SELECTION_ID%" class="uk-select">
+                <select id="%FS_FILE_DELETION_ID%" class="uk-select">
+                    <option value="-1">Select file</option>
                     %FILES%
                 </select>
             </div>
         </div>
-        <button id="%FS_RM_FILE%" class="uk-button uk-button-default">Remove</button>
+        <button class="uk-button uk-button-default" onclick='fsCtrl().set("didClickDeleteFile", true)'>Delete</button>
     </form>
 `;
 let FS_PAGE_DELETE_ITEM = `
-<option>%FILE%</option>
+<option value="%ID%">%FILE%</option>
 `;
 let FS_PANEL_MAIN = "panel-main";
 let FS_PANEL_MAIN_HEADER = "panel-main-header";
@@ -452,6 +477,13 @@ function FSComponent() {
             });
         }
 
+        let deleted = deId(FS_FILE_DELETION_ID);
+        if (deleted != null ) {
+            deleted.addEventListener("change", (e) => {
+                this.ctrl.set("inputDeletedFileId", e.target.value);
+            });
+        }
+
         let hideDirs = deId(FS_HIDE_DIRS);
         if (hideDirs != null) {
             hideDirs.addEventListener("click", (e) => {
@@ -483,6 +515,14 @@ function FSComponent() {
             })();
         });
 
+        this.ctrl.registerFieldCallback("didClickDeleteFile", (c) => {
+            (async() => {
+                await this.pfs.unlink(c.deletedFile);
+                this.ctrl.set("didDeleteFile", true);
+            })();
+        });
+
+
         this.ctrl.registerFieldCallback("contents", (c) => {
             let main = deId(FS_PANEL_MAIN);
             main.innerHTML = c.contents;
@@ -494,17 +534,10 @@ function FSComponent() {
             this.resetEvents();
         });
 
-        /*
-        this.ctrl.registerFieldCallback("didClickAddFile", (c) => {
-            UIkit.modal.prompt("Create a new file:", "/file.txt").then((path) => {
-                // Ignore cancellation.
-                if (path == null) {
-                    return;
-                }
-                this.ctrl.set("addFile", path);
-            });
+        this.ctrl.registerFieldCallback("didDeleteFile", (c) => {
+            reportSuccess("🧹 Did delete file", 500)
         });
-        */
+
 
         this.ctrl.registerFieldCallback("didSaveFiles", (c) => {
             reportSuccess("💾 Did save", 500)
@@ -583,6 +616,7 @@ function FSComponent() {
             fsShouldReloadFiles,
             fsShouldResetAddedFile,
             fsShouldResetContents,
+            fsShouldResetDeletedFile,
             fsShouldResetEditedFileContents,
             fsShouldResetHiddenDirs,
             fsShouldResetHiddenGit,
@@ -773,6 +807,26 @@ function fsShouldResetContents(c) {
 }
 
 // Conditions:
+// 1. User selected file to delete
+// 2. User selected side menu item
+function fsShouldResetDeletedFile(c) {
+    if (c.recentField == "inputDeletedFileId") {
+        c.deletedFile = c.walkedFiles[c.inputDeletedFileId].path;
+        c.recentField = "deletedFile";
+        return c;
+    }
+
+    if (c.recentField == "selectedItemId") {
+        c.deletedFile = "";
+        c.recentField = "deletedFile";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
 // 1. Editor reported new contents as a result of user input
 // 2. Did save files
 function fsShouldResetEditedFileContents(c) {
@@ -851,8 +905,9 @@ function fsShouldResetLoadingFile(c) {
 // 1. `Files` side menu item has been selected
 // 2. List of files is now available
 // 3. `Add/Remove` side menu item has been selected
+// 4. File has been deleted while at `Add/Remove`
 function fsShouldResetLoadingFiles(c) {
-    if (
+    /* 1 */ if (
         c.recentField == "selectedItemId" &&
         c.selectedItemId == FS_MENU_ID_ALL
     ) {
@@ -861,14 +916,23 @@ function fsShouldResetLoadingFiles(c) {
         return c;
     }
 
-    if (c.recentField == "walkedFiles") {
+    /* 2 */ if (c.recentField == "walkedFiles") {
         c.isLoadingFiles = false;
         c.recentField = "isLoadingFiles";
         return c;
     }
 
-    if (
+    /* 3 */ if (
         c.recentField == "selectedItemId" &&
+        c.selectedItemId == FS_MENU_ID_ADD
+    ) {
+        c.isLoadingFiles = true;
+        c.recentField = "isLoadingFiles";
+        return c;
+    }
+
+    /* 4 */ if (
+        c.recentField == "didDeleteFile" &&
         c.selectedItemId == FS_MENU_ID_ADD
     ) {
         c.isLoadingFiles = true;
@@ -883,8 +947,9 @@ function fsShouldResetLoadingFiles(c) {
 // Conditions:
 // 1. Finished loading file (after selection in All, Recent, or Side menu)
 // 2. Did load non-empty recent files
+// 3. Did delete file
 function fsShouldResetRecentFiles(c) {
-    if (
+    /* 1 */ if (
         c.recentField == "isLoadingFile" &&
         !c.isLoadingFile
     ) {
@@ -893,12 +958,18 @@ function fsShouldResetRecentFiles(c) {
         return c;
     }
 
-    if (
+    /* 2 */ if (
         c.recentField == "loadedRecentFiles" &&
         c.loadedRecentFiles != null &&
         Object.keys(c.loadedRecentFiles).length > 0
     ) {
         c.recentFiles = c.loadedRecentFiles;
+        c.recentField = "recentFiles";
+        return c;
+    }
+
+    /* 3 */ if (c.recentField == "didDeleteFile") {
+        delete c.recentFiles[c.deletedFile];
         c.recentField = "recentFiles";
         return c;
     }
@@ -1054,6 +1125,7 @@ function fsFilesToRemoveHTML(files, areDirsHidden, isGitHidden) {
         }
         let name = item.path;
         o += FS_PAGE_DELETE_ITEM
+            .replaceAll("%ID%", i)
             .replaceAll("%FILE%", name);
     }
     return o;
@@ -1107,7 +1179,7 @@ function fsPageAdd(fileName, filesToRemove) {
    return FS_PAGE_ADD
       .replaceAll("%FS_ADDED_FILE%", FS_ADDED_FILE)
       .replaceAll("%FILE%", fileName)
-      .replaceAll("%FS_FILE_SELECTION_ID%", FS_FILE_SELECTION_ID)
+      .replaceAll("%FS_FILE_DELETION_ID%", FS_FILE_DELETION_ID)
       .replaceAll("%FILES%", filesToRemove);
 }
 
