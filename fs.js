@@ -16,18 +16,37 @@ function pfs() {
 
 function FSContext() {
     this._construct = function() {
+        this.addedFile = "";
         this.areDirsHidden = true;
+        this.clickedFile = "";
+        this.clickedRecentFile = "";
         this.contents = "";
+        this.deletedFile = "";
+        this.didAddFile = false;
+        this.didClickAddFile = false;
+        this.didClickDeleteFile = false;
         this.didClickHideDirs = false;
         this.didClickHideGit = false;
         this.didClickWipe = false;
+        this.didDeleteFile = false;
         this.didLaunch = false;
+        this.didSaveFiles = false;
         this.didWipe = false;
+        this.editedContents = "";
+        this.editedFileContents = {};
+        this.headerClickedButtonId = -1;
+        this.headerSaveButtonId = -1;
+        this.inputAddedFile = "";
+        this.inputDeletedFileId = -1;
         this.isGitHidden = true;
         this.isLoadingFile = false;
         this.isLoadingFiles = false;
+        this.loadedRecentFiles = {};
+        this.loadRecentFiles = false;
+        this.recentFiles = {},
         this.reloadFile = false;
         this.reloadFiles = false;
+        this.saveFiles = false;
         this.selectedFile = "";
         this.selectedFileContents = "";
         this.selectedItemId = -1;
@@ -43,30 +62,70 @@ function FSContext() {
     this._construct();
 
     this.field = function(name) {
-        if (name == "areDirsHidden") {
+        if (name == "addedFile") {
+            return this.addedFile;
+        } else if (name == "areDirsHidden") {
             return this.areDirsHidden;
+        } else if (name == "clickedFile") {
+            return this.clickedFile;
+        } else if (name == "clickedRecentFile") {
+            return this.clickedRecentFile;
         } else if (name == "contents") {
             return this.contents;
+        } else if (name == "deletedFile") {
+            return this.deletedFile;
+        } else if (name == "didAddFile") {
+            return this.didAddFile;
+        } else if (name == "didClickAddFile") {
+            return this.didClickAddFile;
+        } else if (name == "didClickDeleteFile") {
+            return this.didClickDeleteFile;
         } else if (name == "didClickHideDirs") {
             return this.didClickHideDirs;
         } else if (name == "didClickHideGit") {
             return this.didClickHideGit;
         } else if (name == "didClickWipe") {
             return this.didClickWipe;
+        } else if (name == "didDeleteFile") {
+            return this.didDeleteFile;
         } else if (name == "didLaunch") {
             return this.didLaunch;
+        } else if (name == "didSaveFiles") {
+            return this.didSaveFiles;
         } else if (name == "didWipe") {
             return this.didWipe;
+        } else if (name == "editedContents") {
+            return this.editedContents;
+        } else if (name == "editedFileContents") {
+            return this.editedFileContents;
+        } else if (name == "headerClickedButtonId") {
+            return this.headerClickedButtonId;
+        } else if (name == "headerClickedButtonId") {
+            return this.headerClickedButtonId;
+        } else if (name == "headerSaveButtonId") {
+            return this.headerSaveButtonId;
+        } else if (name == "inputAddedFile") {
+            return this.inputAddedFile;
+        } else if (name == "inputDeletedFileId") {
+            return this.inputDeletedFileId;
         } else if (name == "isGitHidden") {
             return this.isGitHidden;
         } else if (name == "isLoadingFile") {
             return this.isLoadingFile;
         } else if (name == "isLoadingFiles") {
             return this.isLoadingFiles;
+        } else if (name == "loadedRecentFiles") {
+            return this.loadedRecentFiles;
+        } else if (name == "loadRecentFiles") {
+            return this.loadRecentFiles;
+        } else if (name == "recentFiles") {
+            return this.recentFiles;
         } else if (name == "reloadFile") {
             return this.reloadFile;
         } else if (name == "reloadFiles") {
             return this.reloadFiles;
+        } else if (name == "saveFiles") {
+            return this.saveFiles;
         } else if (name == "selectedFile") {
             return this.selectedFile;
         } else if (name == "selectedFileContents") {
@@ -90,18 +149,37 @@ function FSContext() {
 
     this.selfCopy = function() {
         let that = new FSContext();
+        that.addedFile = this.addedFile;
         that.areDirsHidden = this.areDirsHidden;
+        that.clickedFile = this.clickedFile;
+        that.clickedRecentFile = this.clickedRecentFile;
         that.contents = this.contents;
+        that.deletedFile = this.deletedFile;
+        that.didAddFile = this.didAddFile;
+        that.didClickAddFile = this.didClickAddFile;
+        that.didClickDeleteFile = this.didClickDeleteFile;
         that.didClickHideDirs = this.didClickHideDirs;
         that.didClickHideGit = this.didClickHideGit;
         that.didClickWipe = this.didClickWipe;
+        that.didDeleteFile = this.didDeleteFile;
         that.didLaunch = this.didLaunch;
+        that.didSaveFiles = this.didSaveFiles;
         that.didWipe = this.didWipe;
+        that.editedContents = this.editedContents;
+        that.editedFileContents = this.editedFileContents;
+        that.headerClickedButtonId = this.headerClickedButtonId;
+        that.headerSaveButtonId = this.headerSaveButtonId;
+        that.inputAddedFile = this.inputAddedFile;
+        that.inputDeletedFileId = this.inputDeletedFileId;
         that.isGitHidden = this.isGitHidden;
         that.isLoadingFile = this.isLoadingFile;
         that.isLoadingFiles = this.isLoadingFiles;
+        that.loadedRecentFiles = this.loadedRecentFiles;
+        that.loadRecentFiles = this.loadRecentFiles;
+        that.recentFiles = this.recentFiles;
         that.reloadFile = this.reloadFile;
         that.reloadFiles = this.reloadFiles;
+        that.saveFiles = this.saveFiles;
         that.selectedFile = this.selectedFile;
         that.selectedFileContents = this.selectedFileContents;
         that.selectedItemId = this.selectedItemId;
@@ -117,30 +195,68 @@ function FSContext() {
     };
 
     this.setField = function(name, value) {
-        if (name == "areDirsHidden") {
+        if (name == "addedFile") {
+            this.addedFile = value;
+        } else if (name == "areDirsHidden") {
             this.areDirsHidden = value;
+        } else if (name == "clickedFile") {
+            this.clickedFile = value;
+        } else if (name == "clickedRecentFile") {
+            this.clickedRecentFile = value;
         } else if (name == "contents") {
             this.contents = value;
+        } else if (name == "deletedFile") {
+            this.deletedFile = value;
+        } else if (name == "didAddFile") {
+            this.didAddFile = value;
+        } else if (name == "didClickAddFile") {
+            this.didClickAddFile = value;
+        } else if (name == "didClickDeleteFile") {
+            this.didClickDeleteFile = value;
         } else if (name == "didClickHideDirs") {
             this.didClickHideDirs = value;
         } else if (name == "didClickHideGit") {
             this.didClickHideGit = value;
         } else if (name == "didClickWipe") {
             this.didClickWipe = value;
+        } else if (name == "didDeleteFile") {
+            this.didDeleteFile = value;
         } else if (name == "didLaunch") {
             this.didLaunch = value;
+        } else if (name == "didSaveFiles") {
+            this.didSaveFiles = value;
         } else if (name == "didWipe") {
             this.didWipe  = value;
+        } else if (name == "editedContents") {
+            this.editedContents = value;
+        } else if (name == "editedFileContents") {
+            this.editedFileContents = value;
+        } else if (name == "headerClickedButtonId") {
+            this.headerClickedButtonId = value;
+        } else if (name == "headerSaveButtonId") {
+            this.headerSaveButtonId = value;
+        } else if (name == "inputAddedFile") {
+            this.inputAddedFile = value;
+        } else if (name == "inputDeletedFileId") {
+            this.inputDeletedFileId = value;
         } else if (name == "isGitHidden") {
             this.isGitHidden = value;
         } else if (name == "isLoadingFile") {
             this.isLoadingFile = value;
         } else if (name == "isLoadingFiles") {
             this.isLoadingFiles = value;
+        } else if (name == "loadedRecentFiles") {
+            this.loadedRecentFiles = value;
+        } else if (name == "loadRecentFiles") {
+            this.loadRecentFiles = value;
+        } else if (name == "recentFiles") {
+            this.recentFiles = value;
         } else if (name == "reloadFile") {
             this.reloadFile = value;
         } else if (name == "reloadFiles") {
             this.reloadFiles = value;
+        } else if (name == "saveFiles") {
+            this.saveFiles = value;
         } else if (name == "selectedFile") {
             this.selectedFile = value;
         } else if (name == "selectedFileContents") {
@@ -165,34 +281,12 @@ function FSContext() {
 
 //<!-- Constants -->
 
-let FS_CONTENTS_CFG = `
+let FS_ADDED_FILE = "fs-added-file";
+let FS_CONTENTS_ALL = `
 <div class="uk-container uk-padding-small">
-    <h1 class="uk-heading">Cfg</h1>
-    <form>
-        <fieldset class="uk-fieldset">
-            <div class="uk-margin">
-                <label>
-                    <input id="%FS_HIDE_DIRS%" class="uk-checkbox" type="checkbox" %ARE_DIRS_HIDDEN%>
-                    Hide directories
-                </label>
-            </div>
-            <div class="uk-margin">
-                <label>
-                    <input id="%FS_HIDE_GIT%" class="uk-checkbox" type="checkbox" %IS_GIT_HIDDEN%>
-                    Hide .git
-                </label>
-            </div>
-        </fieldset>
-    </form>
-    <button id="%FS_WIPE%" class="uk-button uk-button-danger">Wipe file system and reload</button>
+    <strong>All repository files</strong>
 </div>
-`;
-let FS_CONTENTS_EDITOR = `
-<div id="%EDITOR_ID%">%CONTENTS%</div>
-`;
-let FS_CONTENTS_FILES = `
 <div class="uk-container uk-padding-small">
-    <h1 class="uk-heading">Files</h1>
     <table class="uk-table uk-table-hover uk-table-divider">
         <thead>
             <tr>
@@ -207,27 +301,129 @@ let FS_CONTENTS_FILES = `
     </table>
 </div>
 `;
-let FS_CONTENTS_FILES_ITEM = `
+let FS_CONTENTS_ALL_ITEM = `
 <tr>
-    <td><a onclick='fsCtrl().set("selectedFile", "%PATH%")'>%PATH%</a></td>
+    <td><a onclick='fsCtrl().set("clickedFile", "%PATH%")'>%PATH%</a></td>
     <td>%TYPE%</td>
     <td>%SIZE%</td>
 </tr>
+`;
+let FS_CONTENTS_CFG = `
+<div class="uk-container uk-padding-small">
+    <strong>Configuration</strong>
+</div>
+<div class="uk-container uk-padding-small">
+    <form>
+        <fieldset class="uk-fieldset">
+            <div class="uk-margin-small">
+                <label>
+                    <input id="%FS_HIDE_DIRS%" class="uk-checkbox" type="checkbox" %ARE_DIRS_HIDDEN%>
+                    Hide directories
+                </label>
+            </div>
+            <div class="uk-margin-small">
+                <label>
+                    <input id="%FS_HIDE_GIT%" class="uk-checkbox" type="checkbox" %IS_GIT_HIDDEN%>
+                    Hide .git
+                </label>
+            </div>
+        </fieldset>
+    </form>
+    <button id="%FS_WIPE%" class="uk-button uk-button-danger">Wipe file system and reload</button>
+</div>
+`;
+let FS_CONTENTS_EDITOR = `
+<div id="%EDITOR_ID%"></div>
 `;
 let FS_CONTENTS_LOADING = `
 <div class="uk-container uk-padding-small">
     <p>Loading...</p>
 </div>
 `;
+let FS_CONTENTS_RECENT = `
+<div class="uk-container uk-padding-small">
+    <strong>Recently opened files</strong>
+</div>
+<div class="uk-container uk-padding-small">
+    <table class="uk-table uk-table-hover uk-table-divider">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Last opened</th>
+            </tr>
+        </thead>
+        <tbody>
+%ITEMS%
+        </tbody>
+    </table>
+</div>
+`;
+let FS_CONTENTS_RECENT_ITEM = `
+<tr>
+    <td>
+        <a onclick='fsCtrl().set("clickedRecentFile", "%PATH%")'>
+            %PATH%%BADGE%
+        </a>
+    </td>
+    <td>%DATE%</td>
+</tr>
+`;
+let FS_CONTENTS_RECENT_ITEM_UNSAVED = `
+<span class="uk-badge">Unsaved</span>
+`;
 let FS_EDITOR_ID = "fs-editor";
+let FS_FILE_DELETION_ID = "fs-file-deletion";
 let FS_FILE_SIDE_ITEM = `<span uk-icon="file-text"></span>%NAME%`;
 let FS_HIDE_DIRS = "fs-hide-dirs";
 let FS_HIDE_GIT = "fs-hide-git";
-let FS_MENU_ID_FILE = 2;
-let FS_MENU_ID_FILES = 0;
-let FS_MENU_ID_CFG = 1;
+let FS_MENU_ID_ADD = 2;
+let FS_MENU_ID_ALL = 0;
+let FS_MENU_ID_CFG = 3;
+let FS_MENU_ID_FILE = 4;
+let FS_MENU_ID_RECENT = 1;
+let FS_MENU_TITLE_ADD = "Add / remove";
+let FS_MENU_TITLE_ALL = "All";
+let FS_MENU_TITLE_CFG = "Config";
+let FS_MENU_TITLE_RECENT = "Recent";
+let FS_MENU_TITLE_RECENT_UNSAVED = FS_MENU_TITLE_RECENT + ' <span class="uk-badge">%COUNT%</span>';
 let FS_NAME = "pskov2-proto-fs";
+let FS_NT_DID_DELETE = "🧹 Did delete file";
+let FS_NT_DID_SAVE = "💾 Did save";
+let FS_PAGE_ADD = `
+<div class="uk-container uk-padding-small">
+    <div class="uk-container uk-padding-small">
+        <strong>Add file:</strong>
+    </div>
+    <form onclick="event.preventDefault();">
+        <div class="uk-margin-small">
+            <div class="uk-form-controls">
+                <input id="%FS_ADDED_FILE%" class="uk-input" type="text" placeholder="For example: /abc.txt" value="%FILE%">
+            </div>
+        </div>
+        <button class="uk-button uk-button-default" onclick='fsCtrl().set("didClickAddFile", true)'>Add</button>
+    </form>
+    <br/> <br/>
+    <div class="uk-container uk-padding-small">
+        <strong>Remove file:</strong>
+    </div>
+    <form onclick="event.preventDefault();">
+        <div class="uk-margin-small">
+            <div class="uk-form-controls">
+                <select id="%FS_FILE_DELETION_ID%" class="uk-select">
+                    <option value="-1">Select file</option>
+                    %FILES%
+                </select>
+            </div>
+        </div>
+        <button class="uk-button uk-button-default" onclick='fsCtrl().set("didClickDeleteFile", true)'>Delete</button>
+    </form>
+`;
+let FS_PAGE_DELETE_ITEM = `
+<option value="%ID%">%FILE%</option>
+`;
 let FS_PANEL_MAIN = "panel-main";
+let FS_PANEL_MAIN_HEADER = "panel-main-header";
+let FS_RECENT_FILES_KEY = "fs-recent-files";
 let FS_WIPE = "fs-wipe";
 let FS_WIPE_KEY = "fs-wipe";
 
@@ -246,6 +442,7 @@ function FSComponent() {
         this.fs = new LightningFS(FS_NAME, {wipe: doWipe});
         this.pfs = this.fs.promises;
 
+        this.setupHeader();
         this.setupSideMenu();
         this.setupEffects();
         this.setupEvents();
@@ -257,15 +454,38 @@ function FSComponent() {
         }
     };
 
-    this.resetEditor = function() {
+    this.resetEditor = function(file, originalContents, editedContents) {
         let ed = deId(FS_EDITOR_ID);
-        if (ed != null) {
-            let editor = ace.edit(FS_EDITOR_ID);
-            editor.setReadOnly(true);
+        if (ed == null) {
+            return;
         }
+        let editor = ace.edit(FS_EDITOR_ID);
+        var contents = editedContents[file];
+        if (contents == null) {
+            contents = originalContents;
+        }
+        editor.setValue(contents);
+        editor.getSelection().clearSelection();
+        editor.session.on("change", (d) => {
+            this.ctrl.set("editedContents", editor.getValue());
+        });
     };
 
     this.resetEvents = function() {
+        let added = deId(FS_ADDED_FILE);
+        if (added != null) {
+            added.addEventListener("input", (e) => {
+                this.ctrl.set("inputAddedFile", added.value);
+            });
+        }
+
+        let deleted = deId(FS_FILE_DELETION_ID);
+        if (deleted != null) {
+            deleted.addEventListener("change", (e) => {
+                this.ctrl.set("inputDeletedFileId", e.target.value);
+            });
+        }
+
         let hideDirs = deId(FS_HIDE_DIRS);
         if (hideDirs != null) {
             hideDirs.addEventListener("click", (e) => {
@@ -289,12 +509,51 @@ function FSComponent() {
     };
 
     this.setupEffects = function() {
+        let oneLiners = {
+            "didDeleteFile": (c) => { reportSuccess(FS_NT_DID_DELETE, 500); },
+            "didSaveFiles": (c) => { reportSuccess(FS_NT_DID_SAVE, 500); },
+            "recentFiles": (c) => { fsSaveRecentFiles(c.recentFiles); },
+            "selectedFileContents": (c) => { sideSelectItem(c.sideId, FS_MENU_ID_FILE); },
+            "sideItems": (c) => { sideResetItemTitles(c.sideId, c.sideItems); },
+            "stopWiping": (c) => { localStorage.removeItem(FS_WIPE_KEY); },
+        };
+        for (let key in oneLiners) {
+            let f = oneLiners[key];
+            this.ctrl.registerFieldCallback(key, f);
+        }
+
+        this.ctrl.registerFieldCallback("didClickAddFile", (c) => {
+            (async() => {
+                let contents = "";
+                await this.pfs.writeFile(c.addedFile, contents, {encoding: "utf8"});
+                this.ctrl.set("didAddFile", true);
+            })();
+        });
+
+        this.ctrl.registerFieldCallback("didClickDeleteFile", (c) => {
+            (async() => {
+                await this.pfs.unlink(c.deletedFile);
+                this.ctrl.set("didDeleteFile", true);
+            })();
+        });
+
+
         this.ctrl.registerFieldCallback("contents", (c) => {
             let main = deId(FS_PANEL_MAIN);
             main.innerHTML = c.contents;
-            this.resetEditor();
+            this.resetEditor(
+                c.selectedFile,
+                c.selectedFileContents,
+                c.editedFileContents
+            );
             this.resetEvents();
         });
+
+        this.ctrl.registerFieldCallback("loadRecentFiles", (c) => {
+            let r = fsLoadRecentFiles();
+            this.ctrl.set("loadedRecentFiles", r);
+        });
+
 
         this.ctrl.registerFieldCallback("reloadFile", (c) => {
             (async() => {
@@ -312,21 +571,16 @@ function FSComponent() {
             })();
         });
 
-        this.ctrl.registerFieldCallback("selectedFileContents", (c) => {
-            sideSelectItem(c.sideId, FS_MENU_ID_FILE);
-        });
-
-        this.ctrl.registerFieldCallback("sideItems", (c) => {
-            sideResetItemTitles(c.sideId, c.sideItems);
+        this.ctrl.registerFieldCallback("saveFiles", (c) => {
+            (async() => {
+                await fsSaveFiles(this.pfs, c.editedFileContents);
+                this.ctrl.set("didSaveFiles", true);
+            })();
         });
 
         this.ctrl.registerFieldCallback("startWiping", (c) => {
             localStorage.setItem(FS_WIPE_KEY, c.wipe);
             location.reload();
-        });
-
-        this.ctrl.registerFieldCallback("stopWiping", (c) => {
-            localStorage.removeItem(FS_WIPE_KEY);
         });
     };
 
@@ -336,17 +590,33 @@ function FSComponent() {
         });
     };
 
+    this.setupHeader = function() {
+        let id = headerCreateButton('<span uk-tooltip="title: Save unsaved files; delay: 500">💾</span>');
+        this.ctrl.set("headerSaveButtonId", id);
+
+        headerCtrl().registerFieldCallback("clickedButtonId", (c) => {
+            this.ctrl.set("headerClickedButtonId", c.clickedButtonId);
+        });
+    };
+
     this.setupShoulds = function() {
         [
+            fsShouldLoadRecentFiles,
             fsShouldReloadFile,
             fsShouldReloadFiles,
+            fsShouldResetAddedFile,
             fsShouldResetContents,
+            fsShouldResetDeletedFile,
+            fsShouldResetEditedFileContents,
             fsShouldResetHiddenDirs,
             fsShouldResetHiddenGit,
             fsShouldResetLoadingFile,
             fsShouldResetLoadingFiles,
+            fsShouldResetRecentFiles,
+            fsShouldResetSelectedFile,
             fsShouldResetSelectedItemId,
             fsShouldResetSideItems,
+            fsShouldSaveFiles,
             fsShouldStartWiping,
             fsShouldStopWiping,
         ].forEach((f) => {
@@ -356,7 +626,7 @@ function FSComponent() {
 
     this.setupSideMenu = function() {
         // Register side menu group.
-        let sideId = sideCreateGroup("FS");
+        let sideId = sideCreateGroup("Files");
         this.ctrl.set("sideId", sideId);
 
         // Track selections.
@@ -369,6 +639,19 @@ function FSComponent() {
 }
 
 //<!-- Shoulds -->
+
+// Conditions:
+// 1. Did launch
+function fsShouldLoadRecentFiles(c) {
+    if (c.recentField == "didLaunch") {
+        c.loadRecentFiles = true;
+        c.recentField = "loadRecentFiles";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
 
 // Conditions:
 // 1. Started loading a file
@@ -403,13 +686,36 @@ function fsShouldReloadFiles(c) {
 }
 
 // Conditions:
+// 1. User changed input field
+// 2. Did add file
+function fsShouldResetAddedFile(c) {
+    if (c.recentField == "inputAddedFile") {
+        c.addedFile = c.inputAddedFile;
+        c.recentField = "addedFile";
+        return c;
+    }
+
+    if (c.recentField == "didAddFile") {
+        c.addedFile = "";
+        c.recentField = "addedFile";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
 // 1. Started loading files
-// 2. Finished loading files
-// 3. Selected `Cfg`
+// 2. Finished loading files while at `All` side menu
+// 3. Selected `Confg`
 // 4. Started loading a file
 // 5. Finished loading a file
+// 6. Selected `Recent`
+// 7. Finished loading files while at `Add / remove`
+// 8. Edited file contents changed (by pressing Save) while at `Recent`
 function fsShouldResetContents(c) {
-    if (
+    /* 1 */ if (
         c.recentField == "isLoadingFiles" &&
         c.isLoadingFiles
     ) {
@@ -418,16 +724,17 @@ function fsShouldResetContents(c) {
         return c;
     }
 
-    if (
+    /* 2 */ if (
         c.recentField == "isLoadingFiles" &&
-        !c.isLoadingFiles
+        !c.isLoadingFiles &&
+        c.selectedItemId == FS_MENU_ID_ALL
     ) {
-        c.contents = fsFilesHTML(c.areDirsHidden, c.isGitHidden, c.walkedFiles);
+        c.contents = fsAllHTML(c.areDirsHidden, c.isGitHidden, c.walkedFiles);
         c.recentField = "contents";
         return c;
     }
 
-    if (
+    /* 3 */ if (
         c.recentField == "selectedItemId" &&
         c.selectedItemId == FS_MENU_ID_CFG
     ) {
@@ -436,7 +743,7 @@ function fsShouldResetContents(c) {
         return c;
     }
 
-    if (
+    /* 4 */ if (
         c.recentField == "isLoadingFile" &&
         c.isLoadingFile
     ) {
@@ -445,14 +752,83 @@ function fsShouldResetContents(c) {
         return c;
     }
 
-    if (
+    /* 5 */ if (
         c.recentField == "isLoadingFile" &&
         !c.isLoadingFile
     ) {
         c.contents = FS_CONTENTS_EDITOR
-            .replaceAll("%EDITOR_ID%", FS_EDITOR_ID)
-            .replaceAll("%CONTENTS%", c.selectedFileContents);
+            .replaceAll("%EDITOR_ID%", FS_EDITOR_ID);
         c.recentField = "contents";
+        return c;
+    }
+
+    /* 6 */ if (
+        c.recentField == "selectedItemId" &&
+        c.selectedItemId == FS_MENU_ID_RECENT
+    ) {
+        c.contents = fsRecentHTML(c.recentFiles, c.editedFileContents);
+        c.recentField = "contents";
+        return c;
+    }
+
+    /* 7 */ if (
+        c.recentField == "isLoadingFiles" &&
+        !c.isLoadingFiles &&
+        c.selectedItemId == FS_MENU_ID_ADD
+    ) {
+        var filesHTML = fsFilesToRemoveHTML(c.walkedFiles, c.areDirsHidden, c.isGitHidden);
+        /**/console.log("ИГР fsSRC-7 files:", filesHTML);
+        c.contents = fsPageAdd(c.addedFile, filesHTML);
+        c.recentField = "contents";
+        return c;
+    }
+
+    /* 8 */ if (
+        c.recentField == "editedFileContents" &&
+        c.selectedItemId == FS_MENU_ID_RECENT
+    ) {
+        c.contents = fsRecentHTML(c.recentFiles, c.editedFileContents);
+        c.recentField = "contents";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. User selected file to delete
+// 2. User selected side menu item
+function fsShouldResetDeletedFile(c) {
+    if (c.recentField == "inputDeletedFileId") {
+        c.deletedFile = c.walkedFiles[c.inputDeletedFileId].path;
+        c.recentField = "deletedFile";
+        return c;
+    }
+
+    if (c.recentField == "selectedItemId") {
+        c.deletedFile = "";
+        c.recentField = "deletedFile";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Editor reported new contents as a result of user input
+// 2. Did save files
+function fsShouldResetEditedFileContents(c) {
+    if (c.recentField == "editedContents") {
+        c.editedFileContents[c.selectedFile] = c.editedContents;
+        c.recentField = "editedFileContents";
+        return c;
+    }
+
+    if (c.recentField == "didSaveFiles") {
+        c.editedFileContents = {};
+        c.recentField = "editedFileContents";
         return c;
     }
 
@@ -517,19 +893,101 @@ function fsShouldResetLoadingFile(c) {
 
 // Conditions:
 // 1. `Files` side menu item has been selected
+// 2. List of files is now available
+// 3. `Add/Remove` side menu item has been selected
+// 4. File has been deleted while at `Add/Remove`
 function fsShouldResetLoadingFiles(c) {
-    if (
+    /* 1 */ if (
         c.recentField == "selectedItemId" &&
-        c.selectedItemId == FS_MENU_ID_FILES
+        c.selectedItemId == FS_MENU_ID_ALL
     ) {
         c.isLoadingFiles = true;
         c.recentField = "isLoadingFiles";
         return c;
     }
 
-    if (c.recentField == "walkedFiles") {
+    /* 2 */ if (c.recentField == "walkedFiles") {
         c.isLoadingFiles = false;
         c.recentField = "isLoadingFiles";
+        return c;
+    }
+
+    /* 3 */ if (
+        c.recentField == "selectedItemId" &&
+        c.selectedItemId == FS_MENU_ID_ADD
+    ) {
+        c.isLoadingFiles = true;
+        c.recentField = "isLoadingFiles";
+        return c;
+    }
+
+    /* 4 */ if (
+        c.recentField == "didDeleteFile" &&
+        c.selectedItemId == FS_MENU_ID_ADD
+    ) {
+        c.isLoadingFiles = true;
+        c.recentField = "isLoadingFiles";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Finished loading file (after selection in All, Recent, or Side menu)
+// 2. Did load non-empty recent files
+// 3. Did delete file
+function fsShouldResetRecentFiles(c) {
+    /* 1 */ if (
+        c.recentField == "isLoadingFile" &&
+        !c.isLoadingFile
+    ) {
+        c.recentFiles[c.selectedFile] = new Date();
+        c.recentField = "recentFiles";
+        return c;
+    }
+
+    /* 2 */ if (
+        c.recentField == "loadedRecentFiles" &&
+        c.loadedRecentFiles != null &&
+        Object.keys(c.loadedRecentFiles).length > 0
+    ) {
+        c.recentFiles = c.loadedRecentFiles;
+        c.recentField = "recentFiles";
+        return c;
+    }
+
+    /* 3 */ if (c.recentField == "didDeleteFile") {
+        delete c.recentFiles[c.deletedFile];
+        c.recentField = "recentFiles";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Clicked file in the list of all files
+// 2. Added new file
+// 3. Clicked file in the list of recent files
+function fsShouldResetSelectedFile(c) {
+    if (c.recentField == "clickedFile") {
+        c.selectedFile = c.clickedFile;
+        c.recentField = "selectedFile";
+        return c;
+    }
+
+    if (c.recentField == "didAddFile") {
+        c.selectedFile = c.addedFile;
+        c.recentField = "selectedFile";
+        return c;
+    }
+
+    if (c.recentField == "clickedRecentFile") {
+        c.selectedFile = c.clickedRecentFile;
+        c.recentField = "selectedFile";
         return c;
     }
 
@@ -555,22 +1013,32 @@ function fsShouldResetSelectedItemId(c) {
 }
 
 // Conditions:
-// 1. Did launch
-// 2. Selected file
-function fsShouldResetSideItems(c) {
-    let permanent = ["Files", "Cfg"];
-
-    if (c.recentField == "didLaunch") {
-        c.sideItems = permanent;
-        c.recentField = "sideItems";
+// 1. Save button has been clicked in the header
+function fsShouldSaveFiles(c) {
+    if (
+        c.recentField == "headerClickedButtonId" &&
+        c.headerClickedButtonId == c.headerSaveButtonId
+    ) {
+        c.saveFiles = true;
+        c.recentField = "saveFiles";
         return c;
     }
 
-    if (c.recentField == "selectedFile") {
-        var items = Array.from(permanent);
-        let fileItem = FS_FILE_SIDE_ITEM.replaceAll("%NAME%", c.selectedFile);
-        items.push(fileItem);
-        c.sideItems = items;
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Did launch
+// 2. Selected a file
+// 3. Edited a file
+function fsShouldResetSideItems(c) {
+    if (
+        c.recentField == "didLaunch" ||
+        c.recentField == "selectedFile" ||
+        c.recentField == "editedFileContents"
+    ) {
+        c.sideItems = fsSideMenuItems(c.selectedFile, c.editedFileContents);
         c.recentField = "sideItems";
         return c;
     }
@@ -607,6 +1075,24 @@ function fsShouldStopWiping(c) {
 
 //<!-- Other -->
 
+// All files' page contents
+function fsAllHTML(areDirsHidden, isGitHidden, walkedFiles) {
+    var htmlItems = "";
+    for (let i in walkedFiles) {
+        let item = walkedFiles[i];
+        if (fsIsFileHidden(item, areDirsHidden, isGitHidden)) {
+            continue;
+        }
+   
+        htmlItems += FS_CONTENTS_ALL_ITEM
+            .replaceAll("%PATH%", item.path)
+            .replaceAll("%TYPE%", item.st.type)
+            .replaceAll("%SIZE%", item.st.size);
+    }
+    return FS_CONTENTS_ALL
+        .replaceAll("%ITEMS%", htmlItems);
+}
+
 // Cfg page contents
 function fsCfgHTML(areDirsHidden, isGitHidden) {
     let gitHidden = isGitHidden ? "checked" : "";
@@ -619,23 +1105,22 @@ function fsCfgHTML(areDirsHidden, isGitHidden) {
         .replaceAll("%IS_GIT_HIDDEN%", gitHidden);
 }
 
-// Files' page contents
-function fsFilesHTML(areDirsHidden, isGitHidden, walkedFiles) {
-   var htmlItems = "";
-   for (let i in walkedFiles) {
-       let item = walkedFiles[i];
-       if (fsIsFileHidden(item, areDirsHidden, isGitHidden)) {
-           continue;
-       }
-
-       htmlItems += FS_CONTENTS_FILES_ITEM
-           .replaceAll("%PATH%", item.path)
-           .replaceAll("%TYPE%", item.st.type)
-           .replaceAll("%SIZE%", item.st.size);
-   }
-   return FS_CONTENTS_FILES
-       .replaceAll("%ITEMS%", htmlItems);
+// Files to select for removal
+function fsFilesToRemoveHTML(files, areDirsHidden, isGitHidden) {
+    var o = "";
+    for (let i in files) {
+        let item = files[i];
+        if (fsIsFileHidden(item, areDirsHidden, isGitHidden)) {
+            continue;
+        }
+        let name = item.path;
+        o += FS_PAGE_DELETE_ITEM
+            .replaceAll("%ID%", i)
+            .replaceAll("%FILE%", name);
+    }
+    return o;
 }
+
 
 function fsIsFileHidden(item, areDirsHidden, isGitHidden) {
     // Ignore directories
@@ -665,6 +1150,86 @@ function fsIsSideSelectionRelevant(selectedItemId, sideId) {
     }
 
     return false;
+}
+
+// Deserialize recent files after the launch
+function fsLoadRecentFiles(files) {
+    let json = localStorage.getItem(FS_RECENT_FILES_KEY);
+    var obj = JSON.parse(json);
+    // Convert string dates to actual dates
+    for (let key in obj) {
+        let strdt = obj[key];
+        obj[key] = new Date(strdt);
+    }
+    return obj;
+}
+
+// Page contents for adding or removing files
+function fsPageAdd(fileName, filesToRemove) {
+   return FS_PAGE_ADD
+      .replaceAll("%FS_ADDED_FILE%", FS_ADDED_FILE)
+      .replaceAll("%FILE%", fileName)
+      .replaceAll("%FS_FILE_DELETION_ID%", FS_FILE_DELETION_ID)
+      .replaceAll("%FILES%", filesToRemove);
+}
+
+// Recently updated files' page contents
+function fsRecentHTML(files, edited) {
+   var htmlItems = "";
+   for (let path in files) {
+       let dt = files[path];
+       let ago = strago(dt);
+       let badge = edited[path] != null ? FS_CONTENTS_RECENT_ITEM_UNSAVED : "";
+       htmlItems += FS_CONTENTS_RECENT_ITEM
+           .replaceAll("%BADGE%", badge)
+           .replaceAll("%DATE%", ago)
+           .replaceAll("%PATH%", path);
+   }
+   return FS_CONTENTS_RECENT
+       .replaceAll("%ITEMS%", htmlItems);
+}
+
+// Save edited unsaved files to file system
+async function fsSaveFiles(pfs, edited) {
+    for (var file in edited) {
+        let contents = edited[file];
+        await pfs.writeFile(file, contents, {encoding: "utf8"});
+    }
+}
+
+// Serialize recent files between launches
+function fsSaveRecentFiles(files) {
+    let json = JSON.stringify(files);
+    localStorage.setItem(FS_RECENT_FILES_KEY, json);
+}
+
+// Construct a list of side menu items
+function fsSideMenuItems(
+    selectedFile,
+    edited
+) {
+    var items = [];
+    items.push(FS_MENU_TITLE_ALL);
+
+    // Display badge number of unsaved files if there are any
+    var recent = FS_MENU_TITLE_RECENT;
+    var count = Object.keys(edited).length;
+    if (count > 0) {
+        recent = FS_MENU_TITLE_RECENT_UNSAVED.replaceAll("%COUNT%", count);
+    }
+    items.push(recent);
+
+    items.push(FS_MENU_TITLE_ADD);
+
+    items.push(FS_MENU_TITLE_CFG);
+
+    // Display last opened file name as the last side menu item.
+    if (selectedFile != "") {
+        let fileItem = FS_FILE_SIDE_ITEM.replaceAll("%NAME%", selectedFile);
+        items.push(fileItem);
+    }
+
+    return items;
 }
 
 // Collect a list of directories and files into the provided `collection`

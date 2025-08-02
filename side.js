@@ -134,7 +134,7 @@ let SIDE_HTML = `
     </ul>
 </div>`;
 let SIDE_HTML_ITEM = `
-<li><a data-id="%ITEM_ID%">%ITEM_NAME%</a></li>
+<li><a onclick='sideCtrl().set("clickedItemId", "%ID%")'>%NAME%</a></li>
 `;
 let SIDE_HTML_TITLE = `
 <li class="uk-nav-header">%TITLE%</li>
@@ -171,13 +171,6 @@ function SideComponent() {
     this.setupEvents = function() {
         window.addEventListener("load", (e) => {
             this.ctrl.set("didLaunch", true);
-        });
-
-        let items = deId(SIDE_ITEMS_ID);
-        items.addEventListener("click", (e) => {
-            if (e.target.nodeName == "A") {
-                this.ctrl.set("clickedItemId", e.target.dataset.id);
-            }
         });
     };
 
@@ -319,8 +312,8 @@ function sideResetHTML(groupTitles) {
             let title = group.items[j];
             let itemId = sideItemId(i, j);
             html += SIDE_HTML_ITEM
-                .replaceAll("%ITEM_ID%", itemId)
-                .replaceAll("%ITEM_NAME%", title);
+                .replaceAll("%ID%", itemId)
+                .replaceAll("%NAME%", title);
         }
     }
     items.innerHTML = html;
