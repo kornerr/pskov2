@@ -471,14 +471,14 @@ function FSComponent() {
 
     this.resetEvents = function() {
         let added = deId(FS_ADDED_FILE);
-        if (added != null ) {
+        if (added != null) {
             added.addEventListener("input", (e) => {
                 this.ctrl.set("inputAddedFile", added.value);
             });
         }
 
         let deleted = deId(FS_FILE_DELETION_ID);
-        if (deleted != null ) {
+        if (deleted != null) {
             deleted.addEventListener("change", (e) => {
                 this.ctrl.set("inputDeletedFileId", e.target.value);
             });
