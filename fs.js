@@ -387,6 +387,8 @@ let FS_MENU_TITLE_CFG = "Config";
 let FS_MENU_TITLE_RECENT = "Recent";
 let FS_MENU_TITLE_RECENT_UNSAVED = FS_MENU_TITLE_RECENT + ' <span class="uk-badge">%COUNT%</span>';
 let FS_NAME = "pskov2-proto-fs";
+let FS_NT_DID_DELETE = "🧹 Did delete file";
+let FS_NT_DID_SAVE = "💾 Did save";
 let FS_PAGE_ADD = `
 <div class="uk-container uk-padding-small">
     <div class="uk-container uk-padding-small">
@@ -507,6 +509,19 @@ function FSComponent() {
     };
 
     this.setupEffects = function() {
+        let oneLiners = {
+            "didDeleteFile": (c) => { reportSuccess(FS_NT_DID_DELETE, 500); },
+            "didSaveFiles": (c) => { reportSuccess(FS_NT_DID_SAVE, 500); },
+            "recentFiles": (c) => { fsSaveRecentFiles(c.recentFiles); },
+            "selectedFileContents": (c) => { sideSelectItem(c.sideId, FS_MENU_ID_FILE); },
+            "sideItems": (c) => { sideResetItemTitles(c.sideId, c.sideItems); },
+            "stopWiping": (c) => { localStorage.removeItem(FS_WIPE_KEY); },
+        };
+        for (let key in oneLiners) {
+            let f = oneLiners[key];
+            this.ctrl.registerFieldCallback(key, f);
+        }
+
         this.ctrl.registerFieldCallback("didClickAddFile", (c) => {
             (async() => {
                 let contents = "";
@@ -534,15 +549,6 @@ function FSComponent() {
             this.resetEvents();
         });
 
-        this.ctrl.registerFieldCallback("didDeleteFile", (c) => {
-            reportSuccess("🧹 Did delete file", 500)
-        });
-
-
-        this.ctrl.registerFieldCallback("didSaveFiles", (c) => {
-            reportSuccess("💾 Did save", 500)
-        });
-
         this.ctrl.registerFieldCallback("loadRecentFiles", (c) => {
             let r = fsLoadRecentFiles();
             this.ctrl.set("loadedRecentFiles", r);
@@ -565,10 +571,6 @@ function FSComponent() {
             })();
         });
 
-        this.ctrl.registerFieldCallback("recentFiles", (c) => {
-            fsSaveRecentFiles(c.recentFiles);
-        });
-
         this.ctrl.registerFieldCallback("saveFiles", (c) => {
             (async() => {
                 await fsSaveFiles(this.pfs, c.editedFileContents);
@@ -576,21 +578,9 @@ function FSComponent() {
             })();
         });
 
-        this.ctrl.registerFieldCallback("selectedFileContents", (c) => {
-            sideSelectItem(c.sideId, FS_MENU_ID_FILE);
-        });
-
-        this.ctrl.registerFieldCallback("sideItems", (c) => {
-            sideResetItemTitles(c.sideId, c.sideItems);
-        });
-
         this.ctrl.registerFieldCallback("startWiping", (c) => {
             localStorage.setItem(FS_WIPE_KEY, c.wipe);
             location.reload();
-        });
-
-        this.ctrl.registerFieldCallback("stopWiping", (c) => {
-            localStorage.removeItem(FS_WIPE_KEY);
         });
     };
 
