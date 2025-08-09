@@ -777,7 +777,6 @@ function fsShouldResetContents(c) {
         c.selectedItemId == FS_MENU_ID_ADD
     ) {
         var filesHTML = fsFilesToRemoveHTML(c.walkedFiles, c.areDirsHidden, c.isGitHidden);
-        /**/console.log("ИГР fsSRC-7 files:", filesHTML);
         c.contents = fsPageAdd(c.addedFile, filesHTML);
         c.recentField = "contents";
         return c;
@@ -806,7 +805,10 @@ function fsShouldResetDeletedFile(c) {
         return c;
     }
 
-    if (c.recentField == "selectedItemId") {
+    if (
+        c.recentField == "selectedItemId" &&
+        c.deletedFile != ""
+    ) {
         c.deletedFile = "";
         c.recentField = "deletedFile";
         return c;
@@ -1000,7 +1002,8 @@ function fsShouldResetSelectedFile(c) {
 function fsShouldResetSelectedItemId(c) {
     if (
         c.recentField == "sideSelectedItemId" &&
-        fsIsSideSelectionRelevant(c.sideSelectedItemId, c.sideId)
+        fsIsSideSelectionRelevant(c.sideSelectedItemId, c.sideId) &&
+        sideSelectionIds(c.sideSelectedItemId)[1] != c.selectedItemId
     ) {
         let ids = sideSelectionIds(c.sideSelectedItemId);
         c.selectedItemId = ids[1];

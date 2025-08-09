@@ -38,7 +38,7 @@ function sideSelectItem(groupId, itemId) {
 function SideContext() {
     this._construct = function() {
         this.activeGroupId = -1;
-        this.activeGroupTitles= [];
+        this.activeGroupTitles = [];
         this.clickedItemId = "";
         this.createGroup = "";
         this.createdGroupId = -1;
@@ -199,22 +199,32 @@ function SideComponent() {
 // 1. Did launch
 // 2. Item has been clicked
 // 3. Item selection has been explicitely requested and it differs
+// 4. Group titles has been reset and their number still includes selected id
 function sideShouldResetSelectedItemId(c) {
-    if (c.recentField == "didLaunch") {
+    /* 1 */ if (c.recentField == "didLaunch") {
         c.selectedItemId = "0/0";
         c.recentField = "selectedItemId";
         return c;
     }
 
-    if (c.recentField == "clickedItemId") {
+    /* 2 */ if (c.recentField == "clickedItemId") {
         c.selectedItemId = c.clickedItemId;
         c.recentField = "selectedItemId";
         return c;
     }
 
-    if (
+    /* 3 */ if (
         c.recentField == "selectItem" &&
         c.selectedItemId != sideItemId(c.activeGroupId, c.selectItem)
+    ) {
+        c.selectedItemId = sideItemId(c.activeGroupId, c.selectItem);
+        c.recentField = "selectedItemId";
+        return c;
+    }
+
+    /* 4 */ if (
+        c.recentField == "groupTitles" &&
+        c.selectedItemId != ""
     ) {
         c.selectedItemId = sideItemId(c.activeGroupId, c.selectItem);
         c.recentField = "selectedItemId";
