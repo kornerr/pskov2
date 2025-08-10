@@ -1002,8 +1002,7 @@ function fsShouldResetSelectedFile(c) {
 function fsShouldResetSelectedItemId(c) {
     if (
         c.recentField == "sideSelectedItemId" &&
-        fsIsSideSelectionRelevant(c.sideSelectedItemId, c.sideId) &&
-        sideSelectionIds(c.sideSelectedItemId)[1] != c.selectedItemId
+        fsIsSideSelectionRelevant(c.sideSelectedItemId, c.sideId)
     ) {
         let ids = sideSelectionIds(c.sideSelectedItemId);
         c.selectedItemId = ids[1];

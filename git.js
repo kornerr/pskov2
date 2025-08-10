@@ -733,8 +733,7 @@ function gitShouldResetPullingState(c) {
 function gitShouldResetSelectedItemId(c) {
     if (
         c.recentField == "sideSelectedItemId" &&
-        gitIsSideSelectionRelevant(c.sideSelectedItemId, c.sideId) &&
-        sideSelectionIds(c.sideSelectedItemId)[1] != c.selectedItemId
+        gitIsSideSelectionRelevant(c.sideSelectedItemId, c.sideId)
     ) {
         let ids = sideSelectionIds(c.sideSelectedItemId);
         c.selectedItemId = ids[1];
