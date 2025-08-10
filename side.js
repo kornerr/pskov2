@@ -199,7 +199,7 @@ function SideComponent() {
 // 1. Did launch
 // 2. Item has been clicked
 // 3. Item selection has been explicitely requested and it differs
-// 4. Group titles has been reset and their number still includes selected id
+// 4. Group titles have been reset
 function sideShouldResetSelectedItemId(c) {
     /* 1 */ if (c.recentField == "didLaunch") {
         c.selectedItemId = "0/0";
@@ -226,7 +226,6 @@ function sideShouldResetSelectedItemId(c) {
         c.recentField == "groupTitles" &&
         c.selectedItemId != ""
     ) {
-        c.selectedItemId = sideItemId(c.activeGroupId, c.selectItem);
         c.recentField = "selectedItemId";
         return c;
     }
