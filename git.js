@@ -256,6 +256,7 @@ let GIT_PAGES = {
 `,
 };
 let GIT_PANEL_MAIN = "panel-main";
+let GIT_PANEL_MAIN_HEADER = "panel-main-header";
 let GIT_PROXY = "https://vercel-cors-proxy-pi.vercel.app";
 let GIT_REPO = "repository";
 let GIT_REPO_BRANCH = "repository-branch";
@@ -280,6 +281,7 @@ function GitComponent() {
 
         git.plugins.set("fs", fs());
 
+        this.setupHeader();
         this.setupSideMenu();
         this.setupShoulds();
         this.setupEffects();
@@ -448,6 +450,15 @@ function GitComponent() {
     this.setupEvents = function() {
         window.addEventListener("load", (e) => {
             this.ctrl.set("didLaunch", true);
+        });
+    };
+
+    this.setupHeader = function() {
+        let id = headerCreateButton('<span uk-tooltip="title: Commit and push all files; delay: 500">⬆️</span>');
+        this.ctrl.set("headerSaveButtonId", id);
+
+        headerCtrl().registerFieldCallback("clickedButtonId", (c) => {
+            this.ctrl.set("headerClickedButtonId", c.clickedButtonId);
         });
     };
 
