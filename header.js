@@ -82,6 +82,9 @@ let HEADER_HTML_BUTTON = `
     <button class="uk-button uk-button-small uk-button-default" onclick='headerCtrl().set("clickedButtonId", "%ID%")'>%TITLE%</button>
 </div>
 `;
+let HEADER_HTML_COMMIT_PUSH = `
+<p>TODO commit push dialog</p>
+`;
 let HEADER_BUTTONS_ID = "header-buttons";
 let HEADER_PANEL_HEADER = "panel-header";
 
@@ -139,7 +142,7 @@ function HeaderComponent() {
 // 1. Button id after creation has been "allocated"
 function headerShouldResetButtons(c) {
     if (c.recentField == "createdButtonId") {
-        c.buttons.unshift(c.createButton);
+        c.buttons.push(c.createButton);
         c.recentField = "buttons"
         return c;
     }
@@ -170,9 +173,11 @@ function headerResetHTML(buttons) {
     var html = "";
     // For each button.
     for (let i in buttons) {
-        let title = buttons[i];
+        // Reverse buttons: from right to left.
+        let id = buttons.length - 1 - i;
+        let title = buttons[id];
         html += HEADER_HTML_BUTTON
-            .replaceAll("%ID%", i)
+            .replaceAll("%ID%", id)
             .replaceAll("%TITLE%", title);
     }
     el.innerHTML = html;

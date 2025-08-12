@@ -18,6 +18,8 @@ function GitContext() {
         this.didLaunch = false;
         this.didPull = false;
         this.didResetContents = false;
+        this.headerClickedButtonId = -1;
+        this.headerPushButtonId = -1;
         this.inputURL = "";
         this.isCheckingOut = false;
         this.isCloning = false;
@@ -71,6 +73,10 @@ function GitContext() {
             return this.didPull;
         } else if (name == "didResetContents") {
             return this.didResetContents;
+        } else if (name == "headerClickedButtonId") {
+            return this.headerClickedButtonId;
+        } else if (name == "headerPushButtonId") {
+            return this.headerPushButtonId;
         } else if (name == "inputURL") {
             return this.inputURL;
         } else if (name == "isCheckingOut") {
@@ -124,6 +130,8 @@ function GitContext() {
         that.didLaunch = this.didLaunch;
         that.didPull = this.didPull;
         that.didResetContents = this.didResetContents;
+        that.headerClickedButtonId = this.headerClickedButtonId;
+        that.headerPushButtonId = this.headerPushButtonId;
         that.inputURL = this.inputURL;
         that.isCheckingOut = this.isCheckingOut;
         that.isCloning = this.isCloning;
@@ -177,6 +185,10 @@ function GitContext() {
             this.didPull = value;
         } else if (name == "didResetContents") {
             this.didResetContents = value;
+        } else if (name == "headerClickedButtonId") {
+            this.headerClickedButtonId = value;
+        } else if (name == "headerPushButtonId") {
+            this.headerPushButtonId = value;
         } else if (name == "inputURL") {
             this.inputURL = value;
         } else if (name == "isCheckingOut") {
@@ -455,7 +467,7 @@ function GitComponent() {
 
     this.setupHeader = function() {
         let id = headerCreateButton('<span uk-tooltip="title: Commit and push all files; delay: 500">⬆️</span>');
-        this.ctrl.set("headerSaveButtonId", id);
+        this.ctrl.set("headerPushButtonId", id);
 
         headerCtrl().registerFieldCallback("clickedButtonId", (c) => {
             this.ctrl.set("headerClickedButtonId", c.clickedButtonId);
