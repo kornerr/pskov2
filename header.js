@@ -78,7 +78,9 @@ let HEADER_HTML = `
 <div id="%HEADER_BUTTONS_ID%" class="vert-align">
 </div>`;
 let HEADER_HTML_BUTTON = `
-<button class="uk-button uk-button-small uk-button-default" onclick='headerCtrl().set("clickedButtonId", "%ID%")'>%TITLE%</button>
+<div class="header-item-space">
+    <button class="uk-button uk-button-small uk-button-default" onclick='headerCtrl().set("clickedButtonId", "%ID%")'>%TITLE%</button>
+</div>
 `;
 let HEADER_BUTTONS_ID = "header-buttons";
 let HEADER_PANEL_HEADER = "panel-header";
@@ -137,7 +139,7 @@ function HeaderComponent() {
 // 1. Button id after creation has been "allocated"
 function headerShouldResetButtons(c) {
     if (c.recentField == "createdButtonId") {
-        c.buttons.push(c.createButton);
+        c.buttons.unshift(c.createButton);
         c.recentField = "buttons"
         return c;
     }

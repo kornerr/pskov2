@@ -6,10 +6,14 @@
   width: calc(100% - 240px);
 }
 
+.header-item-space {
+  padding-left: 8px;
+}
 #header-buttons {
   right: 8px;
   position: absolute;
 }
+
 #panel-header {
   background-color: #f8f8f8;
   border-bottom: 1px solid lightgray;
