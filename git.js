@@ -11,6 +11,7 @@ function GitContext() {
         this.checkRepositoryAvailability = false;
         this.clone = false;
         this.cloneError = "";
+        this.commitAndPush = false;
         this.didCheckout = false;
         this.didClickClone = false;
         this.didClickPull = false;
@@ -59,6 +60,8 @@ function GitContext() {
             return this.clone;
         } else if (name == "cloneError") {
             return this.cloneError;
+        } else if (name == "commitAndPush") {
+            return this.commitAndPush;
         } else if (name == "didCheckout") {
             return this.didCheckout;
         } else if (name == "didClickClone") {
@@ -123,6 +126,7 @@ function GitContext() {
         that.checkRepositoryAvailability = this.checkRepositoryAvailability;
         that.clone = this.clone;
         that.cloneError = this.cloneError;
+        that.commitAndPush = this.commitAndPush;
         that.didCheckout = this.didCheckout;
         that.didClickClone = this.didClickClone;
         that.didClickPull = this.didClickPull;
@@ -171,6 +175,8 @@ function GitContext() {
             this.clone = value;
         } else if (name == "cloneError") {
             this.cloneError = value;
+        } else if (name == "commitAndPush") {
+            this.commitAndPush = value;
         } else if (name == "didCheckout") {
             this.didCheckout = value;
         } else if (name == "didClickClone") {
@@ -356,6 +362,26 @@ function GitComponent() {
             reportFailure(GIT_ERROR_CLONE, c.cloneError);
         });
 
+        this.ctrl.registerFieldCallback("commitAndPush", (c) => { (async() => {
+            try {
+                let res = await git.status({
+                    dir: GIT_REPO_DIR,
+                    filepath: "README.md",
+                    //filepath: "a0.txt",
+                });
+                console.log("ИГР setupE.commitAP status:", res);
+                /*
+                await git.add({
+                    dir: GIT_REPO_DIR,
+                    filepath: c.url,
+                });
+                */
+                //this.ctrl.set("didClone", true);
+            } catch (e) {
+                //this.ctrl.set("cloneError", `${e}`);
+            }
+        })(); });
+
         this.ctrl.registerFieldCallback("didCheckout", (c) => {
             reportSuccess("Git: Finished checking out");
         });
@@ -476,11 +502,12 @@ function GitComponent() {
 
     this.setupShoulds = function() {
         [
-            gitShouldResetBranch,
-            gitShouldResetBranches,
             gitShouldCheckRepositoryAvailability,
             gitShouldClone,
+            gitShouldCommitAndPush,
             gitShouldLoadCfg,
+            gitShouldResetBranch,
+            gitShouldResetBranches,
             gitShouldResetCheckingOutState,
             gitShouldResetCloningState,
             gitShouldResetContents,
@@ -513,6 +540,71 @@ function GitComponent() {
 }
 
 //<!-- Shoulds -->
+
+// Conditions:
+// 1. Did clone successfully
+// 2. Did launch
+function gitShouldCheckRepositoryAvailability(c) {
+    if (c.recentField == "didClone") {
+        c.checkRepositoryAvailability = true;
+        c.recentField = "checkRepositoryAvailability";
+        return c;
+    }
+
+    if (c.recentField == "didLaunch") {
+        c.checkRepositoryAvailability = true;
+        c.recentField = "checkRepositoryAvailability";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. URL is not empty and `Clone` button has been clicked
+function gitShouldClone(c) {
+    if (
+        c.recentField == "didClickClone" &&
+        c.url.length > 0
+    ) {
+        c.clone = true;
+        c.recentField = "clone";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Push button has been clicked in the header
+function gitShouldCommitAndPush(c) {
+    if (
+        c.recentField == "headerClickedButtonId" &&
+        c.headerClickedButtonId == c.headerPushButtonId
+    ) {
+        c.commitAndPush = true;
+        c.recentField = "commitAndPush";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Did launch
+function gitShouldLoadCfg(c) {
+    if (c.recentField == "didLaunch") {
+        c.loadCfg = true;
+        c.recentField = "loadCfg";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
 
 // Conditions:
 // 1. Did clone repository
@@ -557,55 +649,6 @@ function gitShouldResetBranches(c) {
     if (c.recentField == "didPull") {
         c.resetBranches = true;
         c.recentField = "resetBranches";
-        return c;
-    }
-
-    c.recentField = "none";
-    return c;
-}
-
-// Conditions:
-// 1. Did clone successfully
-// 2. Did launch
-function gitShouldCheckRepositoryAvailability(c) {
-    if (c.recentField == "didClone") {
-        c.checkRepositoryAvailability = true;
-        c.recentField = "checkRepositoryAvailability";
-        return c;
-    }
-
-    if (c.recentField == "didLaunch") {
-        c.checkRepositoryAvailability = true;
-        c.recentField = "checkRepositoryAvailability";
-        return c;
-    }
-
-    c.recentField = "none";
-    return c;
-}
-
-// Conditions:
-// 1. URL is not empty and `Clone` button has been clicked
-function gitShouldClone(c) {
-    if (
-        c.recentField == "didClickClone" &&
-        c.url.length > 0
-    ) {
-        c.clone = true;
-        c.recentField = "clone";
-        return c;
-    }
-
-    c.recentField = "none";
-    return c;
-}
-
-// Conditions:
-// 1. Did launch
-function gitShouldLoadCfg(c) {
-    if (c.recentField == "didLaunch") {
-        c.loadCfg = true;
-        c.recentField = "loadCfg";
         return c;
     }
 
