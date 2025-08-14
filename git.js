@@ -860,6 +860,10 @@ function gitCfgURL(contents) {
     return "undefined-cfg-url";
 }
 
+// Collect Git statuses of all files
+function gitCollectStatuses() {
+}
+
 // Make sure side selection is about Git items
 function gitIsSideSelectionRelevant(selectedItemId, sideId) {
     let ids = sideSelectionIds(selectedItemId);
