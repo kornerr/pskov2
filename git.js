@@ -19,6 +19,7 @@ function GitContext() {
         this.didLaunch = false;
         this.didPull = false;
         this.didResetContents = false;
+        this.fsWalkedFiles = [];
         this.headerClickedButtonId = -1;
         this.headerPushButtonId = -1;
         this.inputURL = "";
@@ -76,6 +77,8 @@ function GitContext() {
             return this.didPull;
         } else if (name == "didResetContents") {
             return this.didResetContents;
+        } else if (name == "fsWalkedFiles") {
+            return this.fsWalkedFiles;
         } else if (name == "headerClickedButtonId") {
             return this.headerClickedButtonId;
         } else if (name == "headerPushButtonId") {
@@ -134,6 +137,7 @@ function GitContext() {
         that.didLaunch = this.didLaunch;
         that.didPull = this.didPull;
         that.didResetContents = this.didResetContents;
+        that.fsWalkedFiles = this.fsWalkedFiles;
         that.headerClickedButtonId = this.headerClickedButtonId;
         that.headerPushButtonId = this.headerPushButtonId;
         that.inputURL = this.inputURL;
@@ -191,6 +195,8 @@ function GitContext() {
             this.didPull = value;
         } else if (name == "didResetContents") {
             this.didResetContents = value;
+        } else if (name == "fsWalkedFiles") {
+            this.fsWalkedFiles = value;
         } else if (name == "headerClickedButtonId") {
             this.headerClickedButtonId = value;
         } else if (name == "headerPushButtonId") {
@@ -297,8 +303,7 @@ function GitComponent() {
             console.log(`ИГР GitC._construct ctrl key/value: '${c.recentField}'/'${c.field(c.recentField)}'`);
         });
 
-        git.plugins.set("fs", fs());
-
+        this.setupFS();
         this.setupHeader();
         this.setupSideMenu();
         this.setupShoulds();
@@ -340,7 +345,7 @@ function GitComponent() {
         });
 
         this.ctrl.registerFieldCallback("checkRepositoryAvailability", (c) => { (async() => {
-            let files = await pfs().readdir(GIT_REPO_DIR);
+            let files = await this.pfs.readdir(GIT_REPO_DIR);
             let hasRepo = files.includes(GIT_DOT_DIR);
             this.ctrl.set("isRepositoryAvailable", hasRepo);
         })(); });
@@ -364,12 +369,8 @@ function GitComponent() {
 
         this.ctrl.registerFieldCallback("commitAndPush", (c) => { (async() => {
             try {
-                let res = await git.status({
-                    dir: GIT_REPO_DIR,
-                    filepath: "README.md",
-                    //filepath: "a0.txt",
-                });
-                console.log("ИГР setupE.commitAP status:", res);
+                let statuses = await gitCollectStatuses(c.fsWalkedFiles);
+                console.log("ИГР setupE.commitAP-1 statuses:", statuses);
                 /*
                 await git.add({
                     dir: GIT_REPO_DIR,
@@ -411,7 +412,7 @@ function GitComponent() {
         });
 
         this.ctrl.registerFieldCallback("loadCfg", (c) => { (async() => {
-            let contents = await pfs().readFile(GIT_CFG, {encoding: "utf8"});
+            let contents = await this.pfs.readFile(GIT_CFG, {encoding: "utf8"});
             this.ctrl.set("cfgContents", contents);
         })(); });
 
@@ -488,6 +489,16 @@ function GitComponent() {
     this.setupEvents = function() {
         window.addEventListener("load", (e) => {
             this.ctrl.set("didLaunch", true);
+        });
+    };
+
+    this.setupFS = function() {
+        this.fs = fs();
+        this.pfs = pfs();
+        git.plugins.set("fs", this.fs);
+
+        fsCtrl().registerFieldCallback("walkedFiles", (c) => {
+            this.ctrl.set("fsWalkedFiles", c.walkedFiles);
         });
     };
 
@@ -860,8 +871,30 @@ function gitCfgURL(contents) {
     return "undefined-cfg-url";
 }
 
-// Collect Git statuses of all files
-function gitCollectStatuses() {
+// Collect Git statuses of the walked files
+async function gitCollectStatuses(walkedFiles) {
+    for (let i in walkedFiles) {
+        let f = walkedFiles[i];
+
+        //console.log("ИГР gitCS-1 f.path:", f.path);
+
+        // Ignore dirs and .git.
+        if (
+            f.path.endsWith("/") ||
+            f.path.startsWith("/.git")
+        ) {
+            continue;
+        }
+
+        let path = f.path.substring(1);
+        //console.log("ИГР gitCS-2 path:", path);
+        let result =
+            await git.status({
+                dir: GIT_REPO_DIR,
+                filepath: path,
+            });
+        console.log("ИГР gitCS-3 f/result:", f, result);
+    }
 }
 
 // Make sure side selection is about Git items
