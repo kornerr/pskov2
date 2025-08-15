@@ -239,6 +239,34 @@ function GitContext() {
 
 let GIT_CFG = "/.git/config";
 let GIT_CFG_URL_PREFIX = "url = ";
+let GIT_COMMIT_PUSH_DIALOG = `
+<div id="%DIALOG%" uk-modal>
+    <div class="uk-modal-dialog uk-modal-body">
+        <h2 class="uk-modal-title">Commit + Push</h2>
+        <form onsubmit="return false;">
+            <div class="uk-margin-small">
+                <div class="uk-form-controls">
+                    <input id="%DIALOG_COMMIT_MESSAGE" class="uk-input" type="text" placeholder="Commit message">
+                </div>
+            </div>
+            <div class="uk-margin-small">
+                <div class="uk-form-controls">
+                    <input id="%DIALOG_PUSH_USERNAME%" class="uk-input" type="text" placeholder="Username">
+                </div>
+            </div>
+            <div class="uk-margin-small">
+                <div class="uk-form-controls">
+                    <input id="%DIALOG_PUSH_PASSWORD%" class="uk-input" type="password" placeholder="Password">
+                </div>
+            </div>
+            <p class="uk-text-right">
+                <button class="uk-button uk-button-default uk-modal-close" type=:button">Cancel</button>
+                <button class="uk-button uk-button-primary" type="button" onclick='appCtrl().set("didClickCommitAndPush", true);'>Commit and push</button>
+            </p>
+        </form>
+    </div>
+</div>
+`;
 let GIT_DOT_DIR = ".git";
 let GIT_ERROR_BRANCH = "Failed to get current branch";
 let GIT_ERROR_BRANCHES = "Failed to get remote branches";
