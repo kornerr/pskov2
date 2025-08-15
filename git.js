@@ -289,6 +289,7 @@ let GIT_REPO_CLONE = "repository-clone";
 let GIT_REPO_DIR = "/";
 let GIT_REPO_PULL = "repository-pull";
 let GIT_REPO_URL = "repository-url";
+let GIT_STATUS_UNMODIFIED = "unmodified";
 let GIT_TEMPLATE_BRANCHES_ITEM = `
 <option %SELECTED%>%BRANCH%</option>
 `;
@@ -369,12 +370,24 @@ function GitComponent() {
 
         this.ctrl.registerFieldCallback("commitAndPush", (c) => { (async() => {
             try {
-                let statuses = await gitCollectStatuses(c.fsWalkedFiles);
-                console.log("ИГР setupE.commitAP-1 statuses:", statuses);
+                let stRaw = await gitCollectStatuses(c.fsWalkedFiles);
+                let stMod = gitModifiedStatuses(stRaw);
+                console.log("ИГР setupE.commitAP-1 stM:", stMod);
                 /*
-                await git.add({
+                let resCommit = await git.commit({
                     dir: GIT_REPO_DIR,
-                    filepath: c.url,
+                    message: "PSKOV 2 msg",
+                    author: {
+                        name: "JS",
+                        email: "gitjs.org"
+                    }
+                });
+                await git.push({
+                    dir: GIT_REPO_DIR,
+                    remote: GIT_ORIGIN,
+                    username: elUsername.value,
+                    password: elPassword.value,
+                    corsProxy: GIT_PROXY,
                 });
                 */
                 //this.ctrl.set("didClone", true);
@@ -873,12 +886,15 @@ function gitCfgURL(contents) {
 
 // Collect Git statuses of the walked files
 async function gitCollectStatuses(walkedFiles) {
+    var d = {};
     for (let i in walkedFiles) {
         let f = walkedFiles[i];
 
         //console.log("ИГР gitCS-1 f.path:", f.path);
 
-        // Ignore dirs and .git.
+        // Ignore dirs and .git
+        // WARN This duplicates logic in FS component
+        // TODO Make single ogic function
         if (
             f.path.endsWith("/") ||
             f.path.startsWith("/.git")
@@ -887,14 +903,14 @@ async function gitCollectStatuses(walkedFiles) {
         }
 
         let path = f.path.substring(1);
-        //console.log("ИГР gitCS-2 path:", path);
-        let result =
+        let stat =
             await git.status({
                 dir: GIT_REPO_DIR,
                 filepath: path,
             });
-        console.log("ИГР gitCS-3 f/result:", f, result);
+        d[f.path] = stat;
     }
+    return d;
 }
 
 // Make sure side selection is about Git items
@@ -905,6 +921,18 @@ function gitIsSideSelectionRelevant(selectedItemId, sideId) {
     }
 
     return false;
+}
+
+// Only select statuses that are not `unmodified`
+function gitModifiedStatuses(sts) {
+    var d = {};
+    for (let path in sts) {
+        let st = sts[path];
+        if (st != GIT_STATUS_UNMODIFIED) {
+            d[path] = st;
+        }
+    }
+    return d;
 }
 
 //<!-- Setup -->
