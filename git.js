@@ -14,6 +14,7 @@ function GitContext() {
         this.commitAndPush = false;
         this.didCheckout = false;
         this.didClickClone = false;
+        this.didClickCommitAndPush = false;
         this.didClickPull = false;
         this.didClone = false;
         this.didLaunch = false;
@@ -34,6 +35,7 @@ function GitContext() {
         this.resetContents = false;
         this.selectedBranch = "";
         this.selectedItemId = -1;
+        this.showCommitAndPushDialog = false;
         this.sideId = -1;
         this.sideSelectedItemId = -1;
         this.url = "";
@@ -67,6 +69,8 @@ function GitContext() {
             return this.didCheckout;
         } else if (name == "didClickClone") {
             return this.didClickClone;
+        } else if (name == "didClickCommitAndPush") {
+            return this.didClickCommitAndPush;
         } else if (name == "didClickPull") {
             return this.didClickPull;
         } else if (name == "didClone") {
@@ -107,6 +111,8 @@ function GitContext() {
             return this.selectedBranch;
         } else if (name == "selectedItemId") {
             return this.selectedItemId;
+        } else if (name == "showCommitAndPushDialog") {
+            return this.showCommitAndPushDialog;
         } else if (name == "sideId") {
             return this.sideId;
         } else if (name == "sideSelectedItemId") {
@@ -132,6 +138,7 @@ function GitContext() {
         that.commitAndPush = this.commitAndPush;
         that.didCheckout = this.didCheckout;
         that.didClickClone = this.didClickClone;
+        that.didClickCommitAndPush = this.didClickCommitAndPush;
         that.didClickPull = this.didClickPull;
         that.didClone = this.didClone;
         that.didLaunch = this.didLaunch;
@@ -152,6 +159,7 @@ function GitContext() {
         that.resetContents = this.resetContents;
         that.selectedBranch = this.selectedBranch;
         that.selectedItemId = this.selectedItemId;
+        that.showCommitAndPushDialog = this.showCommitAndPushDialog;
         that.sideId = this.sideId;
         that.sideSelectedItemId = this.sideSelectedItemId;
         that.url = this.url;
@@ -185,6 +193,8 @@ function GitContext() {
             this.didCheckout = value;
         } else if (name == "didClickClone") {
             this.didClickClone = value;
+        } else if (name == "didClickCommitAndPush") {
+            this.didClickCommitAndPush = value;
         } else if (name == "didClickPull") {
             this.didClickPull = value;
         } else if (name == "didClone") {
@@ -225,6 +235,8 @@ function GitContext() {
             this.selectedBranch = value;
         } else if (name == "selectedItemId") {
             this.selectedItemId = value;
+        } else if (name == "showCommitAndPushDialog") {
+            this.showCommitAndPushDialog = value;
         } else if (name == "sideId") {
             this.sideId = value;
         } else if (name == "sideSelectedItemId") {
@@ -259,14 +271,15 @@ let GIT_COMMIT_PUSH_DIALOG = `
                     <input id="%DIALOG_PUSH_PASSWORD%" class="uk-input" type="password" placeholder="Password">
                 </div>
             </div>
-            <p class="uk-text-right">
+            <div class="uk-text-right uk-padding-small uk-padding-remove-bottom uk-padding-remove-right">
                 <button class="uk-button uk-button-default uk-modal-close" type=:button">Cancel</button>
                 <button class="uk-button uk-button-primary" type="button" onclick='appCtrl().set("didClickCommitAndPush", true);'>Commit and push</button>
-            </p>
+            </div>
         </form>
     </div>
 </div>
 `;
+let GIT_COMMIT_PUSH_DIALOG_ID = "git-commit-push-dialog";
 let GIT_DOT_DIR = ".git";
 let GIT_ERROR_BRANCH = "Failed to get current branch";
 let GIT_ERROR_BRANCHES = "Failed to get remote branches";
@@ -307,6 +320,7 @@ let GIT_PAGES = {
 </div>
 `,
 };
+let GIT_PANEL_INTERNAL = "panel-internal";
 let GIT_PANEL_MAIN = "panel-main";
 let GIT_PANEL_MAIN_HEADER = "panel-main-header";
 let GIT_PROXY = "https://vercel-cors-proxy-pi.vercel.app";
@@ -332,6 +346,7 @@ function GitComponent() {
             console.log(`ИГР GitC._construct ctrl key/value: '${c.recentField}'/'${c.field(c.recentField)}'`);
         });
 
+        this.setupDialogs();
         this.setupFS();
         this.setupHeader();
         this.setupSideMenu();
@@ -358,6 +373,14 @@ function GitComponent() {
         url.addEventListener("input", (e) => {
             this.ctrl.set("inputURL", url.value);
         });
+    };
+
+    this.setupDialogs = function() {
+        let panel = deId(GIT_PANEL_INTERNAL);
+        let dialogs = document.createElement("div");
+        dialogs.innerHTML = GIT_COMMIT_PUSH_DIALOG
+            .replaceAll("%DIALOG%", GIT_COMMIT_PUSH_DIALOG_ID);
+        panel.appendChild(dialogs);
     };
 
     this.setupEffects = function() {
@@ -525,6 +548,11 @@ function GitComponent() {
                 this.ctrl.set("checkoutError", `${e}`);
             }
         })(); });
+
+        this.ctrl.registerFieldCallback("showCommitAndPushDialog", (c) => {
+            let elem = deId(GIT_COMMIT_PUSH_DIALOG_ID);
+            UIkit.modal(elem).show();
+        });
     };
 
     this.setupEvents = function() {
@@ -556,7 +584,6 @@ function GitComponent() {
         [
             gitShouldCheckRepositoryAvailability,
             gitShouldClone,
-            gitShouldCommitAndPush,
             gitShouldLoadCfg,
             gitShouldResetBranch,
             gitShouldResetBranches,
@@ -566,6 +593,7 @@ function GitComponent() {
             gitShouldResetPullingState,
             gitShouldResetSelectedItemId,
             gitShouldResetURL,
+            gitShouldShowCommitAndPushDialog,
         ].forEach((f) => {
             this.ctrl.registerFunction(f);
         });
@@ -622,22 +650,6 @@ function gitShouldClone(c) {
     ) {
         c.clone = true;
         c.recentField = "clone";
-        return c;
-    }
-
-    c.recentField = "none";
-    return c;
-}
-
-// Conditions:
-// 1. Push button has been clicked in the header
-function gitShouldCommitAndPush(c) {
-    if (
-        c.recentField == "headerClickedButtonId" &&
-        c.headerClickedButtonId == c.headerPushButtonId
-    ) {
-        c.commitAndPush = true;
-        c.recentField = "commitAndPush";
         return c;
     }
 
@@ -876,6 +888,22 @@ function gitShouldResetURL(c) {
     if (c.recentField == "cfgContents") {
         c.url = gitCfgURL(c.cfgContents);
         c.recentField = "url";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Push button has been clicked in the header
+function gitShouldShowCommitAndPushDialog(c) {
+    if (
+        c.recentField == "headerClickedButtonId" &&
+        c.headerClickedButtonId == c.headerPushButtonId
+    ) {
+        c.showCommitAndPushDialog = true;
+        c.recentField = "showCommitAndPushDialog";
         return c;
     }
 
