@@ -404,11 +404,6 @@ function GitComponent() {
         let dialogs = document.createElement("div");
         dialogs.innerHTML = GIT_COMMIT_PUSH_DIALOG
             .replaceAll("%DIALOG%", GIT_COMMIT_PUSH_DIALOG_ID);
-        /*
-            .replaceAll("%DIALOG_COMMIT_MESSAGE%", GIT_COMMIT_PUSH_DIALOG_MESSAGE_ID)
-            .replaceAll("%DIALOG_PUSH_USERNAME%", GIT_COMMIT_PUSH_DIALOG_USERNAME_ID)
-            .replaceAll("%DIALOG_PUSH_PASSWORD%", GIT_COMMIT_PUSH_DIALOG_PASSWORD_ID);
-            */
         panel.appendChild(dialogs);
     };
 
@@ -613,6 +608,7 @@ function GitComponent() {
         [
             gitShouldCheckRepositoryAvailability,
             gitShouldClone,
+            gitShouldCommitAndPush,
             gitShouldLoadCfg,
             gitShouldResetBranch,
             gitShouldResetBranches,
@@ -679,6 +675,19 @@ function gitShouldClone(c) {
     ) {
         c.clone = true;
         c.recentField = "clone";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Commit + push button has been clicked
+function gitShouldCommitAndPush(c) {
+    if (c.recentField == "didClickCommitAndPush") {
+        c.commitAndPush = true;
+        c.recentField = "commitAndPush";
         return c;
     }
 
