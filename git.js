@@ -448,23 +448,23 @@ function GitComponent() {
                 let stRaw = await gitCollectStatuses(c.fsWalkedFiles);
                 let stMod = gitModifiedStatuses(stRaw);
                 console.log("ИГР setupE.commitAP-1 stM:", stMod);
-                /*
                 let resCommit = await git.commit({
                     dir: GIT_REPO_DIR,
-                    message: "PSKOV 2 msg",
+                    message: c.inputCommitMessage,
                     author: {
-                        name: "JS",
-                        email: "gitjs.org"
+                        name: "PSKOV2",
+                        email: "pskov2@gitjs.org"
                     }
                 });
-                await git.push({
+                console.log("ИГР setupE.commitAP-2 resC:", resCommit);
+                let resPush = await git.push({
                     dir: GIT_REPO_DIR,
                     remote: GIT_ORIGIN,
-                    username: elUsername.value,
-                    password: elPassword.value,
+                    username: c.inputPushUsername,
+                    password: c.inputPushPassword,
                     corsProxy: GIT_PROXY,
                 });
-                */
+                console.log("ИГР setupE.commitAP-3 resP:", resPush);
                 //this.ctrl.set("didClone", true);
             } catch (e) {
                 //this.ctrl.set("cloneError", `${e}`);
