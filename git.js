@@ -1,3 +1,9 @@
+//<!-- API -->
+
+function gitCtrl() {
+    return window.gitCmp.ctrl;
+}
+
 //<!-- Context -->
 
 function GitContext() {
@@ -23,6 +29,9 @@ function GitContext() {
         this.fsWalkedFiles = [];
         this.headerClickedButtonId = -1;
         this.headerPushButtonId = -1;
+        this.inputCommitMessage = "";
+        this.inputPushPassword = "";
+        this.inputPushUsername = "";
         this.inputURL = "";
         this.isCheckingOut = false;
         this.isCloning = false;
@@ -87,6 +96,12 @@ function GitContext() {
             return this.headerClickedButtonId;
         } else if (name == "headerPushButtonId") {
             return this.headerPushButtonId;
+        } else if (name == "inputCommitMessage") {
+            return this.inputCommitMessage;
+        } else if (name == "inputPushPassword") {
+            return this.inputPushPassword;
+        } else if (name == "inputPushUsername") {
+            return this.inputPushUsername;
         } else if (name == "inputURL") {
             return this.inputURL;
         } else if (name == "isCheckingOut") {
@@ -147,6 +162,9 @@ function GitContext() {
         that.fsWalkedFiles = this.fsWalkedFiles;
         that.headerClickedButtonId = this.headerClickedButtonId;
         that.headerPushButtonId = this.headerPushButtonId;
+        that.inputCommitMessage = this.inputCommitMessage;
+        that.inputPushPassword = this.inputPushPassword;
+        that.inputPushUsername = this.inputPushUsername;
         that.inputURL = this.inputURL;
         that.isCheckingOut = this.isCheckingOut;
         that.isCloning = this.isCloning;
@@ -211,6 +229,12 @@ function GitContext() {
             this.headerClickedButtonId = value;
         } else if (name == "headerPushButtonId") {
             this.headerPushButtonId = value;
+        } else if (name == "inputCommitMessage") {
+            this.inputCommitMessage = value;
+        } else if (name == "inputPushPassword") {
+            this.inputPushPassword = value;
+        } else if (name == "inputPushUsername") {
+            this.inputPushUsername = value;
         } else if (name == "inputURL") {
             this.inputURL = value;
         } else if (name == "isCheckingOut") {
@@ -258,22 +282,22 @@ let GIT_COMMIT_PUSH_DIALOG = `
         <form onsubmit="return false;">
             <div class="uk-margin-small">
                 <div class="uk-form-controls">
-                    <input id="%DIALOG_COMMIT_MESSAGE" class="uk-input" type="text" placeholder="Commit message">
+                    <input class="uk-input" type="text" placeholder="Commit message" oninput='gitCtrl().set("inputCommitMessage", this.value);'>
                 </div>
             </div>
             <div class="uk-margin-small">
                 <div class="uk-form-controls">
-                    <input id="%DIALOG_PUSH_USERNAME%" class="uk-input" type="text" placeholder="Username">
+                    <input class="uk-input" type="text" placeholder="Username" oninput='gitCtrl().set("inputPushUsername", this.value);'>
                 </div>
             </div>
             <div class="uk-margin-small">
                 <div class="uk-form-controls">
-                    <input id="%DIALOG_PUSH_PASSWORD%" class="uk-input" type="password" placeholder="Password">
+                    <input class="uk-input" type="password" placeholder="Password" oninput='gitCtrl().set("inputPushPassword", this.value);'>
                 </div>
             </div>
             <div class="uk-text-right uk-padding-small uk-padding-remove-bottom uk-padding-remove-right">
                 <button class="uk-button uk-button-default uk-modal-close" type=:button">Cancel</button>
-                <button class="uk-button uk-button-primary" type="button" onclick='appCtrl().set("didClickCommitAndPush", true);'>Commit and push</button>
+                <button class="uk-button uk-button-primary" type="button" onclick='gitCtrl().set("didClickCommitAndPush", true);'>Commit and push</button>
             </div>
         </form>
     </div>
@@ -380,6 +404,11 @@ function GitComponent() {
         let dialogs = document.createElement("div");
         dialogs.innerHTML = GIT_COMMIT_PUSH_DIALOG
             .replaceAll("%DIALOG%", GIT_COMMIT_PUSH_DIALOG_ID);
+        /*
+            .replaceAll("%DIALOG_COMMIT_MESSAGE%", GIT_COMMIT_PUSH_DIALOG_MESSAGE_ID)
+            .replaceAll("%DIALOG_PUSH_USERNAME%", GIT_COMMIT_PUSH_DIALOG_USERNAME_ID)
+            .replaceAll("%DIALOG_PUSH_PASSWORD%", GIT_COMMIT_PUSH_DIALOG_PASSWORD_ID);
+            */
         panel.appendChild(dialogs);
     };
 
@@ -993,4 +1022,5 @@ function gitModifiedStatuses(sts) {
 
 //<!-- Setup -->
 
-window.components.push(new GitComponent());
+window.gitCmp = new GitComponent();
+window.components.push(window.gitCmp);
