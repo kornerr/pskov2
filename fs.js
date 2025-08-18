@@ -777,7 +777,6 @@ function fsShouldResetContents(c) {
         c.selectedItemId == FS_MENU_ID_ADD
     ) {
         var filesHTML = fsFilesToRemoveHTML(c.walkedFiles, c.areDirsHidden, c.isGitHidden);
-        /**/console.log("ИГР fsSRC-7 files:", filesHTML);
         c.contents = fsPageAdd(c.addedFile, filesHTML);
         c.recentField = "contents";
         return c;
@@ -806,7 +805,10 @@ function fsShouldResetDeletedFile(c) {
         return c;
     }
 
-    if (c.recentField == "selectedItemId") {
+    if (
+        c.recentField == "selectedItemId" &&
+        c.deletedFile != ""
+    ) {
         c.deletedFile = "";
         c.recentField = "deletedFile";
         return c;

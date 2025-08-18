@@ -38,12 +38,13 @@ function sideSelectItem(groupId, itemId) {
 function SideContext() {
     this._construct = function() {
         this.activeGroupId = -1;
-        this.activeGroupTitles= [];
+        this.activeGroupTitles = [];
         this.clickedItemId = "";
         this.createGroup = "";
         this.createdGroupId = -1;
         this.deleteGroup = -1;
         this.didLaunch = false;
+        this.displaySelection = false;
         this.groupTitles = [];
         this.html = "";
         this.selectedItemId = "";
@@ -68,6 +69,8 @@ function SideContext() {
             return this.deleteGroup;
         } else if (name == "didLaunch") {
             return this.didLaunch;
+        } else if (name == "displaySelection") {
+            return this.displaySelection;
         } else if (name == "groupTitles") {
             return this.groupTitles;
         } else if (name == "html") {
@@ -90,6 +93,7 @@ function SideContext() {
         that.createdGroupId = this.createdGroupId;
         that.deleteGroup = this.deleteGroup;
         that.didLaunch = this.didLaunch;
+        that.displaySelection = this.displaySelection;
         that.groupTitles = this.groupTitles;
         that.html = this.html;
         that.selectedItemId = this.selectedItemId;
@@ -114,6 +118,8 @@ function SideContext() {
             this.deleteGroup = value;
         } else if (name == "didLaunch") {
             this.didLaunch = value;
+        } else if (name == "displaySelection") {
+            this.displaySelection = value;
         } else if (name == "groupTitles") {
             this.groupTitles = value;
         } else if (name == "html") {
@@ -160,8 +166,8 @@ function SideComponent() {
 
     this.setupEffects = function() {
         let d = { 
+            "displaySelection": (c) => { sideDisplaySelection(c.groupTitles, c.selectedItemId); },
             "groupTitles": (c) => { sideResetHTML(c.groupTitles); },
-            "selectedItemId": (c) => { sideDisplaySelection(c.groupTitles, c.selectedItemId); },
         }
         for (let field in d) {
             this.ctrl.registerFieldCallback(field, d[field]);
@@ -182,6 +188,7 @@ function SideComponent() {
 
     this.setupShoulds = function() {
         [
+            sideShouldDisplaySelection,
             sideShouldResetCreatedGroupId,
             sideShouldResetGroupTitles,
             sideShouldResetSelectedItemId,
@@ -196,23 +203,44 @@ function SideComponent() {
 //<!-- Shoulds -->
 
 // Conditions:
+// 1. Group titles changed
+// 2. Selected item changed
+function sideShouldDisplaySelection(c) {
+    if (c.recentField == "groupTitles") {
+        c.displaySelection = true;
+        c.recentField = "displaySelection";
+        return c;
+    }
+
+    if (c.recentField == "selectedItemId") {
+        c.displaySelection = true;
+        c.recentField = "displaySelection";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+
+// Conditions:
 // 1. Did launch
 // 2. Item has been clicked
 // 3. Item selection has been explicitely requested and it differs
 function sideShouldResetSelectedItemId(c) {
-    if (c.recentField == "didLaunch") {
+    /* 1 */ if (c.recentField == "didLaunch") {
         c.selectedItemId = "0/0";
         c.recentField = "selectedItemId";
         return c;
     }
 
-    if (c.recentField == "clickedItemId") {
+    /* 2 */ if (c.recentField == "clickedItemId") {
         c.selectedItemId = c.clickedItemId;
         c.recentField = "selectedItemId";
         return c;
     }
 
-    if (
+    /* 3 */ if (
         c.recentField == "selectItem" &&
         c.selectedItemId != sideItemId(c.activeGroupId, c.selectItem)
     ) {

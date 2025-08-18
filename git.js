@@ -1,3 +1,9 @@
+//<!-- API -->
+
+function gitCtrl() {
+    return window.gitCmp.ctrl;
+}
+
 //<!-- Context -->
 
 function GitContext() {
@@ -11,13 +17,21 @@ function GitContext() {
         this.checkRepositoryAvailability = false;
         this.clone = false;
         this.cloneError = "";
+        this.commitAndPush = false;
         this.didCheckout = false;
         this.didClickClone = false;
+        this.didClickCommitAndPush = false;
         this.didClickPull = false;
         this.didClone = false;
         this.didLaunch = false;
         this.didPull = false;
         this.didResetContents = false;
+        this.fsWalkedFiles = [];
+        this.headerClickedButtonId = -1;
+        this.headerPushButtonId = -1;
+        this.inputCommitMessage = "";
+        this.inputPushPassword = "";
+        this.inputPushUsername = "";
         this.inputURL = "";
         this.isCheckingOut = false;
         this.isCloning = false;
@@ -30,6 +44,7 @@ function GitContext() {
         this.resetContents = false;
         this.selectedBranch = "";
         this.selectedItemId = -1;
+        this.showCommitAndPushDialog = false;
         this.sideId = -1;
         this.sideSelectedItemId = -1;
         this.url = "";
@@ -57,10 +72,14 @@ function GitContext() {
             return this.clone;
         } else if (name == "cloneError") {
             return this.cloneError;
+        } else if (name == "commitAndPush") {
+            return this.commitAndPush;
         } else if (name == "didCheckout") {
             return this.didCheckout;
         } else if (name == "didClickClone") {
             return this.didClickClone;
+        } else if (name == "didClickCommitAndPush") {
+            return this.didClickCommitAndPush;
         } else if (name == "didClickPull") {
             return this.didClickPull;
         } else if (name == "didClone") {
@@ -71,6 +90,18 @@ function GitContext() {
             return this.didPull;
         } else if (name == "didResetContents") {
             return this.didResetContents;
+        } else if (name == "fsWalkedFiles") {
+            return this.fsWalkedFiles;
+        } else if (name == "headerClickedButtonId") {
+            return this.headerClickedButtonId;
+        } else if (name == "headerPushButtonId") {
+            return this.headerPushButtonId;
+        } else if (name == "inputCommitMessage") {
+            return this.inputCommitMessage;
+        } else if (name == "inputPushPassword") {
+            return this.inputPushPassword;
+        } else if (name == "inputPushUsername") {
+            return this.inputPushUsername;
         } else if (name == "inputURL") {
             return this.inputURL;
         } else if (name == "isCheckingOut") {
@@ -95,6 +126,8 @@ function GitContext() {
             return this.selectedBranch;
         } else if (name == "selectedItemId") {
             return this.selectedItemId;
+        } else if (name == "showCommitAndPushDialog") {
+            return this.showCommitAndPushDialog;
         } else if (name == "sideId") {
             return this.sideId;
         } else if (name == "sideSelectedItemId") {
@@ -117,13 +150,21 @@ function GitContext() {
         that.checkRepositoryAvailability = this.checkRepositoryAvailability;
         that.clone = this.clone;
         that.cloneError = this.cloneError;
+        that.commitAndPush = this.commitAndPush;
         that.didCheckout = this.didCheckout;
         that.didClickClone = this.didClickClone;
+        that.didClickCommitAndPush = this.didClickCommitAndPush;
         that.didClickPull = this.didClickPull;
         that.didClone = this.didClone;
         that.didLaunch = this.didLaunch;
         that.didPull = this.didPull;
         that.didResetContents = this.didResetContents;
+        that.fsWalkedFiles = this.fsWalkedFiles;
+        that.headerClickedButtonId = this.headerClickedButtonId;
+        that.headerPushButtonId = this.headerPushButtonId;
+        that.inputCommitMessage = this.inputCommitMessage;
+        that.inputPushPassword = this.inputPushPassword;
+        that.inputPushUsername = this.inputPushUsername;
         that.inputURL = this.inputURL;
         that.isCheckingOut = this.isCheckingOut;
         that.isCloning = this.isCloning;
@@ -136,6 +177,7 @@ function GitContext() {
         that.resetContents = this.resetContents;
         that.selectedBranch = this.selectedBranch;
         that.selectedItemId = this.selectedItemId;
+        that.showCommitAndPushDialog = this.showCommitAndPushDialog;
         that.sideId = this.sideId;
         that.sideSelectedItemId = this.sideSelectedItemId;
         that.url = this.url;
@@ -163,10 +205,14 @@ function GitContext() {
             this.clone = value;
         } else if (name == "cloneError") {
             this.cloneError = value;
+        } else if (name == "commitAndPush") {
+            this.commitAndPush = value;
         } else if (name == "didCheckout") {
             this.didCheckout = value;
         } else if (name == "didClickClone") {
             this.didClickClone = value;
+        } else if (name == "didClickCommitAndPush") {
+            this.didClickCommitAndPush = value;
         } else if (name == "didClickPull") {
             this.didClickPull = value;
         } else if (name == "didClone") {
@@ -177,6 +223,18 @@ function GitContext() {
             this.didPull = value;
         } else if (name == "didResetContents") {
             this.didResetContents = value;
+        } else if (name == "fsWalkedFiles") {
+            this.fsWalkedFiles = value;
+        } else if (name == "headerClickedButtonId") {
+            this.headerClickedButtonId = value;
+        } else if (name == "headerPushButtonId") {
+            this.headerPushButtonId = value;
+        } else if (name == "inputCommitMessage") {
+            this.inputCommitMessage = value;
+        } else if (name == "inputPushPassword") {
+            this.inputPushPassword = value;
+        } else if (name == "inputPushUsername") {
+            this.inputPushUsername = value;
         } else if (name == "inputURL") {
             this.inputURL = value;
         } else if (name == "isCheckingOut") {
@@ -201,6 +259,8 @@ function GitContext() {
             this.selectedBranch = value;
         } else if (name == "selectedItemId") {
             this.selectedItemId = value;
+        } else if (name == "showCommitAndPushDialog") {
+            this.showCommitAndPushDialog = value;
         } else if (name == "sideId") {
             this.sideId = value;
         } else if (name == "sideSelectedItemId") {
@@ -215,6 +275,35 @@ function GitContext() {
 
 let GIT_CFG = "/.git/config";
 let GIT_CFG_URL_PREFIX = "url = ";
+let GIT_COMMIT_PUSH_DIALOG = `
+<div id="%DIALOG%" uk-modal>
+    <div class="uk-modal-dialog uk-modal-body">
+        <h2 class="uk-modal-title">Commit + Push</h2>
+        <form onsubmit="return false;">
+            <div class="uk-margin-small">
+                <div class="uk-form-controls">
+                    <input class="uk-input" type="text" placeholder="Commit message" oninput='gitCtrl().set("inputCommitMessage", this.value);'>
+                </div>
+            </div>
+            <div class="uk-margin-small">
+                <div class="uk-form-controls">
+                    <input class="uk-input" type="text" placeholder="Username" oninput='gitCtrl().set("inputPushUsername", this.value);'>
+                </div>
+            </div>
+            <div class="uk-margin-small">
+                <div class="uk-form-controls">
+                    <input class="uk-input" type="password" placeholder="Password" oninput='gitCtrl().set("inputPushPassword", this.value);'>
+                </div>
+            </div>
+            <div class="uk-text-right uk-padding-small uk-padding-remove-bottom uk-padding-remove-right">
+                <button class="uk-button uk-button-default uk-modal-close" type=:button">Cancel</button>
+                <button class="uk-button uk-button-primary" type="button" onclick='gitCtrl().set("didClickCommitAndPush", true);'>Commit and push</button>
+            </div>
+        </form>
+    </div>
+</div>
+`;
+let GIT_COMMIT_PUSH_DIALOG_ID = "git-commit-push-dialog";
 let GIT_DOT_DIR = ".git";
 let GIT_ERROR_BRANCH = "Failed to get current branch";
 let GIT_ERROR_BRANCHES = "Failed to get remote branches";
@@ -255,7 +344,9 @@ let GIT_PAGES = {
 </div>
 `,
 };
+let GIT_PANEL_INTERNAL = "panel-internal";
 let GIT_PANEL_MAIN = "panel-main";
+let GIT_PANEL_MAIN_HEADER = "panel-main-header";
 let GIT_PROXY = "https://vercel-cors-proxy-pi.vercel.app";
 let GIT_REPO = "repository";
 let GIT_REPO_BRANCH = "repository-branch";
@@ -264,6 +355,7 @@ let GIT_REPO_CLONE = "repository-clone";
 let GIT_REPO_DIR = "/";
 let GIT_REPO_PULL = "repository-pull";
 let GIT_REPO_URL = "repository-url";
+let GIT_STATUS_UNMODIFIED = "unmodified";
 let GIT_TEMPLATE_BRANCHES_ITEM = `
 <option %SELECTED%>%BRANCH%</option>
 `;
@@ -278,8 +370,9 @@ function GitComponent() {
             console.log(`ИГР GitC._construct ctrl key/value: '${c.recentField}'/'${c.field(c.recentField)}'`);
         });
 
-        git.plugins.set("fs", fs());
-
+        this.setupDialogs();
+        this.setupFS();
+        this.setupHeader();
         this.setupSideMenu();
         this.setupShoulds();
         this.setupEffects();
@@ -306,6 +399,14 @@ function GitComponent() {
         });
     };
 
+    this.setupDialogs = function() {
+        let panel = deId(GIT_PANEL_INTERNAL);
+        let dialogs = document.createElement("div");
+        dialogs.innerHTML = GIT_COMMIT_PUSH_DIALOG
+            .replaceAll("%DIALOG%", GIT_COMMIT_PUSH_DIALOG_ID);
+        panel.appendChild(dialogs);
+    };
+
     this.setupEffects = function() {
         this.ctrl.registerFieldCallback("branchError", (c) => {
             reportFailure(GIT_ERROR_BRANCH, c.branchError);
@@ -320,7 +421,7 @@ function GitComponent() {
         });
 
         this.ctrl.registerFieldCallback("checkRepositoryAvailability", (c) => { (async() => {
-            let files = await pfs().readdir(GIT_REPO_DIR);
+            let files = await this.pfs.readdir(GIT_REPO_DIR);
             let hasRepo = files.includes(GIT_DOT_DIR);
             this.ctrl.set("isRepositoryAvailable", hasRepo);
         })(); });
@@ -341,6 +442,34 @@ function GitComponent() {
         this.ctrl.registerFieldCallback("cloneError", (c) => {
             reportFailure(GIT_ERROR_CLONE, c.cloneError);
         });
+
+        this.ctrl.registerFieldCallback("commitAndPush", (c) => { (async() => {
+            try {
+                let stRaw = await gitCollectStatuses(c.fsWalkedFiles);
+                let stMod = gitModifiedStatuses(stRaw);
+                console.log("ИГР setupE.commitAP-1 stM:", stMod);
+                let resCommit = await git.commit({
+                    dir: GIT_REPO_DIR,
+                    message: c.inputCommitMessage,
+                    author: {
+                        name: "PSKOV2",
+                        email: "pskov2@gitjs.org"
+                    }
+                });
+                console.log("ИГР setupE.commitAP-2 resC:", resCommit);
+                let resPush = await git.push({
+                    dir: GIT_REPO_DIR,
+                    remote: GIT_ORIGIN,
+                    username: c.inputPushUsername,
+                    password: c.inputPushPassword,
+                    corsProxy: GIT_PROXY,
+                });
+                console.log("ИГР setupE.commitAP-3 resP:", resPush);
+                //this.ctrl.set("didClone", true);
+            } catch (e) {
+                //this.ctrl.set("cloneError", `${e}`);
+            }
+        })(); });
 
         this.ctrl.registerFieldCallback("didCheckout", (c) => {
             reportSuccess("Git: Finished checking out");
@@ -371,7 +500,7 @@ function GitComponent() {
         });
 
         this.ctrl.registerFieldCallback("loadCfg", (c) => { (async() => {
-            let contents = await pfs().readFile(GIT_CFG, {encoding: "utf8"});
+            let contents = await this.pfs.readFile(GIT_CFG, {encoding: "utf8"});
             this.ctrl.set("cfgContents", contents);
         })(); });
 
@@ -443,6 +572,11 @@ function GitComponent() {
                 this.ctrl.set("checkoutError", `${e}`);
             }
         })(); });
+
+        this.ctrl.registerFieldCallback("showCommitAndPushDialog", (c) => {
+            let elem = deId(GIT_COMMIT_PUSH_DIALOG_ID);
+            UIkit.modal(elem).show();
+        });
     };
 
     this.setupEvents = function() {
@@ -451,19 +585,40 @@ function GitComponent() {
         });
     };
 
+    this.setupFS = function() {
+        this.fs = fs();
+        this.pfs = pfs();
+        git.plugins.set("fs", this.fs);
+
+        fsCtrl().registerFieldCallback("walkedFiles", (c) => {
+            this.ctrl.set("fsWalkedFiles", c.walkedFiles);
+        });
+    };
+
+    this.setupHeader = function() {
+        let id = headerCreateButton('<span uk-tooltip="title: Commit and push all files; delay: 500">⬆️</span>');
+        this.ctrl.set("headerPushButtonId", id);
+
+        headerCtrl().registerFieldCallback("clickedButtonId", (c) => {
+            this.ctrl.set("headerClickedButtonId", c.clickedButtonId);
+        });
+    };
+
     this.setupShoulds = function() {
         [
-            gitShouldResetBranch,
-            gitShouldResetBranches,
             gitShouldCheckRepositoryAvailability,
             gitShouldClone,
+            gitShouldCommitAndPush,
             gitShouldLoadCfg,
+            gitShouldResetBranch,
+            gitShouldResetBranches,
             gitShouldResetCheckingOutState,
             gitShouldResetCloningState,
             gitShouldResetContents,
             gitShouldResetPullingState,
             gitShouldResetSelectedItemId,
             gitShouldResetURL,
+            gitShouldShowCommitAndPushDialog,
         ].forEach((f) => {
             this.ctrl.registerFunction(f);
         });
@@ -490,6 +645,68 @@ function GitComponent() {
 }
 
 //<!-- Shoulds -->
+
+// Conditions:
+// 1. Did clone successfully
+// 2. Did launch
+function gitShouldCheckRepositoryAvailability(c) {
+    if (c.recentField == "didClone") {
+        c.checkRepositoryAvailability = true;
+        c.recentField = "checkRepositoryAvailability";
+        return c;
+    }
+
+    if (c.recentField == "didLaunch") {
+        c.checkRepositoryAvailability = true;
+        c.recentField = "checkRepositoryAvailability";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. URL is not empty and `Clone` button has been clicked
+function gitShouldClone(c) {
+    if (
+        c.recentField == "didClickClone" &&
+        c.url.length > 0
+    ) {
+        c.clone = true;
+        c.recentField = "clone";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Commit + push button has been clicked
+function gitShouldCommitAndPush(c) {
+    if (c.recentField == "didClickCommitAndPush") {
+        c.commitAndPush = true;
+        c.recentField = "commitAndPush";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
+// Conditions:
+// 1. Did launch
+function gitShouldLoadCfg(c) {
+    if (c.recentField == "didLaunch") {
+        c.loadCfg = true;
+        c.recentField = "loadCfg";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
 
 // Conditions:
 // 1. Did clone repository
@@ -534,55 +751,6 @@ function gitShouldResetBranches(c) {
     if (c.recentField == "didPull") {
         c.resetBranches = true;
         c.recentField = "resetBranches";
-        return c;
-    }
-
-    c.recentField = "none";
-    return c;
-}
-
-// Conditions:
-// 1. Did clone successfully
-// 2. Did launch
-function gitShouldCheckRepositoryAvailability(c) {
-    if (c.recentField == "didClone") {
-        c.checkRepositoryAvailability = true;
-        c.recentField = "checkRepositoryAvailability";
-        return c;
-    }
-
-    if (c.recentField == "didLaunch") {
-        c.checkRepositoryAvailability = true;
-        c.recentField = "checkRepositoryAvailability";
-        return c;
-    }
-
-    c.recentField = "none";
-    return c;
-}
-
-// Conditions:
-// 1. URL is not empty and `Clone` button has been clicked
-function gitShouldClone(c) {
-    if (
-        c.recentField == "didClickClone" &&
-        c.url.length > 0
-    ) {
-        c.clone = true;
-        c.recentField = "clone";
-        return c;
-    }
-
-    c.recentField = "none";
-    return c;
-}
-
-// Conditions:
-// 1. Did launch
-function gitShouldLoadCfg(c) {
-    if (c.recentField == "didLaunch") {
-        c.loadCfg = true;
-        c.recentField = "loadCfg";
         return c;
     }
 
@@ -765,6 +933,22 @@ function gitShouldResetURL(c) {
     return c;
 }
 
+// Conditions:
+// 1. Push button has been clicked in the header
+function gitShouldShowCommitAndPushDialog(c) {
+    if (
+        c.recentField == "headerClickedButtonId" &&
+        c.headerClickedButtonId == c.headerPushButtonId
+    ) {
+        c.showCommitAndPushDialog = true;
+        c.recentField = "showCommitAndPushDialog";
+        return c;
+    }
+
+    c.recentField = "none";
+    return c;
+}
+
 //<!-- Other -->
 
 function gitBranchesHTML(items, selectedItem) {
@@ -794,6 +978,35 @@ function gitCfgURL(contents) {
     return "undefined-cfg-url";
 }
 
+// Collect Git statuses of the walked files
+async function gitCollectStatuses(walkedFiles) {
+    var d = {};
+    for (let i in walkedFiles) {
+        let f = walkedFiles[i];
+
+        //console.log("ИГР gitCS-1 f.path:", f.path);
+
+        // Ignore dirs and .git
+        // WARN This duplicates logic in FS component
+        // TODO Make single ogic function
+        if (
+            f.path.endsWith("/") ||
+            f.path.startsWith("/.git")
+        ) {
+            continue;
+        }
+
+        let path = f.path.substring(1);
+        let stat =
+            await git.status({
+                dir: GIT_REPO_DIR,
+                filepath: path,
+            });
+        d[f.path] = stat;
+    }
+    return d;
+}
+
 // Make sure side selection is about Git items
 function gitIsSideSelectionRelevant(selectedItemId, sideId) {
     let ids = sideSelectionIds(selectedItemId);
@@ -804,6 +1017,19 @@ function gitIsSideSelectionRelevant(selectedItemId, sideId) {
     return false;
 }
 
+// Only select statuses that are not `unmodified`
+function gitModifiedStatuses(sts) {
+    var d = {};
+    for (let path in sts) {
+        let st = sts[path];
+        if (st != GIT_STATUS_UNMODIFIED) {
+            d[path] = st;
+        }
+    }
+    return d;
+}
+
 //<!-- Setup -->
 
-window.components.push(new GitComponent());
+window.gitCmp = new GitComponent();
+window.components.push(window.gitCmp);

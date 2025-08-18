@@ -8,7 +8,7 @@ async function asyncSleep(duration) {
     await new Promise((resolve) => setTimeout(resolve, duration));
 }
 
-// Report failure as a modal
+// Report failure as UIkit modal
 function reportFailure(title, details) {
     let html = `
 <h2>${title}</h2>
@@ -17,9 +17,9 @@ function reportFailure(title, details) {
     UIkit.modal.alert(html);
 }
 
-// Report success with a slight delay
+// Report success as UIkit notification
 //
-// The delay is necessary to overcome the conflict of UIkit and CLDController
+// A tiny delay is used to overcome the conflict of UIkit and CLDController
 function reportSuccess(text, timeout = 5000) {
     setTimeout(
         () => {
@@ -53,4 +53,3 @@ function strago(dt) {
     } 
     return dt.toLocaleString();
 }
-
