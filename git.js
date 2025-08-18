@@ -347,7 +347,7 @@ let GIT_PAGES = {
 let GIT_PANEL_INTERNAL = "panel-internal";
 let GIT_PANEL_MAIN = "panel-main";
 let GIT_PANEL_MAIN_HEADER = "panel-main-header";
-//let GIT_PROXY = "https://vercel-cors-proxy-pi.vercel.app";
+let GIT_PROXY = "https://vercel-cors-proxy-pi.vercel.app";
 let GIT_REPO = "repository";
 let GIT_REPO_BRANCH = "repository-branch";
 let GIT_REPO_CHECKOUT = "repository-checkout";
@@ -429,7 +429,7 @@ function GitComponent() {
         this.ctrl.registerFieldCallback("clone", (c) => { (async() => {
             try {
                 await git.clone({
-                    //corsProxy: GIT_PROXY,
+                    corsProxy: GIT_PROXY,
                     dir: GIT_REPO_DIR,
                     url: c.url,
                 });
@@ -462,7 +462,7 @@ function GitComponent() {
                     remote: GIT_ORIGIN,
                     username: c.inputPushUsername,
                     password: c.inputPushPassword,
-                    //corsProxy: GIT_PROXY,
+                    corsProxy: GIT_PROXY,
                 });
                 console.log("ИГР setupE.commitAP-3 resP:", resPush);
                 //this.ctrl.set("didClone", true);
@@ -478,7 +478,7 @@ function GitComponent() {
         this.ctrl.registerFieldCallback("didClickPull", (c) => { (async() => {
             try {
                 await git.pull({
-                    //corsProxy: GIT_PROXY,
+                    corsProxy: GIT_PROXY,
                     dir: GIT_REPO_DIR,
                 });
                 this.ctrl.set("didPull", true);
