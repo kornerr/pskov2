@@ -7,3 +7,6 @@ targets:
         scheme: {}
         sources:
           - path: PSKOVApp.swift
+        settings:
+            base:
+                INFOPLIST_FILE: $(PROJECT_DIR)/Info.plist
