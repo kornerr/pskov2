@@ -2,6 +2,7 @@ name: Pskov
 
 targets:
     PSKOV:
+        deploymentTarget: 11.0
         type: application
         platform: macOS
         scheme: {}
