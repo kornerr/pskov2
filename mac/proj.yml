@@ -1,0 +1,13 @@
+name: Pskov
+
+targets:
+    PSKOV:
+        deploymentTarget: 11.0
+        type: application
+        platform: macOS
+        scheme: {}
+        sources:
+          - path: src/PskovApp.swift
+        settings:
+            base:
+                INFOPLIST_FILE: $(PROJECT_DIR)/Info.plist

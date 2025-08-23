@@ -1,0 +1,3 @@
+#!/bin/bash
+xcodegen --spec proj.yml
+#xcodegen --spec $PROJECT --project $DESTINATION_DIR
