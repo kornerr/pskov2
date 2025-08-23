@@ -6,7 +6,7 @@ targets:
         platform: macOS
         scheme: {}
         sources:
-          - path: PSKOVApp.swift
+          - path: src/PSKOVApp.swift
         settings:
             base:
                 INFOPLIST_FILE: $(PROJECT_DIR)/Info.plist
