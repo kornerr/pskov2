@@ -1,4 +1,4 @@
-name: PSKOV
+name: Pskov
 
 targets:
     PSKOV:
@@ -6,7 +6,7 @@ targets:
         platform: macOS
         scheme: {}
         sources:
-          - path: src/PSKOVApp.swift
+          - path: src/PskovApp.swift
         settings:
             base:
                 INFOPLIST_FILE: $(PROJECT_DIR)/Info.plist
