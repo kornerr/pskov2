@@ -1,0 +1,9 @@
+name: PSKOV
+
+targets:
+    PSKOV:
+        type: application
+        platform: macOS
+        scheme: {}
+        sources:
+          - path: PSKOVApp.swift
